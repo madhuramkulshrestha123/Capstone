@@ -1,0 +1,8 @@
+{
+  "username": "adminuser",
+  "email": "admin@example.com",
+  "password": "StrongPass123!",
+  "first_name": "Admin",
+  "last_name": "User",
+  "role": "ADMIN"
+}

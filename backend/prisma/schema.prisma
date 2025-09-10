@@ -1,0 +1,188 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique @db.VarChar(50)
+  email        String   @unique @db.VarChar(100)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  firstName    String?  @map("first_name") @db.VarChar(50)
+  lastName     String?  @map("last_name") @db.VarChar(50)
+  avatarUrl    String?  @map("avatar_url") @db.VarChar(255)
+  role         String   @default("WORKER") // WORKER, SUPERVISOR, ADMIN
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  
+  // Relations
+  jobCards     JobCard[]
+  projects     Project[]
+  workRequests WorkDemandRequest[] @relation("WorkerRequests")
+  workerAttendances  Attendance[] @relation("WorkerAttendance")
+  supervisorAttendances Attendance[] @relation("SupervisorAttendance")
+  workerPayments Payment[] @relation("WorkerPayment")
+  approverPayments Payment[] @relation("ApproverPayment")
+
+  @@map("users")
+  @@index([email])
+  @@index([username])
+  @@index([createdAt])
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+  name          String   @db.VarChar(100)
+  description   String?  @db.Text
+  price         Decimal  @db.Decimal(10, 2)
+  imageUrl      String?  @map("image_url") @db.VarChar(255)
+  category      String?  @db.VarChar(50)
+  stockQuantity Int      @default(0) @map("stock_quantity")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("products")
+  @@index([category])
+  @@index([price])
+  @@index([createdAt])
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  name        String    @db.VarChar(255)
+  description String?   @db.Text
+  location    String?   @db.VarChar(255) // Storing as string for now, can be enhanced later
+  workerNeed  Int       @map("worker_need")
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime  @map("end_date")
+  status      String    @default("pending") // Will use enum in database
+  createdBy   Int       @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  
+  // Relations
+  user        User      @relation(fields: [createdBy], references: [id])
+  workRequests WorkDemandRequest[] @relation("ProjectRequests")
+  attendances Attendance[]
+  payments    Payment[]
+
+  @@map("projects")
+  @@index([status])
+  @@index([createdBy])
+  @@index([startDate])
+}
+
+model WorkDemandRequest {
+  id          String    @id @default(uuid())
+  workerId    Int       @map("worker_id")
+  projectId   String    @map("project_id")
+  requestTime DateTime  @default(now()) @map("request_time") @db.Timestamptz
+  status      String    @default("pending") // Will use enum in database
+  allocatedAt DateTime? @map("allocated_at") @db.Timestamptz
+  
+  // Relations
+  worker      User      @relation(fields: [workerId], references: [id], name: "WorkerRequests")
+  project     Project   @relation(fields: [projectId], references: [id], name: "ProjectRequests")
+
+  @@map("work_demand_requests")
+  @@index([workerId])
+  @@index([projectId])
+  @@index([status])
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  workerId  Int      @map("worker_id")
+  projectId String   @map("project_id")
+  date      DateTime @db.Date
+  status    String   @default("PRESENT") // PRESENT, ABSENT, LEAVE
+  markedBy  Int      @map("marked_by") // Supervisor ID
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  
+  // Relations
+  worker    User     @relation(fields: [workerId], references: [id], name: "WorkerAttendance")
+  project   Project  @relation(fields: [projectId], references: [id])
+  supervisor User    @relation(fields: [markedBy], references: [id], name: "SupervisorAttendance")
+
+  @@map("attendances")
+  @@index([workerId])
+  @@index([projectId])
+  @@index([date])
+}
+
+model Payment {
+  id          String    @id @default(uuid())
+  workerId    Int       @map("worker_id")
+  projectId   String    @map("project_id")
+  amount      Decimal   @db.Decimal(10, 2)
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  approvedBy  Int?      @map("approved_by") // Admin ID
+  approvedAt  DateTime? @map("approved_at") @db.Timestamptz
+  paidAt      DateTime? @map("paid_at") @db.Timestamptz
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  
+  // Relations
+  worker      User      @relation(fields: [workerId], references: [id], name: "WorkerPayment")
+  project     Project   @relation(fields: [projectId], references: [id])
+  approver    User?     @relation(fields: [approvedBy], references: [id], name: "ApproverPayment")
+
+  @@map("payments")
+  @@index([workerId])
+  @@index([projectId])
+  @@index([status])
+}
+
+model JobCard {
+  id                   Int              @id @default(autoincrement())
+  userId               Int
+  jobCardNumber        String           @unique @db.VarChar(100)
+  familyId             String           @db.VarChar(50)
+  headOfHouseholdName  String           @db.VarChar(100)
+  fatherHusbandName    String           @db.VarChar(100)
+  category             String           @db.VarChar(10)
+  dateOfRegistration   DateTime
+  address              String           @db.Text
+  village              String           @db.VarChar(100)
+  panchayat            String           @db.VarChar(100)
+  block                String           @db.VarChar(100)
+  district             String           @db.VarChar(100)
+  isBPL                Boolean          @default(false)
+  epicNo               String           @db.VarChar(50)
+  createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  
+  // Relations
+  user                 User             @relation(fields: [userId], references: [id])
+  applicants           JobCardApplicant[]
+
+  @@map("job_cards")
+  @@index([jobCardNumber])
+  @@index([userId])
+}
+
+model JobCardApplicant {
+  id          Int      @id @default(autoincrement())
+  jobCardId   Int
+  name        String   @db.VarChar(100)
+  gender      String   @db.VarChar(10)
+  age         Int
+  bankDetails String   @db.VarChar(200)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  
+  // Relations
+  jobCard     JobCard  @relation(fields: [jobCardId], references: [id])
+
+  @@map("job_card_applicants")
+  @@index([jobCardId])
+}

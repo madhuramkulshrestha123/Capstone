@@ -1,0 +1,34 @@
+{
+  "aadhaarNumber": "123456789012",
+  "phoneNumber": "9876543210",
+  "captchaToken": "captcha-token-here",
+  "password": "StrongPass123!",
+  "jobCardDetails": {
+    "familyId": "FAM001",
+    "headOfHouseholdName": "John Doe",
+    "fatherHusbandName": "James Doe",
+    "category": "OBC",
+    "dateOfRegistration": "2023-01-15T00:00:00.000Z",
+    "address": "123 Main Street, City",
+    "village": "Sample Village",
+    "panchayat": "Sample Panchayat",
+    "block": "Sample Block",
+    "district": "Sample District",
+    "isBPL": false,
+    "epicNo": "EPIC001",
+    "applicants": [
+      {
+        "name": "John Doe",
+        "gender": "Male",
+        "age": 35,
+        "bankDetails": "Bank of Sample, Account: 1234567890"
+      },
+      {
+        "name": "Jane Doe",
+        "gender": "Female",
+        "age": 30,
+        "bankDetails": "Bank of Sample, Account: 0987654321"
+      }
+    ]
+  }
+}
