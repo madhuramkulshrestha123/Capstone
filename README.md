@@ -1,4 +1,4 @@
-# Capstone Project - Job Portal Application
+# Capstone Project - Unskilled Labour Job Portal Application
 
 This is a full-stack Job Portal application with user authentication, job card applications, and admin management.
 
