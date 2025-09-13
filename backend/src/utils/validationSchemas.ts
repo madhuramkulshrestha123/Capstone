@@ -702,3 +702,104 @@ export const idParamSchema = Joi.object({
       'any.required': 'ID is required',
     }),
 });
+
+// OTP validation schemas
+export const sendOtpSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required',
+    }),
+});
+
+export const verifyOtpSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required',
+    }),
+  otp: Joi.string()
+    .length(6)
+    .pattern(/^\d+$/)
+    .required()
+    .messages({
+      'string.length': 'OTP must be exactly 6 digits',
+      'string.pattern.base': 'OTP must contain only digits',
+      'any.required': 'OTP is required',
+    }),
+});
+
+export const completeRegistrationSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required',
+    }),
+  username: Joi.string()
+    .alphanum()
+    .min(3)
+    .max(30)
+    .required()
+    .messages({
+      'string.alphanum': 'Username must contain only alphanumeric characters',
+      'string.min': 'Username must be at least 3 characters long',
+      'string.max': 'Username must not exceed 30 characters',
+      'any.required': 'Username is required',
+    }),
+  first_name: Joi.string()
+    .min(1)
+    .max(50)
+    .required()
+    .messages({
+      'string.min': 'First name must not be empty',
+      'string.max': 'First name must not exceed 50 characters',
+      'any.required': 'First name is required',
+    }),
+  last_name: Joi.string()
+    .min(1)
+    .max(50)
+    .required()
+    .messages({
+      'string.min': 'Last name must not be empty',
+      'string.max': 'Last name must not exceed 50 characters',
+      'any.required': 'Last name is required',
+    }),
+  password: Joi.string()
+    .min(8)
+    .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])'))
+    .required()
+    .messages({
+      'string.min': 'Password must be at least 8 characters long',
+      'string.pattern.base': 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character',
+      'any.required': 'Password is required',
+    }),
+  role: Joi.string()
+    .valid('WORKER', 'SUPERVISOR', 'ADMIN')
+    .optional()
+    .default('WORKER')
+    .messages({
+      'any.only': 'Role must be one of: WORKER, SUPERVISOR, ADMIN',
+    }),
+});
+
+// Update the sendOtpSchema to include password for login
+export const sendLoginOtpSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required',
+    }),
+  password: Joi.string()
+    .required()
+    .messages({
+      'any.required': 'Password is required',
+    }),
+});

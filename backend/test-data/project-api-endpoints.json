@@ -1,0 +1,239 @@
+{
+  "project_endpoints": {
+    "base_url": "/api/v1/projects",
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/api/v1/projects",
+        "description": "Get all projects with pagination",
+        "query_params": {
+          "page": "Page number (default: 1)",
+          "limit": "Items per page (default: 10, max: 100)",
+          "status": "Filter by status (pending, active, completed)"
+        },
+        "auth": "None",
+        "example_request": "GET /api/v1/projects?page=1&limit=5&status=active",
+        "example_response": {
+          "success": true,
+          "data": [
+            {
+              "id": "proj-12345",
+              "name": "Sample Project",
+              "description": "A sample project description",
+              "location": "Sample Location",
+              "worker_need": 25,
+              "start_date": "2023-07-01T00:00:00.000Z",
+              "end_date": "2024-06-30T00:00:00.000Z",
+              "status": "active",
+              "created_by": 1,
+              "created_at": "2023-06-01T10:00:00.000Z",
+              "updated_at": "2023-06-01T10:00:00.000Z"
+            }
+          ],
+          "meta": {
+            "total": 1,
+            "page": 1,
+            "limit": 5,
+            "totalPages": 1
+          }
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/projects/:id",
+        "description": "Get a specific project by ID",
+        "path_params": {
+          "id": "Project ID (UUID)"
+        },
+        "auth": "None",
+        "example_request": "GET /api/v1/projects/proj-12345",
+        "example_response": {
+          "success": true,
+          "data": {
+            "id": "proj-12345",
+            "name": "Sample Project",
+            "description": "A sample project description",
+            "location": "Sample Location",
+            "worker_need": 25,
+            "start_date": "2023-07-01T00:00:00.000Z",
+            "end_date": "2024-06-30T00:00:00.000Z",
+            "status": "active",
+            "created_by": 1,
+            "created_at": "2023-06-01T10:00:00.000Z",
+            "updated_at": "2023-06-01T10:00:00.000Z"
+          }
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/projects/status/:status",
+        "description": "Get projects by status",
+        "path_params": {
+          "status": "Project status (pending, active, completed)"
+        },
+        "auth": "None",
+        "example_request": "GET /api/v1/projects/status/active",
+        "example_response": {
+          "success": true,
+          "data": [
+            {
+              "id": "proj-12345",
+              "name": "Sample Project",
+              "description": "A sample project description",
+              "location": "Sample Location",
+              "worker_need": 25,
+              "start_date": "2023-07-01T00:00:00.000Z",
+              "end_date": "2024-06-30T00:00:00.000Z",
+              "status": "active",
+              "created_by": 1,
+              "created_at": "2023-06-01T10:00:00.000Z",
+              "updated_at": "2023-06-01T10:00:00.000Z"
+            }
+          ],
+          "meta": {
+            "total": 1,
+            "page": 1,
+            "limit": 10,
+            "totalPages": 1
+          }
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/projects",
+        "description": "Create a new project",
+        "auth": "Admin or Supervisor role required",
+        "headers": {
+          "Authorization": "Bearer <token>",
+          "Content-Type": "application/json"
+        },
+        "request_body": {
+          "name": "string (required)",
+          "description": "string (optional)",
+          "location": "string (optional)",
+          "worker_need": "integer (required)",
+          "start_date": "ISO date string (required)",
+          "end_date": "ISO date string (required)",
+          "status": "enum: pending|active|completed (optional, default: pending)"
+        },
+        "example_request": {
+          "name": "New Road Construction Project",
+          "description": "Construction of rural roads",
+          "location": "Rajasthan, India",
+          "worker_need": 50,
+          "start_date": "2023-07-01",
+          "end_date": "2024-06-30",
+          "status": "pending"
+        },
+        "example_response": {
+          "success": true,
+          "data": {
+            "id": "proj-67890",
+            "name": "New Road Construction Project",
+            "description": "Construction of rural roads",
+            "location": "Rajasthan, India",
+            "worker_need": 50,
+            "start_date": "2023-07-01T00:00:00.000Z",
+            "end_date": "2024-06-30T00:00:00.000Z",
+            "status": "pending",
+            "created_by": 1,
+            "created_at": "2023-06-01T10:00:00.000Z",
+            "updated_at": "2023-06-01T10:00:00.000Z"
+          }
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/projects/:id",
+        "description": "Update an existing project",
+        "auth": "Admin or Supervisor role required",
+        "headers": {
+          "Authorization": "Bearer <token>",
+          "Content-Type": "application/json"
+        },
+        "path_params": {
+          "id": "Project ID (UUID)"
+        },
+        "request_body": {
+          "name": "string (optional)",
+          "description": "string (optional)",
+          "location": "string (optional)",
+          "worker_need": "integer (optional)",
+          "start_date": "ISO date string (optional)",
+          "end_date": "ISO date string (optional)",
+          "status": "enum: pending|active|completed (optional)"
+        },
+        "example_request": {
+          "status": "active"
+        },
+        "example_response": {
+          "success": true,
+          "data": {
+            "id": "proj-67890",
+            "name": "New Road Construction Project",
+            "description": "Construction of rural roads",
+            "location": "Rajasthan, India",
+            "worker_need": 50,
+            "start_date": "2023-07-01T00:00:00.000Z",
+            "end_date": "2024-06-30T00:00:00.000Z",
+            "status": "active",
+            "created_by": 1,
+            "created_at": "2023-06-01T10:00:00.000Z",
+            "updated_at": "2023-06-02T10:00:00.000Z"
+          }
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/v1/projects/:id",
+        "description": "Delete a project",
+        "auth": "Admin role required",
+        "headers": {
+          "Authorization": "Bearer <token>"
+        },
+        "path_params": {
+          "id": "Project ID (UUID)"
+        },
+        "example_request": "DELETE /api/v1/projects/proj-67890",
+        "example_response": {
+          "success": true,
+          "message": "Project deleted successfully"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/projects/my/projects",
+        "description": "Get projects created by the authenticated user",
+        "auth": "Admin or Supervisor role required",
+        "headers": {
+          "Authorization": "Bearer <token>"
+        },
+        "example_request": "GET /api/v1/projects/my/projects",
+        "example_response": {
+          "success": true,
+          "data": [
+            {
+              "id": "proj-12345",
+              "name": "Sample Project",
+              "description": "A sample project description",
+              "location": "Sample Location",
+              "worker_need": 25,
+              "start_date": "2023-07-01T00:00:00.000Z",
+              "end_date": "2024-06-30T00:00:00.000Z",
+              "status": "active",
+              "created_by": 1,
+              "created_at": "2023-06-01T10:00:00.000Z",
+              "updated_at": "2023-06-01T10:00:00.000Z"
+            }
+          ],
+          "meta": {
+            "total": 1,
+            "page": 1,
+            "limit": 10,
+            "totalPages": 1
+          }
+        }
+      }
+    ]
+  }
+}

@@ -186,3 +186,18 @@ model JobCardApplicant {
   @@map("job_card_applicants")
   @@index([jobCardId])
 }
+
+model Otp {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique @db.VarChar(100)
+  otp          String   @db.VarChar(6)
+  expiresAt    DateTime @map("expires_at") @db.Timestamptz
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  resendCount  Int      @default(0) @map("resend_count")
+  lastResendAt DateTime? @map("last_resend_at") @db.Timestamptz
+  isVerified   Boolean  @default(false) @map("is_verified")
+
+  @@map("otps")
+  @@index([email])
+  @@index([expiresAt])
+}

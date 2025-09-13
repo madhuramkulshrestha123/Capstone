@@ -8,7 +8,8 @@ import {
   UserResponse, 
   LoginRequest, 
   LoginResponse,
-  User 
+  User,
+  CreateRegistrationRequest
 } from '../types';
 
 export class UserService {
@@ -18,12 +19,13 @@ export class UserService {
     this.userModel = new UserModel();
   }
 
-  private mapUserToResponse(user: User): UserResponse {
-    const { password_hash, ...userResponse } = user;
-    return userResponse as UserResponse;
+  // Expose userModel for use in controller
+  public getUserModel(): UserModel {
+    return this.userModel;
   }
 
-  private generateTokens(user: User): { token: string; refreshToken: string } {
+  // Make generateTokens public for use in controller
+  public generateTokens(user: User): { token: string; refreshToken: string } {
     const tokenPayload = {
       id: user.id,
       username: user.username,
@@ -51,6 +53,11 @@ export class UserService {
     const refreshToken = jwt.sign(tokenPayload, jwtRefreshSecret as string, refreshSignOptions);
 
     return { token, refreshToken };
+  }
+
+  private mapUserToResponse(user: User): UserResponse {
+    const { password_hash, ...userResponse } = user;
+    return userResponse as UserResponse;
   }
 
   async getAllUsers(page: number = 1, limit: number = 10): Promise<{
@@ -100,6 +107,25 @@ export class UserService {
     }
 
     const user = await this.userModel.create(userData);
+    return this.mapUserToResponse(user);
+  }
+
+  async createRegistration(userData: CreateRegistrationRequest): Promise<UserResponse> {
+    // Check if user already exists
+    const [existingUserByEmail, existingUserByUsername] = await Promise.all([
+      this.userModel.findByEmail(userData.email),
+      this.userModel.findByUsername(userData.username),
+    ]);
+
+    if (existingUserByEmail) {
+      throw new AppError('User with this email already exists', 409);
+    }
+
+    if (existingUserByUsername) {
+      throw new AppError('User with this username already exists', 409);
+    }
+
+    const user = await this.userModel.createRegistration(userData);
     return this.mapUserToResponse(user);
   }
 
