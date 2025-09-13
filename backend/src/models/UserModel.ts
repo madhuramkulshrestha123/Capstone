@@ -1,5 +1,5 @@
 import Database from '../config/database';
-import { User, CreateUserRequest, UpdateUserRequest } from '../types';
+import { User, CreateUserRequest, CreateRegistrationRequest, UpdateUserRequest } from '../types';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 
@@ -28,6 +28,7 @@ export class UserModel {
         firstName: true,
         lastName: true,
         avatarUrl: true,
+        role: true, // Add role selection
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -40,8 +41,7 @@ export class UserModel {
         id: user.id,
         username: user.username,
         email: user.email,
-        // Default role since we can't select it from DB
-        role: 'WORKER',
+        role: user.role as 'WORKER' | 'SUPERVISOR' | 'ADMIN', // Use actual role from DB
         is_active: user.isActive,
         created_at: user.createdAt,
         updated_at: user.updatedAt,
@@ -77,6 +77,7 @@ export class UserModel {
         firstName: true,
         lastName: true,
         avatarUrl: true,
+        role: true, // Add role selection
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -90,8 +91,7 @@ export class UserModel {
       id: user.id,
       username: user.username,
       email: user.email,
-      // Default role since we can't select it from DB
-      role: 'WORKER',
+      role: user.role as 'WORKER' | 'SUPERVISOR' | 'ADMIN', // Use actual role from DB
       is_active: user.isActive,
       created_at: user.createdAt,
       updated_at: user.updatedAt,
@@ -127,8 +127,7 @@ export class UserModel {
       id: user.id,
       username: user.username,
       email: user.email,
-      // Default role since we can't select it from DB
-      role: 'WORKER',
+      role: user.role as 'WORKER' | 'SUPERVISOR' | 'ADMIN', // Use actual role from DB
       is_active: user.isActive,
       created_at: user.createdAt,
       updated_at: user.updatedAt,
@@ -163,6 +162,7 @@ export class UserModel {
         firstName: true,
         lastName: true,
         avatarUrl: true,
+        role: true, // Add role selection
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -176,8 +176,7 @@ export class UserModel {
       id: user.id,
       username: user.username,
       email: user.email,
-      // Default role since we can't select it from DB
-      role: 'WORKER',
+      role: user.role as 'WORKER' | 'SUPERVISOR' | 'ADMIN', // Use actual role from DB
       is_active: user.isActive,
       created_at: user.createdAt,
       updated_at: user.updatedAt,
@@ -210,7 +209,7 @@ export class UserModel {
         passwordHash,
         firstName: userData.first_name || null,
         lastName: userData.last_name || null,
-        // Note: We're not setting role in DB since the column doesn't exist yet
+        role: userData.role || 'WORKER', // Set role in DB
       },
       select: {
         id: true,
@@ -219,6 +218,7 @@ export class UserModel {
         firstName: true,
         lastName: true,
         avatarUrl: true,
+        role: true, // Select role
         isActive: true,
         createdAt: true,
         updatedAt: true,
@@ -230,8 +230,62 @@ export class UserModel {
       id: user.id,
       username: user.username,
       email: user.email,
-      // Use the role from the request or default to WORKER
-      role: userData.role || 'WORKER',
+      role: user.role as 'WORKER' | 'SUPERVISOR' | 'ADMIN', // Use actual role from DB
+      is_active: user.isActive,
+      created_at: user.createdAt,
+      updated_at: user.updatedAt,
+      password_hash: '',
+    };
+    
+    if (user.firstName !== null) {
+      result.first_name = user.firstName;
+    }
+    
+    if (user.lastName !== null) {
+      result.last_name = user.lastName;
+    }
+    
+    if (user.avatarUrl !== null) {
+      result.avatar_url = user.avatarUrl;
+    }
+    
+    return result;
+  }
+
+  // New method for creating user with password during registration
+  async createRegistration(userData: CreateRegistrationRequest): Promise<User> {
+    const saltRounds = 12;
+    const passwordHash = await bcrypt.hash(userData.password, saltRounds);
+
+    const user = await this.prisma.user.create({
+      data: {
+        username: userData.username,
+        email: userData.email,
+        passwordHash,
+        firstName: userData.first_name,
+        lastName: userData.last_name,
+        role: userData.role || 'WORKER', // Set role in DB
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        avatarUrl: true,
+        role: true, // Select role
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        passwordHash: false,
+      },
+    });
+
+    const result: User = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role as 'WORKER' | 'SUPERVISOR' | 'ADMIN', // Use actual role from DB
       is_active: user.isActive,
       created_at: user.createdAt,
       updated_at: user.updatedAt,
@@ -261,7 +315,7 @@ export class UserModel {
     if (userData.first_name !== undefined) updateData.firstName = userData.first_name;
     if (userData.last_name !== undefined) updateData.lastName = userData.last_name;
     if (userData.avatar_url !== undefined) updateData.avatarUrl = userData.avatar_url;
-    // Note: We're not updating role in DB since the column doesn't exist yet
+    if (userData.role !== undefined) updateData.role = userData.role; // Allow updating role
 
     if (Object.keys(updateData).length === 0) {
       return this.findById(id);
@@ -281,6 +335,7 @@ export class UserModel {
           firstName: true,
           lastName: true,
           avatarUrl: true,
+          role: true, // Select role
           isActive: true,
           createdAt: true,
           updatedAt: true,
@@ -292,8 +347,7 @@ export class UserModel {
         id: user.id,
         username: user.username,
         email: user.email,
-        // For updates, we'll need to get the role from the database or use a default
-        role: 'WORKER',
+        role: user.role as 'WORKER' | 'SUPERVISOR' | 'ADMIN', // Use actual role from DB
         is_active: user.isActive,
         created_at: user.createdAt,
         updated_at: user.updatedAt,

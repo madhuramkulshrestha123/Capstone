@@ -142,6 +142,112 @@ Comprehensive testing files and scripts are available in the `test-data/` direct
 - Run test setup: `run-tests.bat` (Windows) or `run-tests.sh` (Linux/Mac)
 - Complete workflow test: `test-workflow.bat` (Windows) or `test-workflow.sh` (Linux/Mac)
 
+Key test files:
+- `test-login.js` - User login functionality
+- `test-registration.js` - User registration flow
+- `test-otp-flow.js` - OTP verification process
+- `test-password-validation.js` - Password validation rules
+- `complete-login-flow.js` - End-to-end login process
+- `complete-registration-flow.js` - End-to-end registration process
+- `test-get-all-users.js` - User management API
+- `test-email-delivery.js` - Email delivery functionality
+- `test-workflow.js` - Complete end-to-end workflow
+
+Test data files:
+- `admin-login.json` - Admin user credentials
+- `supervisor-login.json` - Supervisor user credentials
+- `user-login.json` - Worker user credentials
+
+## Sample Test Data
+
+To help with testing, we provide sample test data and API endpoint examples:
+
+### User Credentials
+
+#### Admin User
+```json
+{
+  "email": "admin@example.com",
+  "password": "StrongPass123!"
+}
+```
+
+#### Supervisor User
+```json
+{
+  "email": "supervisor@example.com",
+  "password": "StrongPass123!"
+}
+```
+
+#### Worker User
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "StrongPass123!"
+}
+```
+
+### Sample Projects
+
+We provide a collection of sample projects for testing purposes. Each project has the following structure:
+
+```json
+{
+  "name": "Rural Road Construction Project",
+  "description": "Construction of 10km rural roads connecting remote villages to the main highway network. This project aims to improve transportation and access to markets for local farmers.",
+  "location": "Rajasthan, India",
+  "worker_need": 75,
+  "start_date": "2023-07-01",
+  "end_date": "2024-06-30",
+  "status": "active"
+}
+```
+
+The sample projects include various types of infrastructure projects from different regions of India. You can find the complete list of sample projects in the `test-data/sample-projects.json` file.
+
+### Project API Endpoints
+
+The following API endpoints are available for project management:
+
+#### Base URL
+```
+/api/v1/projects
+```
+
+#### GET /api/v1/projects
+Retrieve all projects with pagination. Optional query parameters include `page`, `limit`, and `status`.
+
+#### GET /api/v1/projects/:id
+Retrieve a specific project by ID.
+
+#### GET /api/v1/projects/status/:status
+Filter projects by status (pending, active, completed).
+
+#### POST /api/v1/projects
+Create a new project. Requires admin or supervisor role. Example request body:
+
+```json
+{
+  "name": "New Road Construction Project",
+  "description": "Construction of rural roads",
+  "location": "Rajasthan, India",
+  "worker_need": 50,
+  "start_date": "2023-07-01",
+  "end_date": "2024-06-30",
+  "status": "pending"
+}
+```
+
+#### PUT /api/v1/projects/:id
+Update an existing project. Requires admin or supervisor role.
+
+#### DELETE /api/v1/projects/:id
+Delete a project. Requires admin role.
+
+#### GET /api/v1/projects/my/projects
+Get projects created by the authenticated user.
+
 ## Documentation
 
 - [Role-Based Access Control](docs/role-based-access-control.md)

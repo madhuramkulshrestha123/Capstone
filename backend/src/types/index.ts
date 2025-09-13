@@ -21,6 +21,16 @@ export interface CreateUserRequest {
   role?: 'WORKER' | 'SUPERVISOR' | 'ADMIN';
 }
 
+// New interface for registration with password
+export interface CreateRegistrationRequest {
+  username: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  role?: 'WORKER' | 'SUPERVISOR' | 'ADMIN';
+}
+
 export interface UpdateUserRequest {
   username?: string;
   email?: string;
@@ -252,4 +262,11 @@ export interface PaginationQuery {
   limit?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+}
+
+// Email Configuration Interface
+export interface EmailConfig {
+  serviceID: string;
+  publicKey: string;
+  privateKey: string;
 }

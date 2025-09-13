@@ -1,9 +1,0 @@
-{
-  "name": "Road Construction Project",
-  "description": "Construction of rural roads in the district",
-  "location": "Sample District, State",
-  "worker_need": 50,
-  "start_date": "2023-06-01",
-  "end_date": "2023-12-31",
-  "status": "pending"
-}

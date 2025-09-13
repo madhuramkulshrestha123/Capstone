@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Rural Road Construction Project",
+    "description": "Construction of 10km rural roads connecting remote villages to the main highway network. This project aims to improve transportation and access to markets for local farmers.",
+    "location": "Rajasthan, India",
+    "worker_need": 75,
+    "start_date": "2023-07-01",
+    "end_date": "2024-06-30",
+    "status": "active"
+  },
+  {
+    "name": "School Building Renovation",
+    "description": "Complete renovation of the government primary school building including roof repair, wall painting, and installation of new windows and doors.",
+    "location": "Uttar Pradesh, India",
+    "worker_need": 25,
+    "start_date": "2023-09-15",
+    "end_date": "2023-12-15",
+    "status": "active"
+  },
+  {
+    "name": "Water Pipeline Installation",
+    "description": "Installation of a 15km water pipeline to provide clean drinking water to 5 villages. Includes construction of storage tanks and distribution points.",
+    "location": "Maharashtra, India",
+    "worker_need": 50,
+    "start_date": "2024-01-10",
+    "end_date": "2024-08-10",
+    "status": "pending"
+  },
+  {
+    "name": "Community Health Center Construction",
+    "description": "Building a new 10-room community health center with laboratory facilities and staff quarters to serve the healthcare needs of the region.",
+    "location": "Karnataka, India",
+    "worker_need": 60,
+    "start_date": "2022-03-01",
+    "end_date": "2023-08-31",
+    "status": "completed"
+  },
+  {
+    "name": "Agricultural Irrigation System",
+    "description": "Development of a drip irrigation system for 500 acres of farmland to improve water efficiency and crop yields.",
+    "location": "Punjab, India",
+    "worker_need": 40,
+    "start_date": "2023-11-01",
+    "end_date": "2024-04-30",
+    "status": "pending"
+  },
+  {
+    "name": "Bridge Construction Over River",
+    "description": "Construction of a 200-meter concrete bridge to connect two districts separated by a river, improving regional connectivity.",
+    "location": "Bihar, India",
+    "worker_need": 100,
+    "start_date": "2023-05-01",
+    "end_date": "2025-05-01",
+    "status": "active"
+  },
+  {
+    "name": "Solar Power Plant Installation",
+    "description": "Installation of a 5MW solar power plant with battery storage system to provide electricity to remote areas.",
+    "location": "Gujarat, India",
+    "worker_need": 35,
+    "start_date": "2024-03-01",
+    "end_date": "2024-12-31",
+    "status": "pending"
+  },
+  {
+    "name": "Waste Management Facility",
+    "description": "Construction of a waste processing facility to handle municipal solid waste and produce compost for agricultural use.",
+    "location": "Tamil Nadu, India",
+    "worker_need": 30,
+    "start_date": "2022-01-15",
+    "end_date": "2023-01-15",
+    "status": "completed"
+  },
+  {
+    "name": "Digital Literacy Center",
+    "description": "Establishment of a digital literacy center with 20 computers to provide computer education to rural youth and women.",
+    "location": "West Bengal, India",
+    "worker_need": 15,
+    "start_date": "2023-10-01",
+    "end_date": "2024-03-31",
+    "status": "pending"
+  },
+  {
+    "name": "Women's Self-Help Group Center",
+    "description": "Construction of a community center for women's self-help groups to conduct skill development workshops and meetings.",
+    "location": "Odisha, India",
+    "worker_need": 20,
+    "start_date": "2023-08-01",
+    "end_date": "2023-11-30",
+    "status": "active"
+  }
+]

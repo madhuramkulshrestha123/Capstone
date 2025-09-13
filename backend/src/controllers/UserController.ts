@@ -1,13 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import { UserService } from '../services/UserService';
+import { OtpService } from '../services/OtpService';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 import { ApiResponse } from '../types';
 
 export class UserController {
   private userService: UserService;
+  private otpService: OtpService;
 
   constructor() {
     this.userService = new UserService();
+    this.otpService = new OtpService();
   }
 
   public getAllUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -66,21 +69,6 @@ export class UserController {
       };
 
       res.status(200).json(response);
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  public createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const user = await this.userService.createUser(req.body);
-
-      const response: ApiResponse = {
-        success: true,
-        data: user,
-      };
-
-      res.status(201).json(response);
     } catch (error) {
       next(error);
     }
@@ -250,6 +238,242 @@ export class UserController {
     }
   };
 
+  public sendRegistrationOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email } = req.body;
+      
+      // Check if user already exists
+      const existingUser = await this.userService.getUserModel().findByEmail(email);
+      if (existingUser) {
+        res.status(409).json({
+          success: false,
+          error: {
+            message: 'User with this email already exists',
+          },
+        });
+        return;
+      }
+
+      // Send OTP
+      const result = await this.otpService.sendOtp(email);
+
+      if (result.success) {
+        const responseData: any = {
+          message: 'OTP sent successfully',
+          is_verified: false,
+        };
+        
+        // In development, include the OTP for testing
+        if (process.env.NODE_ENV === 'development' && result.otp) {
+          responseData.otp = result.otp;
+        }
+        
+        res.status(200).json({
+          success: true,
+          data: responseData,
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: {
+            message: result.message,
+          },
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public verifyRegistrationOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, otp } = req.body;
+
+      const result = await this.otpService.verifyOtp(email, otp);
+
+      if (result.success) {
+        res.status(200).json({
+          success: true,
+          data: {
+            message: 'OTP verified successfully',
+            email: email,
+          },
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: {
+            message: result.message,
+          },
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public completeRegistration = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, username, first_name, last_name, password, role } = req.body;
+      
+      // Check if OTP is verified
+      const isVerified = await this.otpService.isOtpVerified(email);
+      if (!isVerified) {
+        res.status(400).json({
+          success: false,
+          error: {
+            message: 'OTP not verified. Please verify OTP first.',
+          },
+        });
+        return;
+      }
+
+      // Check if user already exists
+      const existingUser = await this.userService.getUserModel().findByEmail(email);
+      if (existingUser) {
+        res.status(409).json({
+          success: false,
+          error: {
+            message: 'User with this email already exists',
+          },
+        });
+        return;
+      }
+
+      // Create user with password
+      const userData = {
+        email,
+        username,
+        first_name,
+        last_name,
+        password,
+        role,
+      };
+
+      const user = await this.userService.createUser(userData);
+
+      res.status(201).json({
+        success: true,
+        data: {
+          user,
+          message: 'Registration completed successfully',
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public sendLoginOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, password } = req.body;
+      
+      // Check if user exists and verify password
+      const user = await this.userService.getUserModel().verifyPassword(email, password);
+      if (!user) {
+        res.status(401).json({
+          success: false,
+          error: {
+            message: 'Invalid email or password',
+          },
+        });
+        return;
+      }
+
+      // Check if user is active
+      if (!user.is_active) {
+        res.status(403).json({
+          success: false,
+          error: {
+            message: 'Account is deactivated',
+          },
+        });
+        return;
+      }
+
+      // Send OTP
+      const result = await this.otpService.sendOtp(email);
+
+      if (result.success) {
+        const responseData: any = {
+          message: 'OTP sent successfully for login',
+        };
+        
+        // In development, include the OTP for testing
+        if (process.env.NODE_ENV === 'development' && result.otp) {
+          responseData.otp = result.otp;
+        }
+        
+        res.status(200).json({
+          success: true,
+          data: responseData,
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: {
+            message: result.message,
+          },
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public verifyLoginOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, otp } = req.body;
+
+      const result = await this.otpService.verifyOtp(email, otp);
+
+      if (result.success) {
+        // Get user and generate tokens
+        const user = await this.userService.getUserModel().findByEmail(email);
+        if (!user) {
+          res.status(404).json({
+            success: false,
+            error: {
+              message: 'User not found',
+            },
+          });
+          return;
+        }
+
+        const tokens = this.userService.generateTokens(user);
+        
+        res.status(200).json({
+          success: true,
+          data: {
+            user: {
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              role: user.role,
+              is_active: user.is_active,
+              created_at: user.created_at,
+              updated_at: user.updated_at,
+            },
+            token: tokens.token,
+            refreshToken: tokens.refreshToken,
+            message: 'Login successful',
+          },
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: {
+            message: result.message,
+          },
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const loginData = await this.userService.login(req.body);
@@ -280,4 +504,24 @@ export class UserController {
       next(error);
     }
   };
+
+  public createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const user = await this.userService.createUser(req.body);
+
+      const response: ApiResponse = {
+        success: true,
+        data: user,
+      };
+
+      res.status(201).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // Expose userService methods for use in controller methods
+  public getUserModel() {
+    return this.userService.getUserModel();
+  }
 }

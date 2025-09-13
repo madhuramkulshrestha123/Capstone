@@ -9,14 +9,29 @@ import {
   refreshTokenSchema,
   paginationSchema,
   idParamSchema,
+  sendOtpSchema,
+  sendLoginOtpSchema,
+  verifyOtpSchema,
+  completeRegistrationSchema
 } from '../utils/validationSchemas';
 
 const router = Router();
 const userController = new UserController();
 
 // Public routes
+// New OTP-based registration flow
+router.post('/register/send-otp', validateRequest(sendOtpSchema), userController.sendRegistrationOtp);
+router.post('/register/verify-otp', validateRequest(verifyOtpSchema), userController.verifyRegistrationOtp);
+router.post('/register/complete', validateRequest(completeRegistrationSchema), userController.completeRegistration);
+
+// New OTP-based login flow
+router.post('/login/send-otp', validateRequest(sendLoginOtpSchema), userController.sendLoginOtp);
+router.post('/login/verify-otp', validateRequest(verifyOtpSchema), userController.verifyLoginOtp);
+
+// Legacy routes (can be removed later)
 router.post('/register', validateRequest(createUserSchema), userController.createUser);
 router.post('/login', validateRequest(loginSchema), userController.login);
+
 router.post('/refresh-token', validateRequest(refreshTokenSchema), userController.refreshToken);
 
 // Protected routes
