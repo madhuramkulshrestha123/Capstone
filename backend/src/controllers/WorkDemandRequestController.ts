@@ -62,7 +62,7 @@ export class WorkDemandRequestController {
   public createRequest = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Only workers can create work demand requests
-      if (req.user?.role !== 'WORKER') {
+      if (req.user?.role !== 'supervisor') {
         res.status(403).json({
           success: false,
           error: 'Only workers can create work demand requests'
@@ -73,7 +73,7 @@ export class WorkDemandRequestController {
       // Set worker ID from authenticated user
       const requestData = {
         ...req.body,
-        worker_id: req.user.id
+        worker_id: req.user.user_id
       };
 
       const request = await this.workDemandRequestService.createRequest(requestData);
@@ -101,7 +101,7 @@ export class WorkDemandRequestController {
       }
       
       // Only admins can update work demand requests
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: 'Only admins can update work demand requests'
@@ -134,7 +134,7 @@ export class WorkDemandRequestController {
       }
       
       // Only admins can delete work demand requests
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: 'Only admins can delete work demand requests'
@@ -168,7 +168,7 @@ export class WorkDemandRequestController {
       }
 
       // Get user ID from authenticated user
-      const workerId = req.user.id;
+      const workerId = req.user.user_id;
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
 
@@ -236,7 +236,7 @@ export class WorkDemandRequestController {
       }
       
       // Only admins can approve work demand requests
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: 'Only admins can approve work demand requests'
@@ -270,7 +270,7 @@ export class WorkDemandRequestController {
       }
       
       // Only admins can reject work demand requests
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: 'Only admins can reject work demand requests'

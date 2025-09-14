@@ -1,27 +1,11 @@
-import Database from '../config/database';
-import { Product, CreateProductRequest, UpdateProductRequest } from '../types';
 import { PrismaClient } from '@prisma/client';
-
-// Define the Prisma product type based on the database schema
-interface PrismaProduct {
-  id: number;
-  name: string;
-  description: string | null;
-  price: any; // Prisma Decimal type
-  imageUrl: string | null;
-  category: string | null;
-  stockQuantity: number;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { Product, CreateProductRequest, UpdateProductRequest } from '../types';
 
 export class ProductModel {
   private prisma: PrismaClient;
 
   constructor() {
-    const db = Database.getInstance();
-    this.prisma = db.client;
+    this.prisma = new PrismaClient();
   }
 
   async findAll(limit: number = 10, offset: number = 0, category?: string): Promise<Product[]> {
@@ -42,7 +26,7 @@ export class ProductModel {
       skip: offset,
     });
 
-    return products.map((product: PrismaProduct) => ({
+    return products.map((product: any) => ({
       ...product,
       price: Number(product.price),
       image_url: product.imageUrl,
@@ -50,7 +34,7 @@ export class ProductModel {
       is_active: product.isActive,
       created_at: product.createdAt,
       updated_at: product.updatedAt,
-    })) as Product[];
+    }));
   }
 
   async findById(id: number): Promise<Product | null> {
@@ -209,7 +193,7 @@ export class ProductModel {
       take: limit,
     });
 
-    return products.map((product: PrismaProduct) => ({
+    return products.map((product: any) => ({
       ...product,
       price: Number(product.price),
       image_url: product.imageUrl,

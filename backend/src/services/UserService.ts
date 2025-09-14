@@ -27,8 +27,8 @@ export class UserService {
   // Make generateTokens public for use in controller
   public generateTokens(user: User): { token: string; refreshToken: string } {
     const tokenPayload = {
-      id: user.id,
-      username: user.username,
+      user_id: user.user_id,
+      name: user.name,
       email: user.email,
       role: user.role, // Include role in token
     };
@@ -78,8 +78,8 @@ export class UserService {
     };
   }
 
-  async getUserById(id: number): Promise<UserResponse> {
-    const user = await this.userModel.findById(id);
+  async getUserById(user_id: string): Promise<UserResponse> {
+    const user = await this.userModel.findById(user_id);
     if (!user) {
       throw new AppError('User not found', 404);
     }
@@ -88,17 +88,27 @@ export class UserService {
 
   async createUser(userData: CreateUserRequest): Promise<UserResponse> {
     // Check if user already exists
-    const [existingUserByEmail, existingUserByUsername] = await Promise.all([
+    const [existingUserByEmail, existingUserByPhone, existingUserByAadhaar, existingUserByGovId] = await Promise.all([
       this.userModel.findByEmail(userData.email),
-      this.userModel.findByUsername(userData.username),
+      this.userModel.findByPhoneNumber(userData.phone_number),
+      this.userModel.findByAadhaar(userData.aadhaar_number),
+      this.userModel.findByGovernmentId(userData.government_id),
     ]);
 
     if (existingUserByEmail) {
       throw new AppError('User with this email already exists', 409);
     }
 
-    if (existingUserByUsername) {
-      throw new AppError('User with this username already exists', 409);
+    if (existingUserByPhone) {
+      throw new AppError('User with this phone number already exists', 409);
+    }
+
+    if (existingUserByAadhaar) {
+      throw new AppError('User with this Aadhaar number already exists', 409);
+    }
+
+    if (existingUserByGovId) {
+      throw new AppError('User with this government ID already exists', 409);
     }
 
     // Validate password strength
@@ -112,46 +122,70 @@ export class UserService {
 
   async createRegistration(userData: CreateRegistrationRequest): Promise<UserResponse> {
     // Check if user already exists
-    const [existingUserByEmail, existingUserByUsername] = await Promise.all([
+    const [existingUserByEmail, existingUserByPhone, existingUserByAadhaar, existingUserByGovId] = await Promise.all([
       this.userModel.findByEmail(userData.email),
-      this.userModel.findByUsername(userData.username),
+      this.userModel.findByPhoneNumber(userData.phone_number),
+      this.userModel.findByAadhaar(userData.aadhaar_number),
+      this.userModel.findByGovernmentId(userData.government_id),
     ]);
 
     if (existingUserByEmail) {
       throw new AppError('User with this email already exists', 409);
     }
 
-    if (existingUserByUsername) {
-      throw new AppError('User with this username already exists', 409);
+    if (existingUserByPhone) {
+      throw new AppError('User with this phone number already exists', 409);
+    }
+
+    if (existingUserByAadhaar) {
+      throw new AppError('User with this Aadhaar number already exists', 409);
+    }
+
+    if (existingUserByGovId) {
+      throw new AppError('User with this government ID already exists', 409);
     }
 
     const user = await this.userModel.createRegistration(userData);
     return this.mapUserToResponse(user);
   }
 
-  async updateUser(id: number, userData: UpdateUserRequest): Promise<UserResponse> {
+  async updateUser(user_id: string, userData: UpdateUserRequest): Promise<UserResponse> {
     // Check if user exists
-    const existingUser = await this.userModel.findById(id);
+    const existingUser = await this.userModel.findById(user_id);
     if (!existingUser) {
       throw new AppError('User not found', 404);
     }
 
-    // Check for email/username conflicts if being updated
+    // Check for email/phone/aadhaar/govId conflicts if being updated
     if (userData.email && userData.email !== existingUser.email) {
       const userWithEmail = await this.userModel.findByEmail(userData.email);
-      if (userWithEmail && userWithEmail.id !== id) {
+      if (userWithEmail && userWithEmail.user_id !== user_id) {
         throw new AppError('User with this email already exists', 409);
       }
     }
 
-    if (userData.username && userData.username !== existingUser.username) {
-      const userWithUsername = await this.userModel.findByUsername(userData.username);
-      if (userWithUsername && userWithUsername.id !== id) {
-        throw new AppError('User with this username already exists', 409);
+    if (userData.phone_number && userData.phone_number !== existingUser.phone_number) {
+      const userWithPhone = await this.userModel.findByPhoneNumber(userData.phone_number);
+      if (userWithPhone && userWithPhone.user_id !== user_id) {
+        throw new AppError('User with this phone number already exists', 409);
       }
     }
 
-    const updatedUser = await this.userModel.update(id, userData);
+    if (userData.aadhaar_number && userData.aadhaar_number !== existingUser.aadhaar_number) {
+      const userWithAadhaar = await this.userModel.findByAadhaar(userData.aadhaar_number);
+      if (userWithAadhaar && userWithAadhaar.user_id !== user_id) {
+        throw new AppError('User with this Aadhaar number already exists', 409);
+      }
+    }
+
+    if (userData.government_id && userData.government_id !== existingUser.government_id) {
+      const userWithGovId = await this.userModel.findByGovernmentId(userData.government_id);
+      if (userWithGovId && userWithGovId.user_id !== user_id) {
+        throw new AppError('User with this government ID already exists', 409);
+      }
+    }
+
+    const updatedUser = await this.userModel.update(user_id, userData);
     if (!updatedUser) {
       throw new AppError('Failed to update user', 500);
     }
@@ -159,13 +193,13 @@ export class UserService {
     return this.mapUserToResponse(updatedUser);
   }
 
-  async deleteUser(id: number): Promise<void> {
-    const user = await this.userModel.findById(id);
+  async deleteUser(user_id: string): Promise<void> {
+    const user = await this.userModel.findById(user_id);
     if (!user) {
       throw new AppError('User not found', 404);
     }
 
-    const deleted = await this.userModel.delete(id);
+    const deleted = await this.userModel.delete(user_id);
     if (!deleted) {
       throw new AppError('Failed to delete user', 500);
     }
@@ -199,7 +233,7 @@ export class UserService {
       }
       
       const decoded = jwt.verify(refreshToken, jwtRefreshSecret as string) as any;
-      const user = await this.userModel.findById(decoded.id);
+      const user = await this.userModel.findById(decoded.user_id);
       
       if (!user || !user.is_active) {
         throw new AppError('Invalid refresh token', 401);

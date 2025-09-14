@@ -9,4 +9,9 @@ const jobCardController = new JobCardController();
 // Public routes
 router.post('/register', validateRequest(jobCardRegistrationSchema), jobCardController.registerJobCard);
 
+// Get job card by ID (temporarily public for testing)
+router.get('/:id', (req, res, next) => {
+  jobCardController.getJobCardById(req, res, next);
+});
+
 export default router;

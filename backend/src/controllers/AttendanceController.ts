@@ -10,13 +10,12 @@ export class AttendanceController {
     this.attendanceService = new AttendanceService();
   }
 
-  public getAllAttendances = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  public getAllAttendances = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const projectId = req.query.projectId as string;
 
-      const result = await this.attendanceService.getAllAttendances(page, limit, projectId);
+      const result = await this.attendanceService.getAllAttendances(page, limit);
 
       const response: ApiResponse = {
         success: true,
@@ -35,7 +34,7 @@ export class AttendanceController {
     }
   };
 
-  public getAttendanceById = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  public getAttendanceById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
       if (!id) {
@@ -62,7 +61,7 @@ export class AttendanceController {
   public markAttendance = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Get supervisor ID from authenticated user
-      const supervisorId = req.user?.id;
+      const supervisorId = req.user?.user_id;
       
       if (!supervisorId) {
         res.status(401).json({
@@ -138,7 +137,7 @@ export class AttendanceController {
   public getMyAttendances = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Get worker ID from authenticated user
-      const workerId = req.user?.id;
+      const workerId = req.user?.user_id;
       
       if (!workerId) {
         res.status(401).json({

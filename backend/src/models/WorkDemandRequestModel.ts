@@ -1,199 +1,186 @@
 import Database from '../config/database';
-import { PrismaClient } from '@prisma/client';
 import { WorkDemandRequest, CreateWorkDemandRequest, UpdateWorkDemandRequest } from '../types';
 
-// Define the Prisma work demand request type based on the database schema
-interface PrismaWorkDemandRequest {
-  id: string;
-  workerId: number;
-  projectId: string;
-  requestTime: Date;
-  status: string;
-  allocatedAt: Date | null;
-}
-
 export class WorkDemandRequestModel {
-  private prisma: PrismaClient;
+  private db: any;
 
   constructor() {
     const db = Database.getInstance();
-    this.prisma = db.client;
+    this.db = db.client;
   }
 
   async findAll(limit: number = 10, offset: number = 0, status?: string): Promise<WorkDemandRequest[]> {
-    const whereClause: any = {};
-
+    let query = 'SELECT * FROM work_demand_requests ORDER BY request_time DESC LIMIT $1 OFFSET $2';
+    let params: any[] = [limit, offset];
+    
     if (status) {
-      whereClause.status = status;
+      query = 'SELECT * FROM work_demand_requests WHERE status = $3 ORDER BY request_time DESC LIMIT $1 OFFSET $2';
+      params = [limit, offset, status];
     }
 
-    const requests = await (this.prisma as any).workDemandRequest.findMany({
-      where: whereClause,
-      orderBy: {
-        requestTime: 'desc',
-      },
-      take: limit,
-      skip: offset,
-    });
-
-    return requests.map((request: PrismaWorkDemandRequest) => ({
+    const result = await this.db.query(query, params);
+    
+    return result.rows.map((request: any) => ({
       ...request,
-      worker_id: request.workerId,
-      project_id: request.projectId,
-      request_time: request.requestTime,
-      allocated_at: request.allocatedAt,
-    })) as WorkDemandRequest[];
+      worker_id: request.worker_id,
+      project_id: request.project_id,
+      request_time: request.request_time,
+      allocated_at: request.allocated_at,
+    }));
   }
 
   async findById(id: string): Promise<WorkDemandRequest | null> {
-    const request = await (this.prisma as any).workDemandRequest.findUnique({
-      where: {
-        id,
-      },
-    });
-
-    if (!request) return null;
-
+    const result = await this.db.query('SELECT * FROM work_demand_requests WHERE id = $1', [id]);
+    
+    if (result.rows.length === 0) return null;
+    
+    const request = result.rows[0];
     return {
       ...request,
-      worker_id: request.workerId,
-      project_id: request.projectId,
-      request_time: request.requestTime,
-      allocated_at: request.allocatedAt,
-    } as WorkDemandRequest;
+      worker_id: request.worker_id,
+      project_id: request.project_id,
+      request_time: request.request_time,
+      allocated_at: request.allocated_at,
+    };
   }
 
   async create(requestData: CreateWorkDemandRequest): Promise<WorkDemandRequest> {
-    const request = await (this.prisma as any).workDemandRequest.create({
-      data: {
-        workerId: requestData.worker_id,
-        projectId: requestData.project_id,
-        status: requestData.status || 'pending',
-        allocatedAt: requestData.allocated_at ? new Date(requestData.allocated_at) : null,
-      },
-    });
-
+    const result = await this.db.query(
+      `INSERT INTO work_demand_requests (
+        worker_id, project_id, request_time, status, allocated_at
+      ) VALUES ($1, $2, NOW(), $3, $4) RETURNING *`,
+      [
+        requestData.worker_id,
+        requestData.project_id,
+        requestData.status || 'pending',
+        requestData.allocated_at ? new Date(requestData.allocated_at) : null,
+      ]
+    );
+    
+    const request = result.rows[0];
     return {
       ...request,
-      worker_id: request.workerId,
-      project_id: request.projectId,
-      request_time: request.requestTime,
-      allocated_at: request.allocatedAt,
-    } as WorkDemandRequest;
+      worker_id: request.worker_id,
+      project_id: request.project_id,
+      request_time: request.request_time,
+      allocated_at: request.allocated_at,
+    };
   }
 
   async update(id: string, requestData: UpdateWorkDemandRequest): Promise<WorkDemandRequest | null> {
-    const updateData: any = {};
-
-    if (requestData.worker_id !== undefined) updateData.workerId = requestData.worker_id;
-    if (requestData.project_id !== undefined) updateData.projectId = requestData.project_id;
-    if (requestData.status !== undefined) updateData.status = requestData.status;
-    if (requestData.allocated_at !== undefined) updateData.allocatedAt = requestData.allocated_at ? new Date(requestData.allocated_at) : null;
-
-    if (Object.keys(updateData).length === 0) {
+    const updateFields = [];
+    const values = [];
+    let paramCount = 1;
+    
+    // Build dynamic update query based on provided fields
+    if (requestData.worker_id !== undefined) {
+      updateFields.push(`worker_id = $${paramCount}`);
+      values.push(requestData.worker_id);
+      paramCount++;
+    }
+    
+    if (requestData.project_id !== undefined) {
+      updateFields.push(`project_id = $${paramCount}`);
+      values.push(requestData.project_id);
+      paramCount++;
+    }
+    
+    if (requestData.status !== undefined) {
+      updateFields.push(`status = $${paramCount}`);
+      values.push(requestData.status);
+      paramCount++;
+    }
+    
+    if (requestData.allocated_at !== undefined) {
+      updateFields.push(`allocated_at = $${paramCount}`);
+      values.push(requestData.allocated_at ? new Date(requestData.allocated_at) : null);
+      paramCount++;
+    }
+    
+    // If no fields to update, return the existing request
+    if (updateFields.length === 0) {
       return this.findById(id);
     }
-
-    try {
-      const request = await (this.prisma as any).workDemandRequest.update({
-        where: {
-          id,
-        },
-        data: updateData,
-      });
-
-      return {
-        ...request,
-        worker_id: request.workerId,
-        project_id: request.projectId,
-        request_time: request.requestTime,
-        allocated_at: request.allocatedAt,
-      } as WorkDemandRequest;
-    } catch (error) {
-      return null;
-    }
+    
+    // Add request id to values array
+    values.push(id);
+    
+    const result = await this.db.query(
+      `UPDATE work_demand_requests SET ${updateFields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+      values
+    );
+    
+    if (result.rows.length === 0) return null;
+    
+    const request = result.rows[0];
+    return {
+      ...request,
+      worker_id: request.worker_id,
+      project_id: request.project_id,
+      request_time: request.request_time,
+      allocated_at: request.allocated_at,
+    };
   }
 
   async delete(id: string): Promise<boolean> {
     try {
-      await (this.prisma as any).workDemandRequest.delete({
-        where: {
-          id,
-        },
-      });
-      return true;
+      const result = await this.db.query('DELETE FROM work_demand_requests WHERE id = $1', [id]);
+      return result.rowCount > 0;
     } catch (error) {
       return false;
     }
   }
 
   async count(status?: string): Promise<number> {
-    const whereClause: any = {};
-
+    let query = 'SELECT COUNT(*) as count FROM work_demand_requests';
+    let params: any[] = [];
+    
     if (status) {
-      whereClause.status = status;
+      query = 'SELECT COUNT(*) as count FROM work_demand_requests WHERE status = $1';
+      params = [status];
     }
-
-    return await (this.prisma as any).workDemandRequest.count({
-      where: whereClause,
-    });
+    
+    const result = await this.db.query(query, params);
+    return parseInt(result.rows[0].count);
   }
 
-  async findByWorkerId(workerId: number, limit: number = 10, offset: number = 0): Promise<WorkDemandRequest[]> {
-    const requests = await (this.prisma as any).workDemandRequest.findMany({
-      where: {
-        workerId,
-      },
-      orderBy: {
-        requestTime: 'desc',
-      },
-      take: limit,
-      skip: offset,
-    });
-
-    return requests.map((request: PrismaWorkDemandRequest) => ({
+  async findByWorkerId(workerId: string, limit: number = 10, offset: number = 0): Promise<WorkDemandRequest[]> {
+    const result = await this.db.query(
+      'SELECT * FROM work_demand_requests WHERE worker_id = $1 ORDER BY request_time DESC LIMIT $2 OFFSET $3',
+      [workerId, limit, offset]
+    );
+    
+    return result.rows.map((request: any) => ({
       ...request,
-      worker_id: request.workerId,
-      project_id: request.projectId,
-      request_time: request.requestTime,
-      allocated_at: request.allocatedAt,
-    })) as WorkDemandRequest[];
+      worker_id: request.worker_id,
+      project_id: request.project_id,
+      request_time: request.request_time,
+      allocated_at: request.allocated_at,
+    }));
   }
 
   async findByProjectId(projectId: string, limit: number = 10, offset: number = 0): Promise<WorkDemandRequest[]> {
-    const requests = await (this.prisma as any).workDemandRequest.findMany({
-      where: {
-        projectId,
-      },
-      orderBy: {
-        requestTime: 'desc',
-      },
-      take: limit,
-      skip: offset,
-    });
-
-    return requests.map((request: PrismaWorkDemandRequest) => ({
+    const result = await this.db.query(
+      'SELECT * FROM work_demand_requests WHERE project_id = $1 ORDER BY request_time DESC LIMIT $2 OFFSET $3',
+      [projectId, limit, offset]
+    );
+    
+    return result.rows.map((request: any) => ({
       ...request,
-      worker_id: request.workerId,
-      project_id: request.projectId,
-      request_time: request.requestTime,
-      allocated_at: request.allocatedAt,
-    })) as WorkDemandRequest[];
+      worker_id: request.worker_id,
+      project_id: request.project_id,
+      request_time: request.request_time,
+      allocated_at: request.allocated_at,
+    }));
   }
 
-  async countByWorkerId(workerId: number): Promise<number> {
-    return await (this.prisma as any).workDemandRequest.count({
-      where: {
-        workerId,
-      },
-    });
+  async countByWorkerId(workerId: string): Promise<number> {
+    const result = await this.db.query('SELECT COUNT(*) as count FROM work_demand_requests WHERE worker_id = $1', [workerId]);
+    return parseInt(result.rows[0].count);
   }
 
   async countByProjectId(projectId: string): Promise<number> {
-    return await (this.prisma as any).workDemandRequest.count({
-      where: {
-        projectId,
-      },
-    });
+    const result = await this.db.query('SELECT COUNT(*) as count FROM work_demand_requests WHERE project_id = $1', [projectId]);
+    return parseInt(result.rows[0].count);
   }
 }

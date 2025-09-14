@@ -1,53 +1,80 @@
 export interface User {
-  id: number;
-  username: string;
+  user_id: string;
+  role: 'supervisor' | 'admin';
+  name: string;
+  phone_number: string;
+  aadhaar_number: string;
   email: string;
+  panchayat_id: string;
+  government_id: string;
   password_hash: string;
-  first_name?: string;
-  last_name?: string;
-  avatar_url?: string;
-  role: 'WORKER' | 'SUPERVISOR' | 'ADMIN';
+  state: string;
+  district: string;
+  village_name: string;
+  pincode: string;
   is_active: boolean;
   created_at: Date;
   updated_at: Date;
 }
 
 export interface CreateUserRequest {
-  username: string;
+  role?: 'supervisor' | 'admin';
+  name: string;
+  phone_number: string;
+  aadhaar_number: string;
   email: string;
+  panchayat_id: string;
+  government_id: string;
   password: string;
-  first_name?: string;
-  last_name?: string;
-  role?: 'WORKER' | 'SUPERVISOR' | 'ADMIN';
+  state: string;
+  district: string;
+  village_name: string;
+  pincode: string;
 }
 
 // New interface for registration with password
 export interface CreateRegistrationRequest {
-  username: string;
+  role?: 'supervisor' | 'admin';
+  name: string;
+  phone_number: string;
+  aadhaar_number: string;
   email: string;
+  panchayat_id: string;
+  government_id: string;
   password: string;
-  first_name: string;
-  last_name: string;
-  role?: 'WORKER' | 'SUPERVISOR' | 'ADMIN';
+  state: string;
+  district: string;
+  village_name: string;
+  pincode: string;
 }
 
 export interface UpdateUserRequest {
-  username?: string;
+  role?: 'supervisor' | 'admin';
+  name?: string;
+  phone_number?: string;
+  aadhaar_number?: string;
   email?: string;
-  first_name?: string;
-  last_name?: string;
-  avatar_url?: string;
-  role?: 'WORKER' | 'SUPERVISOR' | 'ADMIN';
+  panchayat_id?: string;
+  government_id?: string;
+  state?: string;
+  district?: string;
+  village_name?: string;
+  pincode?: string;
 }
 
 export interface UserResponse {
-  id: number;
-  username: string;
+  user_id: string;
+  role: 'supervisor' | 'admin';
+  name: string;
+  phone_number: string;
+  aadhaar_number: string;
   email: string;
-  first_name?: string;
-  last_name?: string;
-  avatar_url?: string;
-  role: 'WORKER' | 'SUPERVISOR' | 'ADMIN';
+  panchayat_id: string;
+  government_id: string;
+  state: string;
+  district: string;
+  village_name: string;
+  pincode: string;
   is_active: boolean;
   created_at: Date;
   updated_at: Date;
@@ -209,14 +236,14 @@ export interface UpdatePaymentRequest {
   approved_by?: number;
 }
 
-// Product Types (keeping for backward compatibility, but should be replaced with Project)
+// Product Types
 export interface Product {
   id: number;
   name: string;
-  description?: string;
+  description: string | null;
   price: number;
-  image_url?: string;
-  category?: string;
+  image_url: string | null;
+  category: string | null;
   stock_quantity: number;
   is_active: boolean;
   created_at: Date;
@@ -225,23 +252,24 @@ export interface Product {
 
 export interface CreateProductRequest {
   name: string;
-  description?: string;
+  description?: string | null;
   price: number;
-  image_url?: string;
-  category?: string;
+  image_url?: string | null;
+  category?: string | null;
   stock_quantity?: number;
 }
 
 export interface UpdateProductRequest {
   name?: string;
-  description?: string;
+  description?: string | null;
   price?: number;
-  image_url?: string;
-  category?: string;
+  image_url?: string | null;
+  category?: string | null;
   stock_quantity?: number;
   is_active?: boolean;
 }
 
+// API Response Types
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
@@ -255,18 +283,4 @@ export interface ApiResponse<T = any> {
     limit?: number;
     totalPages?: number;
   };
-}
-
-export interface PaginationQuery {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
-
-// Email Configuration Interface
-export interface EmailConfig {
-  serviceID: string;
-  publicKey: string;
-  privateKey: string;
 }

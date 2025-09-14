@@ -39,7 +39,7 @@ export class ProjectService {
     return project;
   }
 
-  async createProject(projectData: CreateProjectRequest, userId: number): Promise<Project> {
+  async createProject(projectData: CreateProjectRequest, userId: string): Promise<Project> {
     // Validate project data
     const startDate = new Date(projectData.start_date);
     const endDate = new Date(projectData.end_date);
@@ -97,7 +97,7 @@ export class ProjectService {
     }
   }
 
-  async getProjectsByUserId(userId: number, page: number = 1, limit: number = 10): Promise<{
+  async getProjectsByUserId(userId: string, page: number = 1, limit: number = 10): Promise<{
     projects: Project[];
     total: number;
     totalPages: number;

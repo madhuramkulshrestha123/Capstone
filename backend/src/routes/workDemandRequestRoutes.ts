@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { WorkDemandRequestController } from '../controllers/WorkDemandRequestController';
-import { authenticateToken, requireAdmin, requireWorker } from '../middlewares/authMiddleware';
+import { authenticateToken, requireAdmin, requireSupervisor } from '../middlewares/authMiddleware';
 import { validateRequest, validateQuery, validateParams } from '../middlewares/validationMiddleware';
 import {
   createWorkDemandRequestSchema,
   updateWorkDemandRequestSchema,
   paginationSchema,
   idParamSchema,
+  projectIdParamSchema
 } from '../utils/validationSchemas';
 
 const router = Router();
@@ -21,8 +22,8 @@ router.get('/', requireAdmin, validateQuery(paginationSchema), workDemandRequest
 // Get request by ID (Admin only)
 router.get('/:id', requireAdmin, validateParams(idParamSchema), workDemandRequestController.getRequestById);
 
-// Create request (Worker only)
-router.post('/', requireWorker, validateRequest(createWorkDemandRequestSchema), workDemandRequestController.createRequest);
+// Create request (Supervisor only)
+router.post('/', requireSupervisor, validateRequest(createWorkDemandRequestSchema), workDemandRequestController.createRequest);
 
 // Update request (Admin only)
 router.put('/:id', requireAdmin, validateParams(idParamSchema), validateRequest(updateWorkDemandRequestSchema), workDemandRequestController.updateRequest);
@@ -30,11 +31,11 @@ router.put('/:id', requireAdmin, validateParams(idParamSchema), validateRequest(
 // Delete request (Admin only)
 router.delete('/:id', requireAdmin, validateParams(idParamSchema), workDemandRequestController.deleteRequest);
 
-// Get my requests (Worker)
-router.get('/my/requests', requireWorker, validateQuery(paginationSchema), workDemandRequestController.getMyRequests);
+// Get my requests (Supervisor)
+router.get('/my/requests', requireSupervisor, validateQuery(paginationSchema), workDemandRequestController.getMyRequests);
 
 // Get requests by project (Admin)
-router.get('/project/:projectId', requireAdmin, validateParams(idParamSchema), validateQuery(paginationSchema), workDemandRequestController.getRequestsByProject);
+router.get('/project/:projectId', requireAdmin, validateParams(projectIdParamSchema), validateQuery(paginationSchema), workDemandRequestController.getRequestsByProject);
 
 // Approve request (Admin only)
 router.patch('/:id/approve', requireAdmin, validateParams(idParamSchema), workDemandRequestController.approveRequest);

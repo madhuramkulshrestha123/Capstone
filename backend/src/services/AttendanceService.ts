@@ -39,7 +39,7 @@ export class AttendanceService {
     return attendance;
   }
 
-  async markAttendance(attendanceData: CreateAttendanceRequest, supervisorId: number): Promise<Attendance> {
+  async markAttendance(attendanceData: CreateAttendanceRequest, supervisorId: string): Promise<Attendance> {
     // Validate that the supervisor has the right role
     // Note: In a real implementation, you would check the user's role in the database
     
@@ -90,7 +90,7 @@ export class AttendanceService {
     }
   }
 
-  async getAttendancesByWorkerId(workerId: number, page: number = 1, limit: number = 10): Promise<{
+  async getAttendancesByWorkerId(workerId: string, page: number = 1, limit: number = 10): Promise<{
     attendances: Attendance[];
     total: number;
     totalPages: number;

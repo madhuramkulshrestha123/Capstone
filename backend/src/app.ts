@@ -14,7 +14,6 @@ import { requestLogger } from './middlewares/requestLogger';
 
 // Import routes
 import userRoutes from './routes/userRoutes';
-import productRoutes from './routes/productRoutes';
 import jobCardRoutes from './routes/jobCardRoutes';
 import projectRoutes from './routes/projectRoutes';
 import workDemandRequestRoutes from './routes/workDemandRequestRoutes';
@@ -79,7 +78,6 @@ class App {
 
     // API routes
     this.app.use('/api/v1/users', userRoutes);
-    this.app.use('/api/v1/products', productRoutes);
     this.app.use('/api/v1/job-cards', jobCardRoutes);
     this.app.use('/api/v1/projects', projectRoutes);
     this.app.use('/api/v1/work-requests', workDemandRequestRoutes);

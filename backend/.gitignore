@@ -43,3 +43,4 @@ temp/
 # Lock files (optional - you might want to commit these)
 # package-lock.json
 # yarn.lock
+/src/generated/prisma

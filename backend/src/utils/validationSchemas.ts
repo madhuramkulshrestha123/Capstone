@@ -2,16 +2,35 @@ import Joi from 'joi';
 
 // User validation schemas
 export const createUserSchema = Joi.object({
-  username: Joi.string()
-    .alphanum()
-    .min(3)
-    .max(30)
+  role: Joi.string()
+    .valid('supervisor', 'admin')
+    .optional()
+    .default('supervisor')
+    .messages({
+      'any.only': 'Role must be one of: supervisor, admin',
+    }),
+  name: Joi.string()
+    .min(1)
+    .max(255)
     .required()
     .messages({
-      'string.alphanum': 'Username must contain only alphanumeric characters',
-      'string.min': 'Username must be at least 3 characters long',
-      'string.max': 'Username must not exceed 30 characters',
-      'any.required': 'Username is required',
+      'string.min': 'Name must not be empty',
+      'string.max': 'Name must not exceed 255 characters',
+      'any.required': 'Name is required',
+    }),
+  phone_number: Joi.string()
+    .pattern(/^\d{10}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Phone number must be exactly 10 digits',
+      'any.required': 'Phone number is required',
+    }),
+  aadhaar_number: Joi.string()
+    .pattern(/^\d{12}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Aadhaar number must be exactly 12 digits',
+      'any.required': 'Aadhaar number is required',
     }),
   email: Joi.string()
     .email()
@@ -19,6 +38,22 @@ export const createUserSchema = Joi.object({
     .messages({
       'string.email': 'Please provide a valid email address',
       'any.required': 'Email is required',
+    }),
+  panchayat_id: Joi.string()
+    .uuid()
+    .required()
+    .messages({
+      'string.uuid': 'Panchayat ID must be a valid UUID',
+      'any.required': 'Panchayat ID is required',
+    }),
+  government_id: Joi.string()
+    .min(1)
+    .max(100)
+    .required()
+    .messages({
+      'string.min': 'Government ID must not be empty',
+      'string.max': 'Government ID must not exceed 100 characters',
+      'any.required': 'Government ID is required',
     }),
   password: Joi.string()
     .min(8)
@@ -29,41 +64,68 @@ export const createUserSchema = Joi.object({
       'string.pattern.base': 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character',
       'any.required': 'Password is required',
     }),
-  first_name: Joi.string()
+  state: Joi.string()
     .min(1)
-    .max(50)
-    .optional()
+    .max(100)
+    .required()
     .messages({
-      'string.min': 'First name must not be empty',
-      'string.max': 'First name must not exceed 50 characters',
+      'string.min': 'State must not be empty',
+      'string.max': 'State must not exceed 100 characters',
+      'any.required': 'State is required',
     }),
-  last_name: Joi.string()
+  district: Joi.string()
     .min(1)
-    .max(50)
-    .optional()
+    .max(100)
+    .required()
     .messages({
-      'string.min': 'Last name must not be empty',
-      'string.max': 'Last name must not exceed 50 characters',
+      'string.min': 'District must not be empty',
+      'string.max': 'District must not exceed 100 characters',
+      'any.required': 'District is required',
     }),
-  role: Joi.string()
-    .valid('WORKER', 'SUPERVISOR', 'ADMIN')
-    .optional()
-    .default('WORKER')
+  village_name: Joi.string()
+    .min(1)
+    .max(100)
+    .required()
     .messages({
-      'any.only': 'Role must be one of: WORKER, SUPERVISOR, ADMIN',
+      'string.min': 'Village name must not be empty',
+      'string.max': 'Village name must not exceed 100 characters',
+      'any.required': 'Village name is required',
+    }),
+  pincode: Joi.string()
+    .pattern(/^\d{6}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Pincode must be exactly 6 digits',
+      'any.required': 'Pincode is required',
     }),
 });
 
 export const updateUserSchema = Joi.object({
-  username: Joi.string()
-    .alphanum()
-    .min(3)
-    .max(30)
+  role: Joi.string()
+    .valid('supervisor', 'admin')
     .optional()
     .messages({
-      'string.alphanum': 'Username must contain only alphanumeric characters',
-      'string.min': 'Username must be at least 3 characters long',
-      'string.max': 'Username must not exceed 30 characters',
+      'any.only': 'Role must be one of: supervisor, admin',
+    }),
+  name: Joi.string()
+    .min(1)
+    .max(255)
+    .optional()
+    .messages({
+      'string.min': 'Name must not be empty',
+      'string.max': 'Name must not exceed 255 characters',
+    }),
+  phone_number: Joi.string()
+    .pattern(/^\d{10}$/)
+    .optional()
+    .messages({
+      'string.pattern.base': 'Phone number must be exactly 10 digits',
+    }),
+  aadhaar_number: Joi.string()
+    .pattern(/^\d{12}$/)
+    .optional()
+    .messages({
+      'string.pattern.base': 'Aadhaar number must be exactly 12 digits',
     }),
   email: Joi.string()
     .email()
@@ -71,36 +133,49 @@ export const updateUserSchema = Joi.object({
     .messages({
       'string.email': 'Please provide a valid email address',
     }),
-  first_name: Joi.string()
+  panchayat_id: Joi.string()
+    .uuid()
+    .optional()
+    .messages({
+      'string.uuid': 'Panchayat ID must be a valid UUID',
+    }),
+  government_id: Joi.string()
     .min(1)
-    .max(50)
+    .max(100)
     .optional()
-    .allow('')
     .messages({
-      'string.min': 'First name must not be empty',
-      'string.max': 'First name must not exceed 50 characters',
+      'string.min': 'Government ID must not be empty',
+      'string.max': 'Government ID must not exceed 100 characters',
     }),
-  last_name: Joi.string()
+  state: Joi.string()
     .min(1)
-    .max(50)
+    .max(100)
     .optional()
-    .allow('')
     .messages({
-      'string.min': 'Last name must not be empty',
-      'string.max': 'Last name must not exceed 50 characters',
+      'string.min': 'State must not be empty',
+      'string.max': 'State must not exceed 100 characters',
     }),
-  avatar_url: Joi.string()
-    .uri()
+  district: Joi.string()
+    .min(1)
+    .max(100)
     .optional()
-    .allow('')
     .messages({
-      'string.uri': 'Avatar URL must be a valid URL',
+      'string.min': 'District must not be empty',
+      'string.max': 'District must not exceed 100 characters',
     }),
-  role: Joi.string()
-    .valid('WORKER', 'SUPERVISOR', 'ADMIN')
+  village_name: Joi.string()
+    .min(1)
+    .max(100)
     .optional()
     .messages({
-      'any.only': 'Role must be one of: WORKER, SUPERVISOR, ADMIN',
+      'string.min': 'Village name must not be empty',
+      'string.max': 'Village name must not exceed 100 characters',
+    }),
+  pincode: Joi.string()
+    .pattern(/^\d{6}$/)
+    .optional()
+    .messages({
+      'string.pattern.base': 'Pincode must be exactly 6 digits',
     }),
 });
 
@@ -482,15 +557,6 @@ export const updateProjectSchema = Joi.object({
 
 // Work Demand Request validation schemas
 export const createWorkDemandRequestSchema = Joi.object({
-  worker_id: Joi.number()
-    .integer()
-    .positive()
-    .required()
-    .messages({
-      'number.integer': 'Worker ID must be a whole number',
-      'number.positive': 'Worker ID must be a positive number',
-      'any.required': 'Worker ID is required',
-    }),
   project_id: Joi.string()
     .uuid()
     .required()
@@ -514,13 +580,11 @@ export const createWorkDemandRequestSchema = Joi.object({
 });
 
 export const updateWorkDemandRequestSchema = Joi.object({
-  worker_id: Joi.number()
-    .integer()
-    .positive()
+  worker_id: Joi.string()
+    .uuid()
     .optional()
     .messages({
-      'number.integer': 'Worker ID must be a whole number',
-      'number.positive': 'Worker ID must be a positive number',
+      'string.uuid': 'Worker ID must be a valid UUID',
     }),
   project_id: Joi.string()
     .uuid()
@@ -544,13 +608,11 @@ export const updateWorkDemandRequestSchema = Joi.object({
 
 // Attendance validation schemas
 export const createAttendanceSchema = Joi.object({
-  worker_id: Joi.number()
-    .integer()
-    .positive()
+  worker_id: Joi.string()
+    .uuid()
     .required()
     .messages({
-      'number.integer': 'Worker ID must be a whole number',
-      'number.positive': 'Worker ID must be a positive number',
+      'string.uuid': 'Worker ID must be a valid UUID',
       'any.required': 'Worker ID is required',
     }),
   project_id: Joi.string()
@@ -587,13 +649,11 @@ export const updateAttendanceSchema = Joi.object({
 
 // Payment validation schemas
 export const createPaymentSchema = Joi.object({
-  worker_id: Joi.number()
-    .integer()
-    .positive()
+  worker_id: Joi.string()
+    .uuid()
     .required()
     .messages({
-      'number.integer': 'Worker ID must be a whole number',
-      'number.positive': 'Worker ID must be a positive number',
+      'string.uuid': 'Worker ID must be a valid UUID',
       'any.required': 'Worker ID is required',
     }),
   project_id: Joi.string()
@@ -620,13 +680,11 @@ export const updatePaymentSchema = Joi.object({
     .messages({
       'any.only': 'Status must be one of: PENDING, APPROVED, REJECTED, PAID',
     }),
-  approved_by: Joi.number()
-    .integer()
-    .positive()
+  approved_by: Joi.string()
+    .uuid()
     .optional()
     .messages({
-      'number.integer': 'Approved by ID must be a whole number',
-      'number.positive': 'Approved by ID must be a positive number',
+      'string.uuid': 'Approved by ID must be a valid UUID',
     }),
 });
 
@@ -691,15 +749,24 @@ export const searchSchema = Joi.object({
 export const idParamSchema = Joi.object({
   id: Joi.alternatives()
     .try(
-      Joi.number().integer().positive(),
       Joi.string().uuid()
     )
     .required()
     .messages({
-      'number.integer': 'ID must be a whole number',
-      'number.positive': 'ID must be a positive number',
       'string.uuid': 'ID must be a valid UUID',
       'any.required': 'ID is required',
+    }),
+});
+
+export const projectIdParamSchema = Joi.object({
+  projectId: Joi.alternatives()
+    .try(
+      Joi.string().uuid()
+    )
+    .required()
+    .messages({
+      'string.uuid': 'Project ID must be a valid UUID',
+      'any.required': 'Project ID is required',
     }),
 });
 
@@ -741,34 +808,44 @@ export const completeRegistrationSchema = Joi.object({
       'string.email': 'Please provide a valid email address',
       'any.required': 'Email is required',
     }),
-  username: Joi.string()
-    .alphanum()
-    .min(3)
-    .max(30)
-    .required()
-    .messages({
-      'string.alphanum': 'Username must contain only alphanumeric characters',
-      'string.min': 'Username must be at least 3 characters long',
-      'string.max': 'Username must not exceed 30 characters',
-      'any.required': 'Username is required',
-    }),
-  first_name: Joi.string()
+  name: Joi.string()
     .min(1)
-    .max(50)
+    .max(255)
     .required()
     .messages({
-      'string.min': 'First name must not be empty',
-      'string.max': 'First name must not exceed 50 characters',
-      'any.required': 'First name is required',
+      'string.min': 'Name must not be empty',
+      'string.max': 'Name must not exceed 255 characters',
+      'any.required': 'Name is required',
     }),
-  last_name: Joi.string()
-    .min(1)
-    .max(50)
+  phone_number: Joi.string()
+    .pattern(/^\d{10}$/)
     .required()
     .messages({
-      'string.min': 'Last name must not be empty',
-      'string.max': 'Last name must not exceed 50 characters',
-      'any.required': 'Last name is required',
+      'string.pattern.base': 'Phone number must be exactly 10 digits',
+      'any.required': 'Phone number is required',
+    }),
+  aadhaar_number: Joi.string()
+    .pattern(/^\d{12}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Aadhaar number must be exactly 12 digits',
+      'any.required': 'Aadhaar number is required',
+    }),
+  panchayat_id: Joi.string()
+    .uuid()
+    .required()
+    .messages({
+      'string.uuid': 'Panchayat ID must be a valid UUID',
+      'any.required': 'Panchayat ID is required',
+    }),
+  government_id: Joi.string()
+    .min(1)
+    .max(100)
+    .required()
+    .messages({
+      'string.min': 'Government ID must not be empty',
+      'string.max': 'Government ID must not exceed 100 characters',
+      'any.required': 'Government ID is required',
     }),
   password: Joi.string()
     .min(8)
@@ -779,12 +856,46 @@ export const completeRegistrationSchema = Joi.object({
       'string.pattern.base': 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character',
       'any.required': 'Password is required',
     }),
-  role: Joi.string()
-    .valid('WORKER', 'SUPERVISOR', 'ADMIN')
-    .optional()
-    .default('WORKER')
+  state: Joi.string()
+    .min(1)
+    .max(100)
+    .required()
     .messages({
-      'any.only': 'Role must be one of: WORKER, SUPERVISOR, ADMIN',
+      'string.min': 'State must not be empty',
+      'string.max': 'State must not exceed 100 characters',
+      'any.required': 'State is required',
+    }),
+  district: Joi.string()
+    .min(1)
+    .max(100)
+    .required()
+    .messages({
+      'string.min': 'District must not be empty',
+      'string.max': 'District must not exceed 100 characters',
+      'any.required': 'District is required',
+    }),
+  village_name: Joi.string()
+    .min(1)
+    .max(100)
+    .required()
+    .messages({
+      'string.min': 'Village name must not be empty',
+      'string.max': 'Village name must not exceed 100 characters',
+      'any.required': 'Village name is required',
+    }),
+  pincode: Joi.string()
+    .pattern(/^\d{6}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Pincode must be exactly 6 digits',
+      'any.required': 'Pincode is required',
+    }),
+  role: Joi.string()
+    .valid('supervisor', 'admin')
+    .optional()
+    .default('supervisor')
+    .messages({
+      'any.only': 'Role must be one of: supervisor, admin',
     }),
 });
 

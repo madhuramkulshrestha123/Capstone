@@ -1,126 +1,77 @@
 import Database from '../config/database';
-import { PrismaClient } from '@prisma/client';
 import { Attendance, CreateAttendanceRequest, UpdateAttendanceRequest } from '../types';
 
-// Define the Prisma attendance type based on the database schema
-interface PrismaAttendance {
-  id: string;
-  workerId: number;
-  projectId: string;
-  date: Date;
-  status: string;
-  markedBy: number;
-  createdAt: Date;
-}
-
 export class AttendanceModel {
-  private prisma: PrismaClient;
+  private db: Database;
 
   constructor() {
-    const db = Database.getInstance();
-    this.prisma = db.client;
+    this.db = Database.getInstance();
   }
 
   async findAll(limit: number = 10, offset: number = 0, projectId?: string): Promise<Attendance[]> {
-    const whereClause: any = {};
-
+    let query = 'SELECT * FROM attendance';
+    const params: any[] = [];
+    
     if (projectId) {
-      whereClause.projectId = projectId;
+      query += ' WHERE project_id = $1';
+      params.push(projectId);
     }
-
-    const attendances = await (this.prisma as any).attendance.findMany({
-      where: whereClause,
-      orderBy: {
-        date: 'desc',
-      },
-      take: limit,
-      skip: offset,
-    });
-
-    return attendances.map((attendance: PrismaAttendance) => ({
-      ...attendance,
-      worker_id: attendance.workerId,
-      project_id: attendance.projectId,
-      marked_by: attendance.markedBy,
-      created_at: attendance.createdAt,
-    })) as Attendance[];
+    
+    query += ' ORDER BY date DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
+    params.push(limit, offset);
+    
+    const result = await this.db.query(query, params);
+    return result.rows;
   }
 
   async findById(id: string): Promise<Attendance | null> {
-    const attendance = await (this.prisma as any).attendance.findUnique({
-      where: {
-        id,
-      },
-    });
-
-    if (!attendance) return null;
-
-    return {
-      ...attendance,
-      worker_id: attendance.workerId,
-      project_id: attendance.projectId,
-      marked_by: attendance.markedBy,
-      created_at: attendance.createdAt,
-    } as Attendance;
+    const result = await this.db.query('SELECT * FROM attendance WHERE id = $1', [id]);
+    
+    if (result.rows.length === 0) return null;
+    
+    return result.rows[0];
   }
 
-  async create(attendanceData: CreateAttendanceRequest, supervisorId: number): Promise<Attendance> {
+  async create(attendanceData: CreateAttendanceRequest, supervisorId: string): Promise<Attendance> {
     // Check if attendance already exists for this worker on this date
-    const existingAttendance = await (this.prisma as any).attendance.findFirst({
-      where: {
-        workerId: attendanceData.worker_id,
-        projectId: attendanceData.project_id,
-        date: new Date(attendanceData.date),
-      },
-    });
+    const existingResult = await this.db.query(
+      'SELECT * FROM attendance WHERE worker_id = $1 AND project_id = $2 AND date = $3',
+      [attendanceData.worker_id, attendanceData.project_id, new Date(attendanceData.date)]
+    );
 
-    if (existingAttendance) {
+    if (existingResult.rows.length > 0) {
       throw new Error('Attendance already marked for this worker on this date');
     }
 
-    const attendance = await (this.prisma as any).attendance.create({
-      data: {
-        workerId: attendanceData.worker_id,
-        projectId: attendanceData.project_id,
-        date: new Date(attendanceData.date),
-        status: attendanceData.status,
-        markedBy: supervisorId,
-      },
-    });
+    const result = await this.db.query(
+      'INSERT INTO attendance (worker_id, project_id, date, status, marked_by, created_at) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *',
+      [
+        attendanceData.worker_id,
+        attendanceData.project_id,
+        new Date(attendanceData.date),
+        attendanceData.status,
+        supervisorId
+      ]
+    );
 
-    return {
-      ...attendance,
-      worker_id: attendance.workerId,
-      project_id: attendance.projectId,
-      marked_by: attendance.markedBy,
-      created_at: attendance.createdAt,
-    } as Attendance;
+    return result.rows[0];
   }
 
   async update(id: string, attendanceData: UpdateAttendanceRequest): Promise<Attendance | null> {
-    const updateData: any = {};
-
-    if (attendanceData.status !== undefined) updateData.status = attendanceData.status;
-
-    if (Object.keys(updateData).length === 0) {
+    // If no data to update, just return the current record
+    if (attendanceData.status === undefined) {
       return this.findById(id);
     }
 
     try {
-      const attendance = await (this.prisma as any).attendance.update({
-        where: {
-          id,
-        },
-        data: updateData,
-      });
+      const result = await this.db.query(
+        'UPDATE attendance SET status = $1 WHERE id = $2 RETURNING *',
+        [attendanceData.status, id]
+      );
 
-      return {
-        ...attendance,
-        worker_id: attendance.workerId,
-        project_id: attendance.projectId,
-        marked_by: attendance.markedBy,
-        created_at: attendance.createdAt,
-      } as Attendance;
+      if (result.rows.length === 0) return null;
+       
+      return result.rows[0];
     } catch (error) {
       return null;
     }
@@ -128,107 +79,68 @@ export class AttendanceModel {
 
   async delete(id: string): Promise<boolean> {
     try {
-      await (this.prisma as any).attendance.delete({
-        where: {
-          id,
-        },
-      });
-      return true;
+      const result = await this.db.query('DELETE FROM attendance WHERE id = $1', [id]);
+      return result.rowCount > 0;
     } catch (error) {
       return false;
     }
   }
 
   async count(projectId?: string): Promise<number> {
-    const whereClause: any = {};
+    let query = 'SELECT COUNT(*) as count FROM attendance';
+    const params: any[] = [];
 
     if (projectId) {
-      whereClause.projectId = projectId;
+      query += ' WHERE project_id = $1';
+      params.push(projectId);
     }
 
-    return await (this.prisma as any).attendance.count({
-      where: whereClause,
-    });
+    const result = await this.db.query(query, params);
+    return parseInt(result.rows[0].count);
   }
 
-  async findByWorkerId(workerId: number, limit: number = 10, offset: number = 0): Promise<Attendance[]> {
-    const attendances = await (this.prisma as any).attendance.findMany({
-      where: {
-        workerId,
-      },
-      orderBy: {
-        date: 'desc',
-      },
-      take: limit,
-      skip: offset,
-    });
-
-    return attendances.map((attendance: PrismaAttendance) => ({
-      ...attendance,
-      worker_id: attendance.workerId,
-      project_id: attendance.projectId,
-      marked_by: attendance.markedBy,
-      created_at: attendance.createdAt,
-    })) as Attendance[];
+  async findByWorkerId(workerId: string, limit: number = 10, offset: number = 0): Promise<Attendance[]> {
+    const result = await this.db.query(
+      'SELECT * FROM attendance WHERE worker_id = $1 ORDER BY date DESC LIMIT $2 OFFSET $3',
+      [workerId, limit, offset]
+    );
+    
+    return result.rows;
   }
 
   async findByProjectId(projectId: string, limit: number = 10, offset: number = 0): Promise<Attendance[]> {
-    const attendances = await (this.prisma as any).attendance.findMany({
-      where: {
-        projectId,
-      },
-      orderBy: {
-        date: 'desc',
-      },
-      take: limit,
-      skip: offset,
-    });
-
-    return attendances.map((attendance: PrismaAttendance) => ({
-      ...attendance,
-      worker_id: attendance.workerId,
-      project_id: attendance.projectId,
-      marked_by: attendance.markedBy,
-      created_at: attendance.createdAt,
-    })) as Attendance[];
+    const result = await this.db.query(
+      'SELECT * FROM attendance WHERE project_id = $1 ORDER BY date DESC LIMIT $2 OFFSET $3',
+      [projectId, limit, offset]
+    );
+    
+    return result.rows;
   }
 
   async findByDateRange(projectId: string, startDate: Date, endDate: Date): Promise<Attendance[]> {
-    const attendances = await (this.prisma as any).attendance.findMany({
-      where: {
-        projectId,
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
-      orderBy: {
-        date: 'asc',
-      },
-    });
-
-    return attendances.map((attendance: PrismaAttendance) => ({
-      ...attendance,
-      worker_id: attendance.workerId,
-      project_id: attendance.projectId,
-      marked_by: attendance.markedBy,
-      created_at: attendance.createdAt,
-    })) as Attendance[];
+    const result = await this.db.query(
+      'SELECT * FROM attendance WHERE project_id = $1 AND date >= $2 AND date <= $3 ORDER BY date ASC',
+      [projectId, startDate, endDate]
+    );
+    
+    return result.rows;
   }
 
-  async countByWorkerId(workerId: number): Promise<number> {
-    return await (this.prisma as any).attendance.count({
-      where: {
-        workerId,
-      },
-    });
+  async countByWorkerId(workerId: string): Promise<number> {
+    const result = await this.db.query(
+      'SELECT COUNT(*) as count FROM attendance WHERE worker_id = $1',
+      [workerId]
+    );
+    
+    return parseInt(result.rows[0].count);
   }
 
   async countByProjectId(projectId: string): Promise<number> {
-    return await (this.prisma as any).attendance.count({
-      where: {
-        projectId,
-      },
-    });
+    const result = await this.db.query(
+      'SELECT COUNT(*) as count FROM attendance WHERE project_id = $1',
+      [projectId]
+    );
+    
+    return parseInt(result.rows[0].count);
   }
 }
