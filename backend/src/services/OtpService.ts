@@ -1,14 +1,17 @@
 import { OtpModel, OtpRecord } from '../models/OtpModel';
 import { EmailService } from './EmailService';
+import { SMSService } from './SMSService';
 import crypto from 'crypto';
 
 export class OtpService {
   private otpModel: OtpModel;
   private emailService: EmailService;
+  private smsService: SMSService;
 
   constructor() {
     this.otpModel = new OtpModel();
     this.emailService = new EmailService();
+    this.smsService = new SMSService();
   }
 
   generateOtp(): string {
@@ -16,7 +19,7 @@ export class OtpService {
     return crypto.randomInt(100000, 999999).toString();
   }
 
-  async sendOtp(email: string): Promise<{ success: boolean; message: string; otp?: string }> {
+  async sendOtp(email: string, phoneNumber?: string): Promise<{ success: boolean; message: string; otp?: string }> {
     try {
       // Check if we can resend OTP
       const canResend = await this.otpModel.canResendOtp(email);
@@ -39,7 +42,13 @@ export class OtpService {
       // Send OTP via email
       const emailSent = await this.emailService.sendOtpEmail(email, otp);
       
-      if (emailSent) {
+      // Send OTP via SMS if phone number is provided
+      let smsSent = true;
+      if (phoneNumber) {
+        smsSent = await this.smsService.sendOtpSms(phoneNumber, otp);
+      }
+      
+      if (emailSent && (smsSent || !phoneNumber)) {
         // In development, return the OTP in the response
         if (process.env.NODE_ENV === 'development') {
           return {
@@ -56,7 +65,7 @@ export class OtpService {
       } else {
         return {
           success: false,
-          message: 'Failed to send OTP email'
+          message: 'Failed to send OTP'
         };
       }
     } catch (error) {

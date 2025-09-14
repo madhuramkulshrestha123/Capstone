@@ -74,7 +74,7 @@ export class WorkDemandRequestService {
     }
   }
 
-  async getRequestsByWorkerId(workerId: number, page: number = 1, limit: number = 10): Promise<{
+  async getRequestsByWorkerId(workerId: string, page: number = 1, limit: number = 10): Promise<{
     requests: WorkDemandRequest[];
     total: number;
     totalPages: number;

@@ -39,8 +39,8 @@ export class UserController {
 
   public getUserById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const idParam = req.params.id;
-      if (!idParam) {
+      const userId = req.params.id;
+      if (!userId) {
         res.status(400).json({
           success: false,
           error: {
@@ -50,18 +50,7 @@ export class UserController {
         return;
       }
       
-      const id = parseInt(idParam);
-      if (isNaN(id)) {
-        res.status(400).json({
-          success: false,
-          error: {
-            message: 'Invalid user ID format',
-          },
-        });
-        return;
-      }
-      
-      const user = await this.userService.getUserById(id);
+      const user = await this.userService.getUserById(userId);
 
       const response: ApiResponse = {
         success: true,
@@ -76,8 +65,8 @@ export class UserController {
 
   public updateUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const idParam = req.params.id;
-      if (!idParam) {
+      const userId = req.params.id;
+      if (!userId) {
         res.status(400).json({
           success: false,
           error: {
@@ -87,19 +76,8 @@ export class UserController {
         return;
       }
       
-      const id = parseInt(idParam);
-      if (isNaN(id)) {
-        res.status(400).json({
-          success: false,
-          error: {
-            message: 'Invalid user ID format',
-          },
-        });
-        return;
-      }
-      
       // Users can only update their own profile unless they're admin
-      if (req.user?.id !== id && req.user?.role !== 'ADMIN') {
+      if (req.user?.user_id !== userId && req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: {
@@ -110,7 +88,7 @@ export class UserController {
       }
 
       // Only admins can update user roles
-      if (req.body.role && req.user?.role !== 'ADMIN') {
+      if (req.body.role && req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: {
@@ -120,7 +98,7 @@ export class UserController {
         return;
       }
 
-      const user = await this.userService.updateUser(id, req.body);
+      const user = await this.userService.updateUser(userId, req.body);
 
       const response: ApiResponse = {
         success: true,
@@ -135,8 +113,8 @@ export class UserController {
 
   public deleteUser = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const idParam = req.params.id;
-      if (!idParam) {
+      const userId = req.params.id;
+      if (!userId) {
         res.status(400).json({
           success: false,
           error: {
@@ -146,19 +124,8 @@ export class UserController {
         return;
       }
       
-      const id = parseInt(idParam);
-      if (isNaN(id)) {
-        res.status(400).json({
-          success: false,
-          error: {
-            message: 'Invalid user ID format',
-          },
-        });
-        return;
-      }
-      
       // Only admins can delete users
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: {
@@ -168,7 +135,7 @@ export class UserController {
         return;
       }
 
-      await this.userService.deleteUser(id);
+      await this.userService.deleteUser(userId);
 
       const response: ApiResponse = {
         success: true,
@@ -195,7 +162,7 @@ export class UserController {
         return;
       }
 
-      const user = await this.userService.getUserById(req.user.id);
+      const user = await this.userService.getUserById(req.user.user_id);
 
       const response: ApiResponse = {
         success: true,
@@ -225,7 +192,7 @@ export class UserController {
         delete req.body.role;
       }
 
-      const user = await this.userService.updateUser(req.user.id, req.body);
+      const user = await this.userService.updateUser(req.user.user_id, req.body);
 
       const response: ApiResponse = {
         success: true,
@@ -240,7 +207,7 @@ export class UserController {
 
   public sendRegistrationOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email } = req.body;
+      const { email, phone_number } = req.body;
       
       // Check if user already exists
       const existingUser = await this.userService.getUserModel().findByEmail(email);
@@ -254,8 +221,8 @@ export class UserController {
         return;
       }
 
-      // Send OTP
-      const result = await this.otpService.sendOtp(email);
+      // Send OTP via email and SMS if phone number is provided
+      const result = await this.otpService.sendOtp(email, phone_number);
 
       if (result.success) {
         const responseData: any = {
@@ -314,10 +281,8 @@ export class UserController {
 
   public completeRegistration = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, username, first_name, last_name, password, role } = req.body;
-      
       // Check if OTP is verified
-      const isVerified = await this.otpService.isOtpVerified(email);
+      const isVerified = await this.otpService.isOtpVerified(req.body.email);
       if (!isVerified) {
         res.status(400).json({
           success: false,
@@ -328,9 +293,15 @@ export class UserController {
         return;
       }
 
-      // Check if user already exists
-      const existingUser = await this.userService.getUserModel().findByEmail(email);
-      if (existingUser) {
+      // Check if user already exists by email, phone, aadhaar, or government ID
+      const [existingUserByEmail, existingUserByPhone, existingUserByAadhaar, existingUserByGovId] = await Promise.all([
+        this.userService.getUserModel().findByEmail(req.body.email),
+        this.userService.getUserModel().findByPhoneNumber(req.body.phone_number),
+        this.userService.getUserModel().findByAadhaar(req.body.aadhaar_number),
+        this.userService.getUserModel().findByGovernmentId(req.body.government_id),
+      ]);
+
+      if (existingUserByEmail) {
         res.status(409).json({
           success: false,
           error: {
@@ -340,17 +311,37 @@ export class UserController {
         return;
       }
 
-      // Create user with password
-      const userData = {
-        email,
-        username,
-        first_name,
-        last_name,
-        password,
-        role,
-      };
+      if (existingUserByPhone) {
+        res.status(409).json({
+          success: false,
+          error: {
+            message: 'User with this phone number already exists',
+          },
+        });
+        return;
+      }
 
-      const user = await this.userService.createUser(userData);
+      if (existingUserByAadhaar) {
+        res.status(409).json({
+          success: false,
+          error: {
+            message: 'User with this Aadhaar number already exists',
+          },
+        });
+        return;
+      }
+
+      if (existingUserByGovId) {
+        res.status(409).json({
+          success: false,
+          error: {
+            message: 'User with this government ID already exists',
+          },
+        });
+        return;
+      }
+
+      const user = await this.userService.createRegistration(req.body);
 
       res.status(201).json({
         success: true,
@@ -391,8 +382,8 @@ export class UserController {
         return;
       }
 
-      // Send OTP
-      const result = await this.otpService.sendOtp(email);
+      // Send OTP via email and SMS using the user's phone number
+      const result = await this.otpService.sendOtp(email, user.phone_number);
 
       if (result.success) {
         const responseData: any = {
@@ -446,11 +437,11 @@ export class UserController {
           success: true,
           data: {
             user: {
-              id: user.id,
-              username: user.username,
+              user_id: user.user_id,
+              name: user.name,
               email: user.email,
-              first_name: user.first_name,
-              last_name: user.last_name,
+              phone_number: user.phone_number,
+              aadhaar_number: user.aadhaar_number,
               role: user.role,
               is_active: user.is_active,
               created_at: user.created_at,

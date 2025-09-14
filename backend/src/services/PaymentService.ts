@@ -49,7 +49,7 @@ export class PaymentService {
     return payment;
   }
 
-  async updatePayment(id: string, paymentData: UpdatePaymentRequest, adminId?: number): Promise<Payment> {
+  async updatePayment(id: string, paymentData: UpdatePaymentRequest, adminId?: string): Promise<Payment> {
     // Check if payment exists
     const existingPayment = await this.paymentModel.findById(id);
     if (!existingPayment) {
@@ -81,7 +81,7 @@ export class PaymentService {
     }
   }
 
-  async getPaymentsByWorkerId(workerId: number, page: number = 1, limit: number = 10): Promise<{
+  async getPaymentsByWorkerId(workerId: string, page: number = 1, limit: number = 10): Promise<{
     payments: Payment[];
     total: number;
     totalPages: number;
@@ -117,7 +117,7 @@ export class PaymentService {
     };
   }
 
-  async approvePayment(id: string, adminId: number): Promise<Payment> {
+  async approvePayment(id: string, adminId: string): Promise<Payment> {
     const paymentData: UpdatePaymentRequest = {
       status: 'APPROVED',
     };
@@ -125,7 +125,7 @@ export class PaymentService {
     return this.updatePayment(id, paymentData, adminId);
   }
 
-  async rejectPayment(id: string, adminId: number): Promise<Payment> {
+  async rejectPayment(id: string, adminId: string): Promise<Payment> {
     const paymentData: UpdatePaymentRequest = {
       status: 'REJECTED',
     };

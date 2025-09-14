@@ -62,7 +62,7 @@ export class ProjectController {
   public createProject = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Only admins can create projects
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: 'Only admins can create projects'
@@ -71,7 +71,7 @@ export class ProjectController {
       }
 
       // Get user ID from authenticated user
-      const userId = req.user.id;
+      const userId = req.user.user_id;
       const project = await this.projectService.createProject(req.body, userId);
 
       const response: ApiResponse = {
@@ -97,7 +97,7 @@ export class ProjectController {
       }
       
       // Only admins can update projects
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: 'Only admins can update projects'
@@ -130,7 +130,7 @@ export class ProjectController {
       }
       
       // Only admins can delete projects
-      if (req.user?.role !== 'ADMIN') {
+      if (req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: 'Only admins can delete projects'
@@ -164,7 +164,7 @@ export class ProjectController {
       }
 
       // Get user ID from authenticated user
-      const userId = req.user.id;
+      const userId = req.user.user_id;
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
 

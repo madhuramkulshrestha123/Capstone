@@ -10,13 +10,12 @@ export class PaymentController {
     this.paymentService = new PaymentService();
   }
 
-  public getAllPayments = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  public getAllPayments = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const status = req.query.status as string;
 
-      const result = await this.paymentService.getAllPayments(page, limit, status);
+      const result = await this.paymentService.getAllPayments(page, limit);
 
       const response: ApiResponse = {
         success: true,
@@ -35,7 +34,7 @@ export class PaymentController {
     }
   };
 
-  public getPaymentById = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  public getPaymentById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
       if (!id) {
@@ -114,7 +113,7 @@ export class PaymentController {
       const response: ApiResponse = {
         success: true,
         data: {
-          message: 'Payment record deleted successfully',
+          message: 'Payment deleted successfully',
         },
       };
 
@@ -127,7 +126,7 @@ export class PaymentController {
   public getMyPayments = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Get worker ID from authenticated user
-      const workerId = req.user?.id;
+      const workerId = req.user?.user_id;
       
       if (!workerId) {
         res.status(401).json({
@@ -204,7 +203,7 @@ export class PaymentController {
       }
       
       // Get admin ID from authenticated user
-      const adminId = req.user?.id;
+      const adminId = req.user?.user_id;
       
       if (!adminId) {
         res.status(401).json({
@@ -239,7 +238,7 @@ export class PaymentController {
       }
       
       // Get admin ID from authenticated user
-      const adminId = req.user?.id;
+      const adminId = req.user?.user_id;
       
       if (!adminId) {
         res.status(401).json({

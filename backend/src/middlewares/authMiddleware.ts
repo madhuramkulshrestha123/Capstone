@@ -2,13 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import config from '../config';
 import { UserModel } from '../models/UserModel';
+import { User } from '../types';
 
 export interface AuthenticatedRequest extends Request {
   user?: {
-    id: number;
-    username: string;
+    user_id: string;
+    name: string;
     email: string;
-    role: 'WORKER' | 'SUPERVISOR' | 'ADMIN';
+    role: 'supervisor' | 'admin';
   };
 }
 
@@ -33,10 +34,10 @@ export const authenticateToken = (
   try {
     const decoded = jwt.verify(token, config.jwt.secret) as any;
     req.user = {
-      id: decoded.id,
-      username: decoded.username,
+      user_id: decoded.user_id, // Changed from decoded.id to decoded.user_id
+      name: decoded.name,
       email: decoded.email,
-      role: decoded.role || 'WORKER', // Default to WORKER if not in token
+      role: decoded.role || 'supervisor', // Default to supervisor if not in token
     };
     next();
   } catch (error) {
@@ -85,10 +86,10 @@ export const optionalAuth = (
   try {
     const decoded = jwt.verify(token, config.jwt.secret) as any;
     req.user = {
-      id: decoded.id,
-      username: decoded.username,
+      user_id: decoded.user_id, // Changed from decoded.id to decoded.user_id
+      name: decoded.name,
       email: decoded.email,
-      role: decoded.role || 'WORKER', // Default to WORKER if not in token
+      role: decoded.role || 'supervisor', // Default to supervisor if not in token
     };
     next();
   } catch (error) {
@@ -98,7 +99,7 @@ export const optionalAuth = (
 };
 
 // Role-based authorization middleware
-export const requireRole = (roles: ('WORKER' | 'SUPERVISOR' | 'ADMIN')[]) => {
+export const requireRole = (roles: ('supervisor' | 'admin')[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
       res.status(401).json({
@@ -125,7 +126,6 @@ export const requireRole = (roles: ('WORKER' | 'SUPERVISOR' | 'ADMIN')[]) => {
 };
 
 // Specific role middleware for convenience
-export const requireWorker = requireRole(['WORKER']);
-export const requireSupervisor = requireRole(['SUPERVISOR']);
-export const requireAdmin = requireRole(['ADMIN']);
-export const requireSupervisorOrAdmin = requireRole(['SUPERVISOR', 'ADMIN']);
+export const requireSupervisor = requireRole(['supervisor']);
+export const requireAdmin = requireRole(['admin']);
+export const requireSupervisorOrAdmin = requireRole(['supervisor', 'admin']);

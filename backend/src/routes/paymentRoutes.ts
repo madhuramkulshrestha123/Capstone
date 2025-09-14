@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { PaymentController } from '../controllers/PaymentController';
-import { authenticateToken, requireAdmin, requireWorker } from '../middlewares/authMiddleware';
+import { authenticateToken, requireAdmin, requireSupervisor } from '../middlewares/authMiddleware';
 import { validateRequest, validateQuery, validateParams } from '../middlewares/validationMiddleware';
 import {
   createPaymentSchema,
   updatePaymentSchema,
   paginationSchema,
   idParamSchema,
+  projectIdParamSchema
 } from '../utils/validationSchemas';
 
 const router = Router();
@@ -30,11 +31,11 @@ router.put('/:id', requireAdmin, validateParams(idParamSchema), validateRequest(
 // Delete payment (Admin only)
 router.delete('/:id', requireAdmin, validateParams(idParamSchema), paymentController.deletePayment);
 
-// Get my payments (Worker)
-router.get('/my/payments', requireWorker, validateQuery(paginationSchema), paymentController.getMyPayments);
+// Get my payments (Supervisor)
+router.get('/my/payments', requireSupervisor, validateQuery(paginationSchema), paymentController.getMyPayments);
 
 // Get payments by project (Admin)
-router.get('/project/:projectId', requireAdmin, validateParams(idParamSchema), validateQuery(paginationSchema), paymentController.getPaymentsByProject);
+router.get('/project/:projectId', requireAdmin, validateParams(projectIdParamSchema), validateQuery(paginationSchema), paymentController.getPaymentsByProject);
 
 // Approve payment (Admin only)
 router.patch('/:id/approve', requireAdmin, validateParams(idParamSchema), paymentController.approvePayment);

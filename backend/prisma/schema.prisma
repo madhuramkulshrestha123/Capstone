@@ -1,6 +1,9 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,193 +14,116 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  username     String   @unique @db.VarChar(50)
-  email        String   @unique @db.VarChar(100)
-  passwordHash String   @map("password_hash") @db.VarChar(255)
-  firstName    String?  @map("first_name") @db.VarChar(50)
-  lastName     String?  @map("last_name") @db.VarChar(50)
-  avatarUrl    String?  @map("avatar_url") @db.VarChar(255)
-  role         String   @default("WORKER") // WORKER, SUPERVISOR, ADMIN
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  
-  // Relations
-  jobCards     JobCard[]
-  projects     Project[]
-  workRequests WorkDemandRequest[] @relation("WorkerRequests")
-  workerAttendances  Attendance[] @relation("WorkerAttendance")
-  supervisorAttendances Attendance[] @relation("SupervisorAttendance")
-  workerPayments Payment[] @relation("WorkerPayment")
-  approverPayments Payment[] @relation("ApproverPayment")
+  user_id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  role           String   @db.VarChar(20)
+  name           String   @db.VarChar(255)
+  phone_number   String?  @unique @db.VarChar(20)
+  aadhaar_number String?  @unique @db.VarChar(20)
+  email          String   @unique @db.VarChar(255)
+  panchayat_id   String?  @db.Uuid
+  government_id  String?  @unique @db.VarChar(100)
+  password_hash  String   @db.VarChar(255)
+  state          String?  @db.VarChar(100)
+  district       String?  @db.VarChar(100)
+  village_name   String?  @db.VarChar(100)
+  pincode        String?  @db.VarChar(10)
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  projects Project[]
 
   @@map("users")
-  @@index([email])
-  @@index([username])
-  @@index([createdAt])
-}
-
-model Product {
-  id            Int      @id @default(autoincrement())
-  name          String   @db.VarChar(100)
-  description   String?  @db.Text
-  price         Decimal  @db.Decimal(10, 2)
-  imageUrl      String?  @map("image_url") @db.VarChar(255)
-  category      String?  @db.VarChar(50)
-  stockQuantity Int      @default(0) @map("stock_quantity")
-  isActive      Boolean  @default(true) @map("is_active")
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  @@map("products")
-  @@index([category])
-  @@index([price])
-  @@index([createdAt])
-}
-
-model Project {
-  id          String    @id @default(uuid())
-  name        String    @db.VarChar(255)
-  description String?   @db.Text
-  location    String?   @db.VarChar(255) // Storing as string for now, can be enhanced later
-  workerNeed  Int       @map("worker_need")
-  startDate   DateTime  @map("start_date")
-  endDate     DateTime  @map("end_date")
-  status      String    @default("pending") // Will use enum in database
-  createdBy   Int       @map("created_by")
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  
-  // Relations
-  user        User      @relation(fields: [createdBy], references: [id])
-  workRequests WorkDemandRequest[] @relation("ProjectRequests")
-  attendances Attendance[]
-  payments    Payment[]
-
-  @@map("projects")
-  @@index([status])
-  @@index([createdBy])
-  @@index([startDate])
-}
-
-model WorkDemandRequest {
-  id          String    @id @default(uuid())
-  workerId    Int       @map("worker_id")
-  projectId   String    @map("project_id")
-  requestTime DateTime  @default(now()) @map("request_time") @db.Timestamptz
-  status      String    @default("pending") // Will use enum in database
-  allocatedAt DateTime? @map("allocated_at") @db.Timestamptz
-  
-  // Relations
-  worker      User      @relation(fields: [workerId], references: [id], name: "WorkerRequests")
-  project     Project   @relation(fields: [projectId], references: [id], name: "ProjectRequests")
-
-  @@map("work_demand_requests")
-  @@index([workerId])
-  @@index([projectId])
-  @@index([status])
-}
-
-model Attendance {
-  id        String   @id @default(uuid())
-  workerId  Int      @map("worker_id")
-  projectId String   @map("project_id")
-  date      DateTime @db.Date
-  status    String   @default("PRESENT") // PRESENT, ABSENT, LEAVE
-  markedBy  Int      @map("marked_by") // Supervisor ID
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  
-  // Relations
-  worker    User     @relation(fields: [workerId], references: [id], name: "WorkerAttendance")
-  project   Project  @relation(fields: [projectId], references: [id])
-  supervisor User    @relation(fields: [markedBy], references: [id], name: "SupervisorAttendance")
-
-  @@map("attendances")
-  @@index([workerId])
-  @@index([projectId])
-  @@index([date])
-}
-
-model Payment {
-  id          String    @id @default(uuid())
-  workerId    Int       @map("worker_id")
-  projectId   String    @map("project_id")
-  amount      Decimal   @db.Decimal(10, 2)
-  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  approvedBy  Int?      @map("approved_by") // Admin ID
-  approvedAt  DateTime? @map("approved_at") @db.Timestamptz
-  paidAt      DateTime? @map("paid_at") @db.Timestamptz
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  
-  // Relations
-  worker      User      @relation(fields: [workerId], references: [id], name: "WorkerPayment")
-  project     Project   @relation(fields: [projectId], references: [id])
-  approver    User?     @relation(fields: [approvedBy], references: [id], name: "ApproverPayment")
-
-  @@map("payments")
-  @@index([workerId])
-  @@index([projectId])
-  @@index([status])
 }
 
 model JobCard {
-  id                   Int              @id @default(autoincrement())
-  userId               Int
-  jobCardNumber        String           @unique @db.VarChar(100)
-  familyId             String           @db.VarChar(50)
-  headOfHouseholdName  String           @db.VarChar(100)
-  fatherHusbandName    String           @db.VarChar(100)
-  category             String           @db.VarChar(10)
-  dateOfRegistration   DateTime
-  address              String           @db.Text
-  village              String           @db.VarChar(100)
-  panchayat            String           @db.VarChar(100)
-  block                String           @db.VarChar(100)
-  district             String           @db.VarChar(100)
-  isBPL                Boolean          @default(false)
-  epicNo               String           @db.VarChar(50)
-  createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt            DateTime         @updatedAt @map("updated_at") @db.Timestamptz
-  
-  // Relations
-  user                 User             @relation(fields: [userId], references: [id])
-  applicants           JobCardApplicant[]
+  job_card_id             String   @id @default(uuid())
+  aadhaar_number          String   @unique
+  phone_number            String
+  password_hash           String
+  date_of_birth           DateTime
+  age                     Int
+  family_id               String
+  head_of_household_name  String
+  father_or_husband_name  String
+  category                String
+  epic_number             String?
+  belongs_to_bpl          Boolean
+  state                   String
+  district                String
+  village                 String
+  panchayat               String
+  block                   String
+  pincode                 String
+  full_address            String
+  bank_name               String
+  account_number          String
+  ifsc_code               String
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+
+  applicants Applicant[]
 
   @@map("job_cards")
-  @@index([jobCardNumber])
-  @@index([userId])
 }
 
-model JobCardApplicant {
-  id          Int      @id @default(autoincrement())
-  jobCardId   Int
-  name        String   @db.VarChar(100)
-  gender      String   @db.VarChar(10)
-  age         Int
-  bankDetails String   @db.VarChar(200)
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
-  
-  // Relations
-  jobCard     JobCard  @relation(fields: [jobCardId], references: [id])
+model Applicant {
+  applicant_id     String   @id @default(uuid())
+  job_card_id      String
+  full_name        String
+  date_of_birth    DateTime
+  age              Int
+  gender           String
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
-  @@map("job_card_applicants")
-  @@index([jobCardId])
+  job_card JobCard @relation(fields: [job_card_id], references: [job_card_id])
+
+  @@map("applicants")
 }
 
 model Otp {
   id           Int      @id @default(autoincrement())
-  email        String   @unique @db.VarChar(100)
-  otp          String   @db.VarChar(6)
-  expiresAt    DateTime @map("expires_at") @db.Timestamptz
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
-  resendCount  Int      @default(0) @map("resend_count")
-  lastResendAt DateTime? @map("last_resend_at") @db.Timestamptz
-  isVerified   Boolean  @default(false) @map("is_verified")
+  email        String
+  otp          String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  resendCount  Int      @default(0)
+  lastResendAt DateTime?
+  isVerified   Boolean  @default(false)
 
   @@map("otps")
-  @@index([email])
-  @@index([expiresAt])
+}
+
+model Project {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String?
+  location    String?
+  worker_need Int
+  start_date  DateTime
+  end_date    DateTime
+  status      String   @default("pending")
+  created_by  String   @db.Uuid
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  creator User @relation(fields: [created_by], references: [user_id])
+
+  @@map("projects")
+}
+
+model Product {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String?
+  price         Float
+  imageUrl      String?
+  category      String?
+  stockQuantity Int       @default(0)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("products")
 }

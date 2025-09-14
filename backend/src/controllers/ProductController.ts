@@ -1,34 +1,35 @@
 import { Request, Response, NextFunction } from 'express';
-import { ProductService } from '../services/ProductService';
-import { ApiResponse } from '../types';
+import { ProductModel } from '../models/ProductModel';
+import { CreateProductRequest, UpdateProductRequest } from '../types';
+import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 
 export class ProductController {
-  private productService: ProductService;
+  private productModel: ProductModel;
 
   constructor() {
-    this.productService = new ProductService();
+    this.productModel = new ProductModel();
   }
 
   public getAllProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const page = parseInt((req.query.page as string) || '1') || 1;
+      const limit = parseInt((req.query.limit as string) || '10') || 10;
       const category = req.query.category as string;
-
-      const result = await this.productService.getAllProducts(page, limit, category);
-
-      const response: ApiResponse = {
+      
+      const offset = (page - 1) * limit;
+      const products = await this.productModel.findAll(limit, offset, category);
+      const total = await this.productModel.count(category);
+      
+      res.status(200).json({
         success: true,
-        data: result.products,
+        data: products,
         meta: {
-          total: result.total,
+          total,
           page,
           limit,
-          totalPages: result.totalPages,
+          totalPages: Math.ceil(total / limit),
         },
-      };
-
-      res.status(200).json(response);
+      });
     } catch (error) {
       next(error);
     }
@@ -40,138 +41,235 @@ export class ProductController {
       if (!idParam) {
         res.status(400).json({
           success: false,
-          error: 'Product ID is required'
+          error: {
+            message: 'Product ID is required',
+          },
         });
         return;
       }
+      
       const id = parseInt(idParam);
       if (isNaN(id)) {
         res.status(400).json({
           success: false,
-          error: 'Invalid product ID format'
+          error: {
+            message: 'Invalid product ID',
+          },
         });
         return;
       }
-      const product = await this.productService.getProductById(id);
 
-      const response: ApiResponse = {
+      const product = await this.productModel.findById(id);
+      if (!product) {
+        res.status(404).json({
+          success: false,
+          error: {
+            message: 'Product not found',
+          },
+        });
+        return;
+      }
+
+      res.status(200).json({
         success: true,
         data: product,
-      };
-
-      res.status(200).json(response);
+      });
     } catch (error) {
       next(error);
     }
   };
 
-  public createProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  public createProduct = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const product = await this.productService.createProduct(req.body);
+      // Only admins can create products
+      if (req.user?.role !== 'admin') {
+        res.status(403).json({
+          success: false,
+          error: {
+            message: 'Only admins can create products',
+          },
+        });
+        return;
+      }
 
-      const response: ApiResponse = {
+      const productData: CreateProductRequest = req.body;
+      const product = await this.productModel.create(productData);
+
+      res.status(201).json({
         success: true,
         data: product,
-      };
-
-      res.status(201).json(response);
+      });
     } catch (error) {
       next(error);
     }
   };
 
-  public updateProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  public updateProduct = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
+      // Only admins can update products
+      if (req.user?.role !== 'admin') {
+        res.status(403).json({
+          success: false,
+          error: {
+            message: 'Only admins can update products',
+          },
+        });
+        return;
+      }
+
       const idParam = req.params.id;
       if (!idParam) {
         res.status(400).json({
           success: false,
-          error: 'Product ID is required'
+          error: {
+            message: 'Product ID is required',
+          },
         });
         return;
       }
+      
       const id = parseInt(idParam);
       if (isNaN(id)) {
         res.status(400).json({
           success: false,
-          error: 'Invalid product ID format'
+          error: {
+            message: 'Invalid product ID',
+          },
         });
         return;
       }
-      const product = await this.productService.updateProduct(id, req.body);
 
-      const response: ApiResponse = {
+      const productData: UpdateProductRequest = req.body;
+      const product = await this.productModel.update(id, productData);
+
+      if (!product) {
+        res.status(404).json({
+          success: false,
+          error: {
+            message: 'Product not found',
+          },
+        });
+        return;
+      }
+
+      res.status(200).json({
         success: true,
         data: product,
-      };
-
-      res.status(200).json(response);
+      });
     } catch (error) {
       next(error);
     }
   };
 
-  public deleteProduct = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  public deleteProduct = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
+      // Only admins can delete products
+      if (req.user?.role !== 'admin') {
+        res.status(403).json({
+          success: false,
+          error: {
+            message: 'Only admins can delete products',
+          },
+        });
+        return;
+      }
+
       const idParam = req.params.id;
       if (!idParam) {
         res.status(400).json({
           success: false,
-          error: 'Product ID is required'
+          error: {
+            message: 'Product ID is required',
+          },
         });
         return;
       }
+      
       const id = parseInt(idParam);
       if (isNaN(id)) {
         res.status(400).json({
           success: false,
-          error: 'Invalid product ID format'
+          error: {
+            message: 'Invalid product ID',
+          },
         });
         return;
       }
-      await this.productService.deleteProduct(id);
 
-      const response: ApiResponse = {
+      const result = await this.productModel.delete(id);
+      if (!result) {
+        res.status(404).json({
+          success: false,
+          error: {
+            message: 'Product not found',
+          },
+        });
+        return;
+      }
+
+      res.status(200).json({
         success: true,
         data: {
           message: 'Product deleted successfully',
         },
-      };
-
-      res.status(200).json(response);
+      });
     } catch (error) {
       next(error);
     }
   };
 
-  public updateStock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  public updateStock = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
+      // Only admins can update stock
+      if (req.user?.role !== 'admin') {
+        res.status(403).json({
+          success: false,
+          error: {
+            message: 'Only admins can update product stock',
+          },
+        });
+        return;
+      }
+
       const idParam = req.params.id;
       if (!idParam) {
         res.status(400).json({
           success: false,
-          error: 'Product ID is required'
+          error: {
+            message: 'Product ID is required',
+          },
         });
         return;
       }
+      
       const id = parseInt(idParam);
       if (isNaN(id)) {
         res.status(400).json({
           success: false,
-          error: 'Invalid product ID format'
+          error: {
+            message: 'Invalid product ID',
+          },
         });
         return;
       }
-      const { quantity } = req.body;
-      
-      const product = await this.productService.updateStock(id, quantity);
 
-      const response: ApiResponse = {
+      const { quantity } = req.body;
+      const product = await this.productModel.updateStock(id, quantity);
+
+      if (!product) {
+        res.status(404).json({
+          success: false,
+          error: {
+            message: 'Product not found',
+          },
+        });
+        return;
+      }
+
+      res.status(200).json({
         success: true,
         data: product,
-      };
-
-      res.status(200).json(response);
+      });
     } catch (error) {
       next(error);
     }
@@ -179,20 +277,25 @@ export class ProductController {
 
   public searchProducts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const searchTerm = req.query.q as string;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const { q: searchTerm, limit: limitParam } = req.query;
+      const limit = parseInt(limitParam as string) || 10;
       
-      const products = await this.productService.searchProducts(searchTerm, limit);
+      if (!searchTerm || typeof searchTerm !== 'string') {
+        res.status(400).json({
+          success: false,
+          error: {
+            message: 'Search term is required',
+          },
+        });
+        return;
+      }
 
-      const response: ApiResponse = {
+      const products = await this.productModel.searchByName(searchTerm, limit);
+
+      res.status(200).json({
         success: true,
         data: products,
-        meta: {
-          total: products.length,
-        },
-      };
-
-      res.status(200).json(response);
+      });
     } catch (error) {
       next(error);
     }
@@ -201,30 +304,23 @@ export class ProductController {
   public getProductsByCategory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const category = req.params.category;
-      if (!category) {
-        res.status(400).json({
-          success: false,
-          error: 'Category is required'
-        });
-        return;
-      }
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
-
-      const result = await this.productService.getProductsByCategory(category, page, limit);
-
-      const response: ApiResponse = {
+      const page = parseInt((req.query.page as string) || '1') || 1;
+      const limit = parseInt((req.query.limit as string) || '10') || 10;
+      
+      const offset = (page - 1) * limit;
+      const products = await this.productModel.findAll(limit, offset, category);
+      const total = await this.productModel.count(category);
+      
+      res.status(200).json({
         success: true,
-        data: result.products,
+        data: products,
         meta: {
-          total: result.total,
+          total,
           page,
           limit,
-          totalPages: result.totalPages,
+          totalPages: Math.ceil(total / limit),
         },
-      };
-
-      res.status(200).json(response);
+      });
     } catch (error) {
       next(error);
     }
