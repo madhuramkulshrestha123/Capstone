@@ -49,7 +49,12 @@ body {
 
 /* Smooth transitions */
 * {
-  transition-property: background-color, border-color, color, fill, stroke;
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+  transition-duration: 300ms;
+}
+
+input:focus, button:focus, a:focus {
+  outline-offset: 2px;
+  outline-width: 3px;
 }
