@@ -28,6 +28,15 @@ export interface Config {
     apiKey: string;
     apiSecret: string;
   };
+  sendgrid: {
+    apiKey: string;
+  };
+  twilio: {
+    accountSid: string;
+    authToken: string;
+    verifyServiceSid: string;
+    phoneNumber: string;
+  };
 }
 
 const config: Config = {
@@ -36,7 +45,7 @@ const config: Config = {
     nodeEnv: process.env.NODE_ENV || 'development',
   },
   database: {
-    url: process.env.DATABASE_URL || 'postgresql://postgres:@localhost:5432/capstone_db',
+    url: `postgresql://${process.env.DB_USERNAME || 'postgres'}:${process.env.DB_PASSWORD || '12345678'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'capstone_db'}?schema=public`,
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'your_jwt_secret_here',
@@ -55,6 +64,15 @@ const config: Config = {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
     apiKey: process.env.CLOUDINARY_API_KEY || '',
     apiSecret: process.env.CLOUDINARY_API_SECRET || '',
+  },
+  sendgrid: {
+    apiKey: process.env.SENDGRID_API_KEY || '',
+  },
+  twilio: {
+    accountSid: process.env.TWILIO_ACCOUNT_SID || '',
+    authToken: process.env.TWILIO_AUTH_TOKEN || '',
+    verifyServiceSid: process.env.TWILIO_VERIFY_SERVICE_SID || '',
+    phoneNumber: process.env.TWILIO_PHONE_NUMBER || '',
   },
 };
 

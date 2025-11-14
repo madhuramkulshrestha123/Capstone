@@ -3,14 +3,18 @@ import { UserService } from '../services/UserService';
 import { OtpService } from '../services/OtpService';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 import { ApiResponse } from '../types';
+import upload from '../middlewares/uploadMiddleware';
+import { CloudinaryService } from '../services/CloudinaryService';
 
 export class UserController {
   private userService: UserService;
   private otpService: OtpService;
+  private cloudinaryService: CloudinaryService;
 
   constructor() {
     this.userService = new UserService();
     this.otpService = new OtpService();
+    this.cloudinaryService = new CloudinaryService();
   }
 
   public getAllUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -98,7 +102,31 @@ export class UserController {
         return;
       }
 
-      const user = await this.userService.updateUser(userId, req.body);
+      // Handle image upload if file is provided
+      let imageUrl: string | undefined;
+      if (req.file) {
+        try {
+          const fileName = `user_${userId}_${Date.now()}`;
+          imageUrl = await this.cloudinaryService.uploadImage(req.file.buffer, fileName);
+        } catch (uploadError) {
+          console.error('Error uploading image to Cloudinary:', uploadError);
+          res.status(500).json({
+            success: false,
+            error: {
+              message: 'Error uploading image',
+            },
+          });
+          return;
+        }
+      }
+
+      // Prepare update data
+      const updateData = { ...req.body };
+      if (imageUrl) {
+        updateData.image_url = imageUrl;
+      }
+
+      const user = await this.userService.updateUser(userId, updateData);
 
       const response: ApiResponse = {
         success: true,
@@ -192,7 +220,31 @@ export class UserController {
         delete req.body.role;
       }
 
-      const user = await this.userService.updateUser(req.user.user_id, req.body);
+      // Handle image upload if file is provided
+      let imageUrl: string | undefined;
+      if (req.file) {
+        try {
+          const fileName = `user_${req.user.user_id}_${Date.now()}`;
+          imageUrl = await this.cloudinaryService.uploadImage(req.file.buffer, fileName);
+        } catch (uploadError) {
+          console.error('Error uploading image to Cloudinary:', uploadError);
+          res.status(500).json({
+            success: false,
+            error: {
+              message: 'Error uploading image',
+            },
+          });
+          return;
+        }
+      }
+
+      // Prepare update data
+      const updateData = { ...req.body };
+      if (imageUrl) {
+        updateData.image_url = imageUrl;
+      }
+
+      const user = await this.userService.updateUser(req.user.user_id, updateData);
 
       const response: ApiResponse = {
         success: true,
@@ -341,7 +393,31 @@ export class UserController {
         return;
       }
 
-      const user = await this.userService.createRegistration(req.body);
+      // Handle image upload if file is provided
+      let imageUrl: string | undefined;
+      if (req.file) {
+        try {
+          const fileName = `user_${req.body.email}_${Date.now()}`;
+          imageUrl = await this.cloudinaryService.uploadImage(req.file.buffer, fileName);
+        } catch (uploadError) {
+          console.error('Error uploading image to Cloudinary:', uploadError);
+          res.status(500).json({
+            success: false,
+            error: {
+              message: 'Error uploading image',
+            },
+          });
+          return;
+        }
+      }
+
+      // Add image URL to registration data
+      const registrationData = { ...req.body };
+      if (imageUrl) {
+        registrationData.image_url = imageUrl;
+      }
+
+      const user = await this.userService.createRegistration(registrationData);
 
       res.status(201).json({
         success: true,
@@ -443,6 +519,7 @@ export class UserController {
               phone_number: user.phone_number,
               aadhaar_number: user.aadhaar_number,
               role: user.role,
+              image_url: user.image_url,
               is_active: user.is_active,
               created_at: user.created_at,
               updated_at: user.updated_at,
@@ -498,7 +575,31 @@ export class UserController {
 
   public createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const user = await this.userService.createUser(req.body);
+      // Handle image upload if file is provided
+      let imageUrl: string | undefined;
+      if (req.file) {
+        try {
+          const fileName = `user_${req.body.email}_${Date.now()}`;
+          imageUrl = await this.cloudinaryService.uploadImage(req.file.buffer, fileName);
+        } catch (uploadError) {
+          console.error('Error uploading image to Cloudinary:', uploadError);
+          res.status(500).json({
+            success: false,
+            error: {
+              message: 'Error uploading image',
+            },
+          });
+          return;
+        }
+      }
+
+      // Add image URL to user data
+      const userData = { ...req.body };
+      if (imageUrl) {
+        userData.image_url = imageUrl;
+      }
+
+      const user = await this.userService.createUser(userData);
 
       const response: ApiResponse = {
         success: true,

@@ -1,119 +1,117 @@
-import { PrismaClient } from '@prisma/client';
 import { Product, CreateProductRequest, UpdateProductRequest } from '../types';
+import Database from '../config/database';
 
 export class ProductModel {
-  private prisma: PrismaClient;
+  private db: Database;
 
   constructor() {
-    this.prisma = new PrismaClient();
+    this.db = Database.getInstance();
   }
 
   async findAll(limit: number = 10, offset: number = 0, category?: string): Promise<Product[]> {
-    const whereClause: any = {
-      isActive: true,
-    };
+    let query = `
+      SELECT id, name, description, price, "imageUrl", category, "stockQuantity", "isActive", "createdAt", "updatedAt"
+      FROM products
+      WHERE "isActive" = true
+    `;
+    const params: any[] = [];
 
     if (category) {
-      whereClause.category = category;
+      query += ` AND category = $${params.length + 1}`;
+      params.push(category);
     }
 
-    const products = await this.prisma.product.findMany({
-      where: whereClause,
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: limit,
-      skip: offset,
-    });
+    query += ` ORDER BY "createdAt" DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limit, offset);
 
-    return products.map((product: any) => ({
-      ...product,
-      price: Number(product.price),
-      image_url: product.imageUrl,
-      stock_quantity: product.stockQuantity,
-      is_active: product.isActive,
-      created_at: product.createdAt,
-      updated_at: product.updatedAt,
-    }));
+    const result = await this.db.query(query, params);
+    return result.rows;
   }
 
   async findById(id: number): Promise<Product | null> {
-    const product = await this.prisma.product.findUnique({
-      where: {
-        id,
-        isActive: true,
-      },
-    });
-
-    if (!product) return null;
-
-    return {
-      ...product,
-      price: Number(product.price),
-      image_url: product.imageUrl,
-      stock_quantity: product.stockQuantity,
-      is_active: product.isActive,
-      created_at: product.createdAt,
-      updated_at: product.updatedAt,
-    } as Product;
+    const query = `
+      SELECT id, name, description, price, "imageUrl", category, "stockQuantity", "isActive", "createdAt", "updatedAt"
+      FROM products
+      WHERE id = $1 AND "isActive" = true
+    `;
+    const result = await this.db.query(query, [id]);
+    
+    if (result.rows.length === 0) return null;
+    return result.rows[0];
   }
 
   async create(productData: CreateProductRequest): Promise<Product> {
-    const product = await this.prisma.product.create({
-      data: {
-        name: productData.name,
-        description: productData.description || null,
-        price: productData.price,
-        imageUrl: productData.image_url || null,
-        category: productData.category || null,
-        stockQuantity: productData.stock_quantity || 0,
-      },
-    });
+    const now = new Date().toISOString();
+    const query = `
+      INSERT INTO products (name, description, price, "imageUrl", category, "stockQuantity", "isActive", "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING id, name, description, price, "imageUrl", category, "stockQuantity", "isActive", "createdAt", "updatedAt"
+    `;
+    const values = [
+      productData.name,
+      productData.description || null,
+      productData.price,
+      productData.image_url || null,
+      productData.category || null,
+      productData.stock_quantity || 0,
+      true,
+      now,
+      now
+    ];
 
-    return {
-      ...product,
-      price: Number(product.price),
-      image_url: product.imageUrl,
-      stock_quantity: product.stockQuantity,
-      is_active: product.isActive,
-      created_at: product.createdAt,
-      updated_at: product.updatedAt,
-    } as Product;
+    const result = await this.db.query(query, values);
+    return result.rows[0];
   }
 
   async update(id: number, productData: UpdateProductRequest): Promise<Product | null> {
-    const updateData: any = {};
+    const fields: string[] = [];
+    const values: any[] = [];
+    
+    if (productData.name !== undefined) {
+      fields.push(`name = $${fields.length + 1}`);
+      values.push(productData.name);
+    }
+    if (productData.description !== undefined) {
+      fields.push(`description = $${fields.length + 1}`);
+      values.push(productData.description);
+    }
+    if (productData.price !== undefined) {
+      fields.push(`price = $${fields.length + 1}`);
+      values.push(productData.price);
+    }
+    if (productData.image_url !== undefined) {
+      fields.push(`"imageUrl" = $${fields.length + 1}`);
+      values.push(productData.image_url);
+    }
+    if (productData.category !== undefined) {
+      fields.push(`category = $${fields.length + 1}`);
+      values.push(productData.category);
+    }
+    if (productData.stock_quantity !== undefined) {
+      fields.push(`"stockQuantity" = $${fields.length + 1}`);
+      values.push(productData.stock_quantity);
+    }
+    if (productData.is_active !== undefined) {
+      fields.push(`"isActive" = $${fields.length + 1}`);
+      values.push(productData.is_active);
+    }
 
-    if (productData.name !== undefined) updateData.name = productData.name;
-    if (productData.description !== undefined) updateData.description = productData.description;
-    if (productData.price !== undefined) updateData.price = productData.price;
-    if (productData.image_url !== undefined) updateData.imageUrl = productData.image_url;
-    if (productData.category !== undefined) updateData.category = productData.category;
-    if (productData.stock_quantity !== undefined) updateData.stockQuantity = productData.stock_quantity;
-    if (productData.is_active !== undefined) updateData.isActive = productData.is_active;
-
-    if (Object.keys(updateData).length === 0) {
+    if (fields.length === 0) {
       return this.findById(id);
     }
 
-    try {
-      const product = await this.prisma.product.update({
-        where: {
-          id,
-          isActive: true,
-        },
-        data: updateData,
-      });
+    const query = `
+      UPDATE products
+      SET ${fields.join(', ')}, "updatedAt" = NOW()
+      WHERE id = $${fields.length + 1} AND "isActive" = true
+      RETURNING id, name, description, price, "imageUrl", category, "stockQuantity", "isActive", "createdAt", "updatedAt"
+    `;
+    values.push(id);
 
-      return {
-        ...product,
-        price: Number(product.price),
-        image_url: product.imageUrl,
-        stock_quantity: product.stockQuantity,
-        is_active: product.isActive,
-        created_at: product.createdAt,
-        updated_at: product.updatedAt,
-      } as Product;
+    try {
+      const result = await this.db.query(query, values);
+      if (result.rows.length === 0) return null;
+      return result.rows[0];
     } catch (error) {
       return null;
     }
@@ -121,86 +119,57 @@ export class ProductModel {
 
   async delete(id: number): Promise<boolean> {
     try {
-      await this.prisma.product.update({
-        where: {
-          id,
-          isActive: true,
-        },
-        data: {
-          isActive: false,
-        },
-      });
-      return true;
+      const query = `
+        UPDATE products
+        SET "isActive" = false, "updatedAt" = NOW()
+        WHERE id = $1 AND "isActive" = true
+      `;
+      const result = await this.db.query(query, [id]);
+      return result.rowCount > 0;
     } catch (error) {
       return false;
     }
   }
 
   async count(category?: string): Promise<number> {
-    const whereClause: any = {
-      isActive: true,
-    };
+    let query = 'SELECT COUNT(*) FROM products WHERE "isActive" = true';
+    const params: any[] = [];
 
     if (category) {
-      whereClause.category = category;
+      query += ` AND category = $${params.length + 1}`;
+      params.push(category);
     }
 
-    return await this.prisma.product.count({
-      where: whereClause,
-    });
+    const result = await this.db.query(query, params);
+    return parseInt(result.rows[0].count);
   }
 
   async updateStock(id: number, quantity: number): Promise<Product | null> {
     try {
-      const product = await this.prisma.product.update({
-        where: {
-          id,
-          isActive: true,
-        },
-        data: {
-          stockQuantity: {
-            increment: quantity,
-          },
-        },
-      });
-
-      return {
-        ...product,
-        price: Number(product.price),
-        image_url: product.imageUrl,
-        stock_quantity: product.stockQuantity,
-        is_active: product.isActive,
-        created_at: product.createdAt,
-        updated_at: product.updatedAt,
-      } as Product;
+      const query = `
+        UPDATE products
+        SET "stockQuantity" = "stockQuantity" + $1, "updatedAt" = NOW()
+        WHERE id = $2 AND "isActive" = true
+        RETURNING id, name, description, price, "imageUrl", category, "stockQuantity", "isActive", "createdAt", "updatedAt"
+      `;
+      const result = await this.db.query(query, [quantity, id]);
+      
+      if (result.rows.length === 0) return null;
+      return result.rows[0];
     } catch (error) {
       return null;
     }
   }
 
   async searchByName(searchTerm: string, limit: number = 10): Promise<Product[]> {
-    const products = await this.prisma.product.findMany({
-      where: {
-        isActive: true,
-        name: {
-          contains: searchTerm,
-          mode: 'insensitive',
-        },
-      },
-      orderBy: {
-        name: 'asc',
-      },
-      take: limit,
-    });
-
-    return products.map((product: any) => ({
-      ...product,
-      price: Number(product.price),
-      image_url: product.imageUrl,
-      stock_quantity: product.stockQuantity,
-      is_active: product.isActive,
-      created_at: product.createdAt,
-      updated_at: product.updatedAt,
-    })) as Product[];
+    const query = `
+      SELECT id, name, description, price, "imageUrl", category, "stockQuantity", "isActive", "createdAt", "updatedAt"
+      FROM products
+      WHERE "isActive" = true AND name ILIKE $1
+      ORDER BY name ASC
+      LIMIT $2
+    `;
+    const result = await this.db.query(query, [`%${searchTerm}%`, limit]);
+    return result.rows;
   }
 }

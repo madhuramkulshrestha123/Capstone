@@ -19,6 +19,8 @@ import projectRoutes from './routes/projectRoutes';
 import workDemandRequestRoutes from './routes/workDemandRequestRoutes';
 import attendanceRoutes from './routes/attendanceRoutes';
 import paymentRoutes from './routes/paymentRoutes';
+import jobCardApplicationRoutes from './routes/jobCardApplicationRoutes';
+import adminJobCardApplicationRoutes from './routes/admin/jobCardApplicationRoutes';
 
 dotenv.config();
 
@@ -83,6 +85,8 @@ class App {
     this.app.use('/api/v1/work-requests', workDemandRequestRoutes);
     this.app.use('/api/v1/attendances', attendanceRoutes);
     this.app.use('/api/v1/payments', paymentRoutes);
+    this.app.use('/api/v1/job-card-applications', jobCardApplicationRoutes);
+    this.app.use('/api/v1/admin', adminJobCardApplicationRoutes);
 
     // Welcome route
     this.app.get('/', (req, res) => {

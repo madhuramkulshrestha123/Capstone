@@ -3,6 +3,7 @@ import { JobCardService } from '../services/JobCardService';
 import { AppError } from '../middlewares/errorMiddleware';
 import { ApiResponse, JobCardRegistrationRequest } from '../types';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
+import upload from '../middlewares/uploadMiddleware';
 
 export class JobCardController {
   private jobCardService: JobCardService;
@@ -28,7 +29,10 @@ export class JobCardController {
         return;
       }
 
-      const result = await this.jobCardService.registerJobCard(registrationData);
+      // Get image buffer if file was uploaded
+      const imageBuffer = req.file ? req.file.buffer : undefined;
+
+      const result = await this.jobCardService.registerJobCard(registrationData, imageBuffer);
 
       const response: ApiResponse = {
         success: true,

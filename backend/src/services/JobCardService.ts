@@ -3,17 +3,20 @@ import { UserModel } from '../models/UserModel';
 import { AppError } from '../middlewares/errorMiddleware';
 import { JobCardRegistrationRequest, JobCardDetails, CreateRegistrationRequest } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { CloudinaryService } from '../services/CloudinaryService';
 
 export class JobCardService {
   private jobCardModel: JobCardModel;
   private userModel: UserModel;
+  private cloudinaryService: CloudinaryService;
 
   constructor() {
     this.jobCardModel = new JobCardModel();
     this.userModel = new UserModel();
+    this.cloudinaryService = new CloudinaryService();
   }
 
-  async registerJobCard(registrationData: JobCardRegistrationRequest): Promise<{ userId: string; jobCardId: string; message: string }> {
+  async registerJobCard(registrationData: JobCardRegistrationRequest, imageBuffer?: Buffer): Promise<{ userId: string; jobCardId: string; message: string }> {
     // Validate Aadhaar number (simplified validation)
     if (!this.isValidAadhaar(registrationData.aadhaarNumber)) {
       throw new AppError('Invalid Aadhaar number', 400);
@@ -39,6 +42,18 @@ export class JobCardService {
     const existingUser = await this.userModel.findByEmail(this.generateEmail(registrationData.aadhaarNumber));
     if (existingUser) {
       throw new AppError('User with this email already exists', 409);
+    }
+
+    // Handle image upload if file is provided
+    let imageUrl: string | undefined;
+    if (imageBuffer) {
+      try {
+        const fileName = `jobcard_${registrationData.aadhaarNumber}_${Date.now()}`;
+        imageUrl = await this.cloudinaryService.uploadImage(imageBuffer, fileName, 'jobcards');
+      } catch (uploadError) {
+        console.error('Error uploading image to Cloudinary:', uploadError);
+        throw new AppError('Error uploading image', 500);
+      }
     }
 
     // Create user account with the new schema
@@ -70,7 +85,7 @@ export class JobCardService {
       head_of_household_name: registrationData.jobCardDetails.headOfHouseholdName,
       father_or_husband_name: registrationData.jobCardDetails.fatherHusbandName,
       category: registrationData.jobCardDetails.category,
-      epic_number: registrationData.jobCardDetails.epicNo,
+      epic_number: registrationData.jobCardDetails.epicNo || '',
       belongs_to_bpl: registrationData.jobCardDetails.isBPL,
       state: '', // Placeholder
       district: registrationData.jobCardDetails.district,
@@ -81,7 +96,8 @@ export class JobCardService {
       full_address: registrationData.jobCardDetails.address,
       bank_name: '', // Placeholder
       account_number: '', // Placeholder
-      ifsc_code: '' // Placeholder
+      ifsc_code: '', // Placeholder
+      image_url: imageUrl || null // Add image URL to job card data, use null if undefined
     };
 
     const jobCard = await this.jobCardModel.createJobCard(jobCardData);

@@ -22,7 +22,7 @@ export default function Dashboard() {
 
   const navItems = [
     'aboutMinistry', 'aboutScheme', 'keyFeatures', 'schemeComponents',
-    'mobileApps', 'login', 'whatsNew', 'raiseComplaint'
+    'mobileApps', 'raiseComplaint', 'login'
   ];
 
   const applySteps = ['step1', 'step2', 'step3', 'step4', 'step5'];
@@ -105,11 +105,15 @@ export default function Dashboard() {
           {navItems.map((item, index) => (
             <li key={index} className="my-2">
               <a 
-                href="#" 
+                href={item === 'login' ? '/auth' : '#'} 
                 className={`px-5 py-2 rounded-lg transition-transform duration-300 ease-in-out hover:scale-110 ${
-                  isDarkTheme 
-                    ? 'text-white hover:bg-indigo-700 hover:shadow-md' 
-                    : 'text-gray-900 hover:bg-indigo-200 hover:text-indigo-700 hover:shadow-md'
+                  item === 'login' 
+                    ? `font-bold ${isDarkTheme 
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg' 
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'}`
+                    : isDarkTheme 
+                      ? 'text-white hover:bg-indigo-700 hover:shadow-md' 
+                      : 'text-gray-900 hover:bg-indigo-200 hover:text-indigo-700 hover:shadow-md'
                 }`}
               >
                 {t(item as any)}
@@ -214,41 +218,39 @@ export default function Dashboard() {
               </ol>
             </div>
 
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-6">
               <a 
                 href="/apply-job-card"
-                className={`py-6 px-10 rounded-3xl text-xl font-semibold shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl flex items-center justify-center ${
+                className={`p-10 rounded-3xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] flex items-center justify-center text-2xl font-semibold ${
                   isDarkTheme 
-                    ? 'bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-800 hover:to-purple-800 text-white' 
-                    : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white'
+                    ? 'bg-blue-700 hover:bg-blue-800 text-white' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
               >
                 {t('applyButton')}
               </a>
-              <button 
-                className={`py-6 px-10 rounded-3xl text-xl font-semibold shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl ${
+              
+              <a 
+                href="/track-application"
+                className={`p-10 rounded-3xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] flex items-center justify-center text-2xl font-semibold ${
                   isDarkTheme 
-                    ? 'bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-800 hover:to-emerald-800 text-white' 
-                    : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white'
+                    ? 'bg-green-700 hover:bg-green-800 text-white' 
+                    : 'bg-green-600 hover:bg-green-700 text-white'
                 }`}
               >
                 {t('trackButton')}
-              </button>
-
-              <div className="grid grid-cols-2 gap-6 mt-10">
-                <div className={`p-6 rounded-2xl shadow-xl text-center transition-shadow duration-300 ${
-                  isDarkTheme ? 'bg-gray-900/90' : 'bg-white/90'
-                }`}>
-                  <div className="text-4xl font-extrabold text-indigo-700 select-text">1.2M+</div>
-                  <div className="text-sm mt-2 font-medium">{t('jobCardsIssued')}</div>
-                </div>
-                <div className={`p-6 rounded-2xl shadow-xl text-center transition-shadow duration-300 ${
-                  isDarkTheme ? 'bg-gray-900/90' : 'bg-white/90'
-                }`}>
-                  <div className="text-4xl font-extrabold text-purple-700 select-text">98%</div>
-                  <div className="text-sm mt-2 font-medium">{t('satisfactionRate')}</div>
-                </div>
-              </div>
+              </a>
+              
+              <a 
+                href="#"
+                className={`p-10 rounded-3xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] flex items-center justify-center text-2xl font-semibold ${
+                  isDarkTheme 
+                    ? 'bg-indigo-700 hover:bg-indigo-800 text-white' 
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                }`}
+              >
+                Download Job Card
+              </a>
             </div>
           </div>
         </section>

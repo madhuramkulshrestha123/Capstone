@@ -26,6 +26,7 @@ interface JobCard {
   bank_name: string;
   account_number: string;
   ifsc_code: string;
+  image_url: string | null; // Update to allow null values
   created_at: Date;
   updated_at: Date;
 }
@@ -61,9 +62,9 @@ export class JobCardModel {
         job_card_id, aadhaar_number, phone_number, password_hash, date_of_birth, age,
         family_id, head_of_household_name, father_or_husband_name, category,
         epic_number, belongs_to_bpl, state, district, village, panchayat,
-        block, pincode, full_address, bank_name, account_number, ifsc_code,
+        block, pincode, full_address, bank_name, account_number, ifsc_code, image_url,
         created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25) RETURNING *`,
       [
         jobCardId,
         jobCardData.aadhaar_number,
@@ -87,6 +88,7 @@ export class JobCardModel {
         jobCardData.bank_name,
         jobCardData.account_number,
         jobCardData.ifsc_code,
+        jobCardData.image_url, // Add image_url parameter
         now, // created_at
         now  // updated_at
       ]

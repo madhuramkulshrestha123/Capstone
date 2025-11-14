@@ -18,6 +18,7 @@ interface User {
   district: string;
   village_name: string;
   pincode: string;
+  image_url?: string;
   is_active: boolean;
   created_at: Date;
   updated_at: Date;
@@ -102,8 +103,8 @@ export class UserModel {
     const result = await this.db.query(
       `INSERT INTO users (
         user_id, role, name, phone_number, aadhaar_number, email, panchayat_id, government_id, 
-        password_hash, state, district, village_name, pincode, is_active, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW()) RETURNING *`,
+        password_hash, state, district, village_name, pincode, image_url, is_active, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW()) RETURNING *`,
       [
         userId,
         userData.role || 'supervisor',
@@ -118,6 +119,7 @@ export class UserModel {
         userData.district,
         userData.village_name,
         userData.pincode,
+        userData.image_url || null,
         true
       ]
     );
@@ -176,6 +178,12 @@ export class UserModel {
     if (userData.role) {
       updateFields.push(`role = $${paramCount}`);
       values.push(userData.role);
+      paramCount++;
+    }
+    
+    if (userData.image_url !== undefined) {
+      updateFields.push(`image_url = $${paramCount}`);
+      values.push(userData.image_url);
       paramCount++;
     }
     
@@ -271,8 +279,8 @@ export class UserModel {
     const result = await this.db.query(
       `INSERT INTO users (
         user_id, role, name, phone_number, aadhaar_number, email, panchayat_id, government_id, 
-        password_hash, state, district, village_name, pincode, is_active, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW()) RETURNING *`,
+        password_hash, state, district, village_name, pincode, image_url, is_active, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW()) RETURNING *`,
       [
         userId,
         userData.role || 'supervisor',
@@ -287,6 +295,7 @@ export class UserModel {
         userData.district,
         userData.village_name,
         userData.pincode,
+        userData.image_url || null,
         true
       ]
     );

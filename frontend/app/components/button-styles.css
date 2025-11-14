@@ -1,0 +1,126 @@
+/* Button Styles for Government Portals */
+
+/* Base Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+/* Spacing between buttons */
+.btn + .btn {
+  margin-top: 1rem;
+}
+
+/* 1. Minimal Design */
+.btn-minimal {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem; /* 8px - professional border radius */
+  font-size: 1rem; /* 16px - readable font size */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+  color: #1f2937;
+  border: 1px solid #d1d5db;
+}
+
+.btn-minimal:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 2. Gradient Design */
+.btn-gradient {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem; /* 8px - professional border radius */
+  font-size: 1rem; /* 16px - readable font size */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  color: #ffffff;
+}
+
+.btn-gradient.apply {
+  background: linear-gradient(to right, #2563eb, #7c3aed); /* indigo gradient */
+}
+
+.btn-gradient.track {
+  background: linear-gradient(to right, #16a34a, #059669); /* green gradient */
+}
+
+.btn-gradient.download {
+  background: linear-gradient(to right, #2563eb, #0891b2); /* blue-cyan gradient */
+}
+
+.btn-gradient:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 3. Government Theme (Recommended for Indian Government Portals) */
+.btn-gov {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem; /* 8px - professional border radius */
+  font-size: 1rem; /* 16px - readable font size */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.btn-gov.apply {
+  background-color: #2563eb; /* blue-600 */
+}
+
+.btn-gov.track {
+  background-color: #16a34a; /* green-600 */
+}
+
+.btn-gov.download {
+  background-color: #4f46e5; /* indigo-600 */
+}
+
+.btn-gov:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.btn-gov.apply:hover {
+  background-color: #1d4ed8; /* blue-700 */
+}
+
+.btn-gov.track:hover {
+  background-color: #15803d; /* green-700 */
+}
+
+.btn-gov.download:hover {
+  background-color: #4338ca; /* indigo-700 */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .btn {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.95rem;
+  }
+  
+  .btn + .btn {
+    margin-top: 0.75rem;
+  }
+}
+
+/* Focus Styles for Accessibility */
+.btn:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}

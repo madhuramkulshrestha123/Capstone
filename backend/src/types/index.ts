@@ -12,6 +12,7 @@ export interface User {
   district: string;
   village_name: string;
   pincode: string;
+  image_url?: string;
   is_active: boolean;
   created_at: Date;
   updated_at: Date;
@@ -30,6 +31,7 @@ export interface CreateUserRequest {
   district: string;
   village_name: string;
   pincode: string;
+  image_url?: string;
 }
 
 // New interface for registration with password
@@ -46,6 +48,7 @@ export interface CreateRegistrationRequest {
   district: string;
   village_name: string;
   pincode: string;
+  image_url?: string;
 }
 
 export interface UpdateUserRequest {
@@ -60,6 +63,7 @@ export interface UpdateUserRequest {
   district?: string;
   village_name?: string;
   pincode?: string;
+  image_url?: string;
 }
 
 export interface UserResponse {
@@ -75,6 +79,7 @@ export interface UserResponse {
   district: string;
   village_name: string;
   pincode: string;
+  image_url?: string;
   is_active: boolean;
   created_at: Date;
   updated_at: Date;
@@ -100,19 +105,19 @@ export interface JobCardApplicant {
 }
 
 export interface JobCardDetails {
-  jobCardNumber: string;
+  jobCardNumber?: string;
   familyId: string;
   headOfHouseholdName: string;
   fatherHusbandName: string;
   category: string;
-  dateOfRegistration: Date;
+  dateOfRegistration: string; // Changed from Date to string to match validation schema
   address: string;
-  village: string;
+  village?: string;
   panchayat: string;
   block: string;
   district: string;
   isBPL: boolean;
-  epicNo: string;
+  epicNo?: string;
   applicants: JobCardApplicant[];
 }
 

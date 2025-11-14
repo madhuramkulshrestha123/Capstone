@@ -23,6 +23,7 @@ For detailed information about the role-based access control system, see [Role-B
 - Attendance tracking
 - Payment processing
 - Job card management
+- Image upload and storage with Cloudinary
 
 ## API Endpoints
 
@@ -33,10 +34,10 @@ For detailed information about the role-based access control system, see [Role-B
 
 ### User Management
 - `GET /api/v1/users/profile` - Get authenticated user's profile
-- `PUT /api/v1/users/profile` - Update authenticated user's profile
+- `PUT /api/v1/users/profile` - Update authenticated user's profile (supports image upload)
 - `GET /api/v1/users` - Get all users (Admin only)
 - `GET /api/v1/users/:id` - Get user by ID (Admin only)
-- `PUT /api/v1/users/:id` - Update user by ID (Admin only)
+- `PUT /api/v1/users/:id` - Update user by ID (Admin only, supports image upload)
 - `DELETE /api/v1/users/:id` - Delete user by ID (Admin only)
 
 ### Project Management
@@ -86,13 +87,19 @@ For detailed information about the role-based access control system, see [Role-B
 - `GET /api/v1/job-cards/:id` - Get job card by ID
 - `GET /api/v1/job-cards/user/:userId` - Get job cards by user ID
 
+### Image Upload
+- Users can upload profile images during registration, login, or profile updates
+- Images are stored in Cloudinary and URLs are saved in the database
+- Supported formats: JPG, PNG, GIF (5MB max file size)
+
 ## Technology Stack
 
 - Node.js with TypeScript
 - Express.js
-- PostgreSQL with Prisma ORM
+- PostgreSQL with raw queries
 - JWT for authentication
 - bcrypt.js for password hashing
+- Cloudinary for image storage
 
 ## Database Setup
 
@@ -104,7 +111,7 @@ Before running the application, you need to set up a PostgreSQL database. See [D
 2. Install dependencies: `npm install`
 3. Set up environment variables (see `.env.example`)
 4. Set up your database (see [Database Setup Guide](SETUP_DATABASE.md))
-5. Run database migrations: `npx prisma migrate dev`
+5. Set up database: `npm run db:setup`
 6. Start the server: `npm run dev`
 
 ## Environment Variables
@@ -117,7 +124,11 @@ PORT=3001
 NODE_ENV=development
 
 # PostgreSQL Configuration
-DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=12345678
+DB_NAME=capstone_db
 
 # JWT Configuration
 JWT_SECRET=your_jwt_secret_here
@@ -127,6 +138,11 @@ JWT_REFRESH_EXPIRES_IN=7d
 
 # CORS Configuration
 CORS_ORIGIN=http://localhost:3000
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 ## Development
@@ -194,63 +210,33 @@ We provide a collection of sample projects for testing purposes. Each project ha
 
 ```json
 {
-  "name": "Rural Road Construction Project",
-  "description": "Construction of 10km rural roads connecting remote villages to the main highway network. This project aims to improve transportation and access to markets for local farmers.",
-  "location": "Rajasthan, India",
-  "worker_need": 75,
-  "start_date": "2023-07-01",
-  "end_date": "2024-06-30",
-  "status": "active"
-}
-```
-
-The sample projects include various types of infrastructure projects from different regions of India. You can find the complete list of sample projects in the `test-data/sample-projects.json` file.
-
-### Project API Endpoints
-
-The following API endpoints are available for project management:
-
-#### Base URL
-```
-/api/v1/projects
-```
-
-#### GET /api/v1/projects
-Retrieve all projects with pagination. Optional query parameters include `page`, `limit`, and `status`.
-
-#### GET /api/v1/projects/:id
-Retrieve a specific project by ID.
-
-#### GET /api/v1/projects/status/:status
-Filter projects by status (pending, active, completed).
-
-#### POST /api/v1/projects
-Create a new project. Requires admin or supervisor role. Example request body:
-
-```json
-{
-  "name": "New Road Construction Project",
-  "description": "Construction of rural roads",
-  "location": "Rajasthan, India",
+  "name": "Road Construction Project",
+  "description": "Construction of rural roads in the district",
+  "location": "Sample District, State",
   "worker_need": 50,
-  "start_date": "2023-07-01",
-  "end_date": "2024-06-30",
+  "start_date": "2023-06-01",
+  "end_date": "2023-12-31",
   "status": "pending"
 }
 ```
 
-#### PUT /api/v1/projects/:id
-Update an existing project. Requires admin or supervisor role.
+## Image Upload API Usage
 
-#### DELETE /api/v1/projects/:id
-Delete a project. Requires admin role.
+### Register User with Image
+```bash
+curl -X POST http://localhost:3001/api/v1/users/register \
+  -H "Content-Type: multipart/form-data" \
+  -F "image=@/path/to/your/image.jpg" \
+  -F 'data={"role":"supervisor","name":"Test Worker","phone_number":"1234567890","aadhaar_number":"123456789012","email":"testworker@example.com","panchayat_id":"123e4567-e89b-12d3-a456-426614174000","government_id":"GOV123456789012","password":"TestPass123!","state":"Test State","district":"Test District","village_name":"Test Village","pincode":"123456"};application/json'
+```
 
-#### GET /api/v1/projects/my/projects
-Get projects created by the authenticated user.
+### Update Profile with Image
+```bash
+curl -X PUT http://localhost:3001/api/v1/users/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: multipart/form-data" \
+  -F "image=@/path/to/your/image.jpg" \
+  -F 'data={"name":"Updated Name"};application/json'
+```
 
-## Documentation
-
-- [Role-Based Access Control](docs/role-based-access-control.md)
-- [Testing Guide](TESTING_GUIDE.md)
-- [Test Files Summary](TEST_SUMMARY.md)
-- [Database Setup Guide](SETUP_DATABASE.md)
+The image URLs will be returned in the user data and can be used to display images in the frontend.

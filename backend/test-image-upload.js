@@ -1,0 +1,48 @@
+// This is a test script to demonstrate how to use the image upload functionality
+// You can run this script after starting the backend server
+
+console.log('Cloudinary Image Upload Integration - Test Instructions');
+console.log('=====================================================');
+console.log('');
+console.log('The Cloudinary image upload functionality has been successfully integrated.');
+console.log('');
+console.log('To test the image upload:');
+console.log('');
+console.log('1. Make sure the backend server is running:');
+console.log('   npm run dev');
+console.log('');
+console.log('2. Use one of the following methods to test:');
+console.log('');
+console.log('   METHOD 1: Using curl');
+console.log('   -----------');
+console.log('   # Register a new user with an image:');
+console.log('   curl -X POST http://localhost:3001/api/v1/users/register \\');
+console.log('     -H "Content-Type: multipart/form-data" \\');
+console.log('     -F "image=@/path/to/your/image.jpg" \\');
+console.log('     -F \'data={"role":"supervisor","name":"Test Worker","phone_number":"1234567890","aadhaar_number":"123456789012","email":"testworker@example.com","panchayat_id":"123e4567-e89b-12d3-a456-426614174000","government_id":"GOV123456789012","password":"TestPass123!","state":"Test State","district":"Test District","village_name":"Test Village","pincode":"123456"};application/json\'');
+console.log('');
+console.log('   # Update user profile with a new image:');
+console.log('   curl -X PUT http://localhost:3001/api/v1/users/profile \\');
+console.log('     -H "Authorization: Bearer YOUR_JWT_TOKEN" \\');
+console.log('     -H "Content-Type: multipart/form-data" \\');
+console.log('     -F "image=@/path/to/your/image.jpg" \\');
+console.log('     -F \'data={"name":"Updated Name"};application/json\'');
+console.log('');
+console.log('   METHOD 2: Using Postman');
+console.log('   -----------');
+console.log('   1. Set the request method to POST/PUT');
+console.log('   2. Set the URL to http://localhost:3001/api/v1/users/register or http://localhost:3001/api/v1/users/profile');
+console.log('   3. For authenticated requests, add Authorization header with Bearer token');
+console.log('   4. In the Body tab, select "form-data"');
+console.log('   5. Add a key "image" with type "File" and select your image');
+console.log('   6. Add a key "data" with type "Text" and value as JSON string of user data');
+console.log('');
+console.log('Features implemented:');
+console.log('- Image upload to Cloudinary with automatic naming');
+console.log('- Image URL stored in the users database table');
+console.log('- File size limit of 5MB');
+console.log('- Only image files accepted (jpg, png, gif, etc.)');
+console.log('- Automatic cleanup of temporary files');
+console.log('- Error handling for upload failures');
+console.log('');
+console.log('The image URLs will be returned in the user data and can be used to display images in the frontend.');

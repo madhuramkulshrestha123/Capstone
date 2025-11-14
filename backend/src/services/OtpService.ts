@@ -21,40 +21,44 @@ export class OtpService {
 
   async sendOtp(email: string, phoneNumber?: string): Promise<{ success: boolean; message: string; otp?: string }> {
     try {
-      // Check if we can resend OTP
-      const canResend = await this.otpModel.canResendOtp(email);
-      if (!canResend) {
-        return {
-          success: false,
-          message: 'Too many resend attempts. Please try again after 1 hour.'
-        };
+      // For Twilio Verify, we don't need to generate or store OTPs locally
+      // Send OTP via email (using local generation for email)
+      let emailSent = true;
+      let generatedOtp: string | undefined;
+      
+      if (email) {
+        // Generate OTP for email
+        generatedOtp = this.generateOtp();
+        
+        // Set expiration time (15 minutes from now)
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+        
+        // Save OTP to storage for email verification
+        await this.otpModel.createOtp(email, generatedOtp, expiresAt);
+        
+        // Send OTP via email
+        emailSent = await this.emailService.sendOtpEmail(email, generatedOtp);
       }
-
-      // Generate OTP
-      const otp = this.generateOtp();
       
-      // Set expiration time (15 minutes from now)
-      const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-      
-      // Save OTP to storage
-      await this.otpModel.createOtp(email, otp, expiresAt);
-      
-      // Send OTP via email
-      const emailSent = await this.emailService.sendOtpEmail(email, otp);
-      
-      // Send OTP via SMS if phone number is provided
+      // Send OTP via SMS using Twilio Verify if phone number is provided
       let smsSent = true;
       if (phoneNumber) {
-        smsSent = await this.smsService.sendOtpSms(phoneNumber, otp);
+        try {
+          smsSent = await this.smsService.sendOtpSms(phoneNumber, '');
+        } catch (smsError) {
+          console.error('Error sending SMS via Twilio:', smsError);
+          // Don't fail the entire operation if SMS fails, just log it
+          smsSent = false;
+        }
       }
       
-      if (emailSent && (smsSent || !phoneNumber)) {
-        // In development, return the OTP in the response
-        if (process.env.NODE_ENV === 'development') {
+      if ((email ? emailSent : true)) {
+        // In development, return the OTP in the response for email
+        if (process.env.NODE_ENV === 'development' && generatedOtp) {
           return {
             success: true,
             message: 'OTP sent successfully',
-            otp: otp // Return OTP for development testing
+            otp: generatedOtp // Return OTP for development testing (email only)
           };
         }
         
@@ -79,6 +83,11 @@ export class OtpService {
 
   async verifyOtp(email: string, otp: string): Promise<{ success: boolean; message: string }> {
     try {
+      // First try to verify using Twilio Verify (assuming this is for SMS)
+      // In a real implementation, we would know whether this is email or SMS verification
+      // For now, we'll try both methods
+      
+      // Try to verify using local database (email verification)
       const otpRecord = await this.otpModel.verifyOtp(email, otp);
       
       if (otpRecord) {
@@ -86,12 +95,22 @@ export class OtpService {
           success: true,
           message: 'OTP verified successfully'
         };
-      } else {
+      }
+      
+      // If not found in local database, try Twilio Verify (SMS verification)
+      const smsVerification = await this.smsService.verifyOtp('', otp);
+      
+      if (smsVerification.success) {
         return {
-          success: false,
-          message: 'Invalid or expired OTP'
+          success: true,
+          message: 'OTP verified successfully'
         };
       }
+      
+      return {
+        success: false,
+        message: 'Invalid or expired OTP'
+      };
     } catch (error) {
       console.error('Error verifying OTP:', error);
       return {
