@@ -21,7 +21,7 @@ async function createWorkDemandRequestsTable() {
       CREATE TABLE IF NOT EXISTS work_demand_requests (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         worker_id UUID NOT NULL,
-        project_id UUID NOT NULL,
+        project_id UUID,  -- Changed from UUID NOT NULL to UUID (nullable)
         request_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         status VARCHAR(20) DEFAULT 'pending',
         allocated_at TIMESTAMP NULL,
@@ -32,6 +32,18 @@ async function createWorkDemandRequestsTable() {
 
     await client.query(createTableQuery);
     console.log('Work demand requests table created successfully');
+
+    // Explicitly alter project_id column to allow NULL values
+    try {
+      await client.query('ALTER TABLE work_demand_requests ALTER COLUMN project_id DROP NOT NULL');
+      console.log('project_id column updated to allow NULL values');
+    } catch (error) {
+      if (error.message.includes('conflicting')) {
+        console.log('project_id column already allows NULL values');
+      } else {
+        throw error;
+      }
+    }
 
     // Add foreign key constraints
     const addForeignKeyConstraints = `

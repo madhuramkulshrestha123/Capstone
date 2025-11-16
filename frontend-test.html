@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Demand Work Test</title>
+</head>
+<body>
+    <h1>Demand Work Test</h1>
+    <button onclick="testDemandWork()">Test Demand Work</button>
+    <div id="result"></div>
+
+    <script>
+        async function testDemandWork() {
+            const resultDiv = document.getElementById('result');
+            try {
+                const response = await fetch('http://localhost:3001/api/v1/users/demand-work', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        jobCardId: '3675328c-c000-4cbb-8e1e-69edac816658'
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

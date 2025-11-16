@@ -17,6 +17,7 @@ export interface JobCardApplication {
   panchayat: string;
   block: string;
   district: string;
+  pincode: string | null;
   is_bpl: boolean;
   epic_number: string | null;
   applicants: any[];
@@ -29,7 +30,9 @@ export interface JobCardApplication {
 
 // Define the type for creating a new application
 // Note: tracking_id is generated internally by the model, so it's omitted from the creation type
-export type CreateJobCardApplication = Omit<JobCardApplication, 'application_id' | 'tracking_id' | 'created_at' | 'updated_at'>;
+export type CreateJobCardApplication = Omit<JobCardApplication, 'application_id' | 'tracking_id' | 'created_at' | 'updated_at'> & {
+  captchaToken: string;
+};
 
 export class JobCardApplicationModel {
   private db: any;
@@ -49,9 +52,9 @@ export class JobCardApplicationModel {
       `INSERT INTO job_card_applications (
         tracking_id, aadhaar_number, phone_number, family_id, head_of_household_name,
         father_or_husband_name, category, date_of_registration, full_address, village,
-        panchayat, block, district, is_bpl, epic_number, applicants, image_url, status, job_card_id,
+        panchayat, block, district, pincode, is_bpl, epic_number, applicants, image_url, status, job_card_id,
         created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) RETURNING *`,
       [
         trackingId,
         applicationData.aadhaar_number,
@@ -66,6 +69,7 @@ export class JobCardApplicationModel {
         applicationData.panchayat,
         applicationData.block,
         applicationData.district,
+        applicationData.pincode || null,
         applicationData.is_bpl,
         applicationData.epic_number || null,
         JSON.stringify(applicationData.applicants),

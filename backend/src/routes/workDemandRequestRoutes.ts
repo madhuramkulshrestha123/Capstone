@@ -17,7 +17,7 @@ const workDemandRequestController = new WorkDemandRequestController();
 router.use(authenticateToken);
 
 // Get all requests (Admin only)
-router.get('/', requireAdmin, validateQuery(paginationSchema), workDemandRequestController.getAllRequests);
+router.get('/', requireAdmin, validateQuery(paginationSchema), workDemandRequestController.getRequests);
 
 // Get request by ID (Admin only)
 router.get('/:id', requireAdmin, validateParams(idParamSchema), workDemandRequestController.getRequestById);

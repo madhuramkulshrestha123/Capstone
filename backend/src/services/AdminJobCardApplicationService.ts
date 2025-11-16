@@ -1,15 +1,18 @@
 import { JobCardApplicationModel } from '../models/JobCardApplicationModel';
 import { JobCardModel } from '../models/JobCardModel';
+import { UserModel } from '../models/UserModel';
 import { AppError } from '../middlewares/errorMiddleware';
 import { v4 as uuidv4 } from 'uuid';
 
 export class AdminJobCardApplicationService {
   private jobCardApplicationModel: JobCardApplicationModel;
   private jobCardModel: JobCardModel;
+  private userModel: UserModel;
 
   constructor() {
     this.jobCardApplicationModel = new JobCardApplicationModel();
     this.jobCardModel = new JobCardModel();
+    this.userModel = new UserModel();
   }
 
   async approveApplication(trackingId: string): Promise<{ message: string; jobCardId: string }> {
@@ -24,7 +27,49 @@ export class AdminJobCardApplicationService {
       throw new AppError('Application is not in pending status', 400);
     }
 
+    // Check if user already exists by aadhaar number
+    const existingUser = await this.userModel.findByAadhaar(application.aadhaar_number);
+    if (existingUser) {
+      throw new AppError('User with this Aadhaar number already exists', 409);
+    }
+
+    // Create a user account from the application data
+    const createUserData = {
+      role: 'supervisor',
+      name: application.head_of_household_name,
+      phone_number: application.phone_number,
+      aadhaar_number: application.aadhaar_number,
+      email: this.generateEmail(application.aadhaar_number),
+      panchayat_id: uuidv4(), // Generate a random panchayat ID for now
+      government_id: `GOV${application.aadhaar_number}`,
+      password: 'TempPass123!', // Temporary password, should be changed by user
+      state: '', // Placeholder
+      district: application.district,
+      village_name: application.village || '',
+      pincode: '' // Placeholder
+    };
+
+    const user = await this.userModel.createRegistration(createUserData);
+
     // Create a job card from the application data
+    // Extract bank details from the first applicant (assuming the first applicant is the main applicant)
+    let bankName = '';
+    let accountNumber = '';
+    let ifscCode = '';
+    
+    if (application.applicants && application.applicants.length > 0) {
+      const firstApplicant = application.applicants[0];
+      if (firstApplicant.bankDetails) {
+        // Split the bank details string to extract individual components
+        const bankDetailsParts = firstApplicant.bankDetails.split('|');
+        if (bankDetailsParts.length === 3) {
+          bankName = bankDetailsParts[0];
+          accountNumber = bankDetailsParts[1];
+          ifscCode = bankDetailsParts[2];
+        }
+      }
+    }
+    
     const jobCardData = {
       aadhaar_number: application.aadhaar_number,
       phone_number: application.phone_number,
@@ -44,9 +89,9 @@ export class AdminJobCardApplicationService {
       block: application.block,
       pincode: '', // Placeholder
       full_address: application.full_address,
-      bank_name: '', // Placeholder
-      account_number: '', // Placeholder
-      ifsc_code: '', // Placeholder
+      bank_name: bankName,
+      account_number: accountNumber,
+      ifsc_code: ifscCode,
       image_url: application.image_url
     };
 
@@ -79,5 +124,9 @@ export class AdminJobCardApplicationService {
     return {
       message: 'Application rejected successfully'
     };
+  }
+
+  private generateEmail(aadhaar: string): string {
+    return `${aadhaar}@jobcardapp.com`;
   }
 }

@@ -24,7 +24,7 @@ const testJobCardData = {
         name: 'John Doe',
         gender: 'Male',
         age: 30,
-        bankDetails: 'Bank of India, Account: 1234567890, IFSC: BOII0001234'
+        bankDetails: 'Bank of India|1234567890|BOII0001234' // Updated format: bankName|accountNumber|ifscCode
       }
     ]
   }

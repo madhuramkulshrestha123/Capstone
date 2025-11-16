@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import RecaptchaProvider from './components/RecaptchaProvider';
 
 export const metadata: Metadata = {
   title: 'Job Portal',
@@ -13,7 +14,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <RecaptchaProvider>
+          {children}
+        </RecaptchaProvider>
+      </body>
     </html>
   );
 }

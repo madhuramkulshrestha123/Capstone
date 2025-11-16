@@ -290,6 +290,20 @@ export const jobCardRegistrationSchema = Joi.object({
       .messages({
         'any.required': 'District is required',
       }),
+    state: Joi.string()
+      .required()
+      .messages({
+        'any.required': 'State is required',
+      }),
+    pincode: Joi.string()
+      .length(6)
+      .pattern(/^\d+$/)
+      .required()
+      .messages({
+        'string.length': 'Pincode must be exactly 6 digits',
+        'string.pattern.base': 'Pincode must contain only digits',
+        'any.required': 'Pincode is required',
+      }),
     isBPL: Joi.boolean()
       .required()
       .messages({
@@ -559,10 +573,9 @@ export const updateProjectSchema = Joi.object({
 export const createWorkDemandRequestSchema = Joi.object({
   project_id: Joi.string()
     .uuid()
-    .required()
+    .optional()  // Make project_id optional
     .messages({
       'string.uuid': 'Project ID must be a valid UUID',
-      'any.required': 'Project ID is required',
     }),
   status: Joi.string()
     .valid('pending', 'approved', 'rejected')
@@ -912,5 +925,37 @@ export const sendLoginOtpSchema = Joi.object({
     .required()
     .messages({
       'any.required': 'Password is required',
+    }),
+});
+
+// Worker verification schema
+export const verifyWorkerSchema = Joi.object({
+  aadhaarNumber: Joi.string()
+    .length(12)
+    .pattern(/^\d+$/)
+    .required()
+    .messages({
+      'string.length': 'Aadhaar number must be exactly 12 digits',
+      'string.pattern.base': 'Aadhaar number must contain only digits',
+      'any.required': 'Aadhaar number is required',
+    }),
+  jobCardId: Joi.string()
+    .required()
+    .messages({
+      'any.required': 'Job card ID is required',
+    }),
+});
+
+// Demand work schema
+export const demandWorkSchema = Joi.object({
+  jobCardId: Joi.string()
+    .required()
+    .messages({
+      'any.required': 'Job card ID is required',
+    }),
+  captchaToken: Joi.string()
+    .required()
+    .messages({
+      'any.required': 'Captcha token is required',
     }),
 });

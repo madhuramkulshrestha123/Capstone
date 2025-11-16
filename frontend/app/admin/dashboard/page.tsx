@@ -84,15 +84,16 @@ export default function AdminDashboard() {
 
   // Navigation items for admin
   const navItems = [
-    { id: 'dashboard', label: 'dashboard', icon: '📊' },
-    { id: 'projects', label: 'projects', icon: '🏗️' },
-    { id: 'job-cards', label: 'jobCards', icon: '📝' },
-    { id: 'workers', label: 'workers', icon: '👷' },
-    { id: 'payments', label: 'payments', icon: '💰' },
-    { id: 'attendance', label: 'attendance', icon: '📋' },
-    { id: 'reports', label: 'reports', icon: '📈' },
-    { id: 'employees', label: 'manageEmployees', icon: '👥' },
-    { id: 'settings', label: 'settings', icon: '⚙️' }
+    { id: 'dashboard', label: 'dashboard', icon: '📊', href: '/admin/dashboard' },
+    { id: 'projects', label: 'projects', icon: '🏗️', href: '/admin/projects' },
+    { id: 'job-cards', label: 'jobCards', icon: '📝', href: '/admin/job-card-applications' },
+    { id: 'workers', label: 'workers', icon: '👷', href: '/admin/workers' },
+    { id: 'work-demand', label: 'workDemand', icon: '📋', href: '/admin/work-demand' },
+    { id: 'payments', label: 'payments', icon: '💰', href: '#' },
+    { id: 'attendance', label: 'attendance', icon: '📋', href: '#' },
+    { id: 'reports', label: 'reports', icon: '📈', href: '#' },
+    { id: 'employees', label: 'manageEmployees', icon: '👥', href: '#' },
+    { id: 'settings', label: 'settings', icon: '⚙️', href: '#' }
   ];
 
   // Handle logout
@@ -217,7 +218,7 @@ export default function AdminDashboard() {
                 {navItems.map((item) => (
                   <li key={item.id}>
                     <a 
-                      href="#" 
+                      href={item.href || '#'} 
                       className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-blue-50 transition-colors duration-200 text-gray-700 hover:text-blue-700"
                     >
                       <span className="text-xl">{item.icon}</span>
@@ -422,7 +423,7 @@ export default function AdminDashboard() {
               </a>
               
               <a 
-                href="#" 
+                href="/admin/projects" 
                 className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center"
               >
                 <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-4">

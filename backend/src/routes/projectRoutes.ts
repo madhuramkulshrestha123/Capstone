@@ -36,4 +36,13 @@ router.get('/my/projects', validateQuery(paginationSchema), projectController.ge
 // Get projects by status (All authenticated users)
 router.get('/status/:status', validateQuery(paginationSchema), projectController.getProjectsByStatus);
 
+// Assign workers to project (Admin only)
+router.post('/:id/assign-workers', requireAdmin, validateParams(idParamSchema), projectController.assignWorkersToProject);
+
+// Get assigned workers by project ID (Admin only)
+router.get('/:id/assigned-workers', requireAdmin, validateParams(idParamSchema), projectController.getAssignedWorkersByProjectId);
+
+// Get available workers (Admin only)
+router.get('/workers/available', requireAdmin, projectController.getAvailableWorkers);
+
 export default router;

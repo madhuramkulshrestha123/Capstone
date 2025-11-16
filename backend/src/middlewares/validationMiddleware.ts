@@ -3,7 +3,27 @@ import Joi from 'joi';
 
 export const validateRequest = (schema: Joi.ObjectSchema) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const { error } = schema.validate(req.body, { 
+    // Handle multipart form data where JSON is in applicationData field
+    let validationData = req.body;
+    if (req.body.applicationData) {
+      try {
+        validationData = JSON.parse(req.body.applicationData);
+        console.log('Parsed applicationData from multipart form:', validationData);
+      } catch (parseError) {
+        console.error('Failed to parse applicationData:', parseError);
+        res.status(400).json({
+          success: false,
+          error: {
+            message: 'Invalid JSON in applicationData field',
+          },
+        });
+        return;
+      }
+    } else {
+      console.log('Received direct form data:', req.body);
+    }
+    
+    const { error } = schema.validate(validationData, { 
       abortEarly: false,
       stripUnknown: true 
     });
@@ -13,6 +33,8 @@ export const validateRequest = (schema: Joi.ObjectSchema) => {
         field: detail.path.join('.'),
         message: detail.message,
       }));
+      
+      console.error('Validation errors:', validationErrors);
 
       res.status(400).json({
         success: false,

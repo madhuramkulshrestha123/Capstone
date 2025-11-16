@@ -9,7 +9,7 @@ export const setAuthToken = (token: string | null) => {
 };
 
 // Generic fetch function with error handling
-const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
+export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
   
   const defaultOptions: RequestInit = {
@@ -27,7 +27,8 @@ const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
@@ -164,6 +165,167 @@ export const adminApi = {
       }));
     } catch (error) {
       console.error('Error fetching pending job card applications:', error);
+      throw error;
+    }
+  },
+  
+  // Fetch all projects
+  getProjects: async () => {
+    try {
+      const response = await apiFetch('/projects');
+      return response;
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      throw error;
+    }
+  },
+  
+  // Fetch project by ID
+  getProjectById: async (id: string) => {
+    try {
+      const response = await apiFetch(`/projects/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching project:', error);
+      throw error;
+    }
+  },
+  
+  // Create a new project
+  createProject: async (projectData: any) => {
+    try {
+      const response = await apiFetch('/projects', {
+        method: 'POST',
+        body: JSON.stringify(projectData),
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating project:', error);
+      throw error;
+    }
+  },
+  
+  // Get available workers for a project
+  getAvailableWorkers: async () => {
+    try {
+      const response = await apiFetch('/projects/workers/available');
+      return response.data || [];
+    } catch (error) {
+      console.error('Error fetching available workers:', error);
+      throw error;
+    }
+  },
+  
+  // Get assigned workers for a project
+  getAssignedWorkersByProjectId: async (projectId: string) => {
+    try {
+      const response = await apiFetch(`/projects/${projectId}/assigned-workers`);
+      return response.data || [];
+    } catch (error) {
+      console.error('Error fetching assigned workers:', error);
+      throw error;
+    }
+  },
+  
+  // Assign workers to a project
+  assignWorkersToProject: async (projectId: string, workerIds: string[]) => {
+    try {
+      const response = await apiFetch(`/projects/${projectId}/assign-workers`, {
+        method: 'POST',
+        body: JSON.stringify({ workerIds }),
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error assigning workers to project:', error);
+      throw error;
+    }
+  },
+  
+  // Get workers with details
+  getWorkersWithDetails: async () => {
+    try {
+      const response = await apiFetch('/users/workers/details');
+      return response;
+    } catch (error) {
+      console.error('Error fetching workers with details:', error);
+      throw error;
+    }
+  },
+  
+  // Verify worker by Aadhaar number and Job Card ID
+  verifyWorker: async (aadhaarNumber: string, jobCardId: string) => {
+    try {
+      const response = await apiFetch('/users/verify-worker', {
+        method: 'POST',
+        body: JSON.stringify({
+          aadhaarNumber,
+          jobCardId
+        }),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error verifying worker:', error);
+      throw error;
+    }
+  },
+  
+  // Demand work for a worker
+  demandWork: async (jobCardId: string, captchaToken: string) => {
+    try {
+      const response = await apiFetch('/users/demand-work', {
+        method: 'POST',
+        body: JSON.stringify({
+          jobCardId,
+          captchaToken
+        }),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error demanding work:', error);
+      throw error;
+    }
+  },
+  
+  // Get work demand requests
+  getWorkDemandRequests: async (status?: string) => {
+    try {
+      let url = '/work-requests';
+      if (status && status !== 'all') {
+        url += `?status=${status}`;
+      }
+      const response = await apiFetch(url);
+      return response;
+    } catch (error) {
+      console.error('Error fetching work demand requests:', error);
+      throw error;
+    }
+  },
+  
+  // Approve work demand request
+  approveWorkDemandRequest: async (requestId: string, projectId?: string) => {
+    try {
+      const response = await apiFetch(`/work-requests/${requestId}/approve`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          projectId
+        }),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error approving work demand request:', error);
+      throw error;
+    }
+  },
+  
+  // Reject work demand request
+  rejectWorkDemandRequest: async (requestId: string) => {
+    try {
+      const response = await apiFetch(`/work-requests/${requestId}/reject`, {
+        method: 'PATCH',
+      });
+      return response;
+    } catch (error) {
+      console.error('Error rejecting work demand request:', error);
       throw error;
     }
   }

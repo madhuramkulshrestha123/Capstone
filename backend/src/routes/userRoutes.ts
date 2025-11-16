@@ -13,7 +13,9 @@ import {
   sendOtpSchema,
   sendLoginOtpSchema,
   verifyOtpSchema,
-  completeRegistrationSchema
+  completeRegistrationSchema,
+  verifyWorkerSchema,
+  demandWorkSchema
 } from '../utils/validationSchemas';
 
 const router = Router();
@@ -28,6 +30,12 @@ router.post('/register/complete', upload.single('image'), validateRequest(comple
 // New OTP-based login flow
 router.post('/login/send-otp', validateRequest(sendLoginOtpSchema), userController.sendLoginOtp);
 router.post('/login/verify-otp', validateRequest(verifyOtpSchema), userController.verifyLoginOtp);
+
+// Worker verification route (public)
+router.post('/verify-worker', validateRequest(verifyWorkerSchema), userController.verifyWorker);
+
+// Demand work route (public)
+router.post('/demand-work', validateRequest(demandWorkSchema), userController.demandWork);
 
 // Legacy routes (can be removed later)
 router.post('/register', upload.single('image'), validateRequest(createUserSchema), userController.createUser);
@@ -44,6 +52,7 @@ router.put('/profile', upload.single('image'), userController.updateProfile);
 
 // User management routes (Admin only for list and delete operations)
 router.get('/', requireAdmin, validateQuery(paginationSchema), userController.getAllUsers);
+router.get('/workers/details', requireAdmin, userController.getWorkersWithDetails);
 router.get('/:id', requireAdmin, validateParams(idParamSchema), userController.getUserById);
 router.put('/:id', upload.single('image'), requireAdmin, validateParams(idParamSchema), validateRequest(updateUserSchema), userController.updateUser);
 router.delete('/:id', requireAdmin, validateParams(idParamSchema), userController.deleteUser);

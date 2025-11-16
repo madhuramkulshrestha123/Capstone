@@ -116,6 +116,8 @@ export interface JobCardDetails {
   panchayat: string;
   block: string;
   district: string;
+  state: string;
+  pincode: string;
   isBPL: boolean;
   epicNo?: string;
   applicants: JobCardApplicant[];
@@ -142,12 +144,14 @@ export interface Project {
   description?: string;
   location?: string;
   worker_need: number;
+  wage_per_worker?: number;
   start_date: Date;
   end_date: Date;
   status: 'pending' | 'active' | 'completed';
   created_by: number;
   created_at: Date;
   updated_at: Date;
+  assigned_workers?: number; // Optional property for the number of assigned workers
 }
 
 export interface CreateProjectRequest {
@@ -155,6 +159,7 @@ export interface CreateProjectRequest {
   description?: string;
   location?: string;
   worker_need: number;
+  wage_per_worker?: number;
   start_date: string; // ISO date string
   end_date: string; // ISO date string
   status?: 'pending' | 'active' | 'completed';
@@ -165,6 +170,7 @@ export interface UpdateProjectRequest {
   description?: string;
   location?: string;
   worker_need?: number;
+  wage_per_worker?: number;
   start_date?: string; // ISO date string
   end_date?: string; // ISO date string
   status?: 'pending' | 'active' | 'completed';
@@ -173,23 +179,23 @@ export interface UpdateProjectRequest {
 // Work Demand Request Types
 export interface WorkDemandRequest {
   id: string;
-  worker_id: number;
-  project_id: string;
+  worker_id: string; // Changed from number to string to match UUID
+  project_id: string | null;  // Allow null values
   request_time: Date;
   status: 'pending' | 'approved' | 'rejected';
   allocated_at?: Date;
 }
 
 export interface CreateWorkDemandRequest {
-  worker_id: number;
-  project_id: string;
+  worker_id: string; // Changed from number to string to match UUID
+  project_id?: string | null;  // Make project_id optional and allow null
   status?: 'pending' | 'approved' | 'rejected';
   allocated_at?: string; // ISO date string
 }
 
 export interface UpdateWorkDemandRequest {
-  worker_id?: number;
-  project_id?: string;
+  worker_id?: string; // Changed from number to string to match UUID
+  project_id?: string | null;  // Make project_id optional and allow null
   status?: 'pending' | 'approved' | 'rejected';
   allocated_at?: string; // ISO date string
 }
@@ -197,33 +203,33 @@ export interface UpdateWorkDemandRequest {
 // Attendance Types
 export interface Attendance {
   id: string;
-  worker_id: number;
+  worker_id: string; // Changed from number to string to match UUID
   project_id: string;
   date: Date;
   status: 'PRESENT' | 'ABSENT' | 'LEAVE';
-  marked_by: number;
+  marked_by: string; // Changed from number to string to match UUID
   created_at: Date;
 }
 
 export interface CreateAttendanceRequest {
-  worker_id: number;
+  worker_id: string; // Changed from number to string to match UUID
   project_id: string;
   date: string; // ISO date string
   status: 'PRESENT' | 'ABSENT' | 'LEAVE';
 }
 
 export interface UpdateAttendanceRequest {
-  status: 'PRESENT' | 'ABSENT' | 'LEAVE';
+  status?: 'PRESENT' | 'ABSENT' | 'LEAVE';
 }
 
 // Payment Types
 export interface Payment {
   id: string;
-  worker_id: number;
+  worker_id: string; // Changed from number to string to match UUID
   project_id: string;
   amount: number;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID';
-  approved_by?: number;
+  approved_by?: string; // Changed from number to string to match UUID
   approved_at?: Date;
   paid_at?: Date;
   created_at: Date;
@@ -231,14 +237,14 @@ export interface Payment {
 }
 
 export interface CreatePaymentRequest {
-  worker_id: number;
+  worker_id: string; // Changed from number to string to match UUID
   project_id: string;
   amount: number;
 }
 
 export interface UpdatePaymentRequest {
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID';
-  approved_by?: number;
+  approved_by?: string; // Changed from number to string to match UUID
 }
 
 // Product Types

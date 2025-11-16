@@ -51,13 +51,14 @@ export class ProjectModel {
   async create(projectData: CreateProjectRequest, userId: string): Promise<Project> {
     const result = await this.db.query(
       `INSERT INTO projects (
-        name, description, location, worker_need, start_date, end_date, status, created_by, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()) RETURNING *`,
+        name, description, location, worker_need, wage_per_worker, start_date, end_date, status, created_by, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()) RETURNING *`,
       [
         projectData.name,
         projectData.description || null,
         projectData.location || null,
         projectData.worker_need,
+        projectData.wage_per_worker || 374, // Default wage per worker
         new Date(projectData.start_date),
         new Date(projectData.end_date),
         projectData.status || 'pending',
@@ -69,6 +70,7 @@ export class ProjectModel {
     return {
       ...project,
       worker_need: project.worker_need,
+      wage_per_worker: project.wage_per_worker,
       start_date: project.start_date,
       end_date: project.end_date,
       created_by: project.created_by,
@@ -104,6 +106,12 @@ export class ProjectModel {
     if (projectData.worker_need !== undefined) {
       updateFields.push(`worker_need = $${paramCount}`);
       values.push(projectData.worker_need);
+      paramCount++;
+    }
+    
+    if (projectData.wage_per_worker !== undefined) {
+      updateFields.push(`wage_per_worker = $${paramCount}`);
+      values.push(projectData.wage_per_worker);
       paramCount++;
     }
     
@@ -147,6 +155,7 @@ export class ProjectModel {
     return {
       ...project,
       worker_need: project.worker_need,
+      wage_per_worker: project.wage_per_worker,
       start_date: project.start_date,
       end_date: project.end_date,
       created_by: project.created_by,

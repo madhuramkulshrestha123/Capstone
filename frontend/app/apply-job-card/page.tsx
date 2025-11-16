@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from '../lib/useTranslation';
 import { Language } from '../lib/translations';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { useRouter } from 'next/navigation';
 
 // Define types for our location data
 type VillageData = {
@@ -48,220 +50,228 @@ const locationData: StateData = {
 };
 
 // Categories for the job card application
-const categories = ['SC', 'ST', 'OBC', 'General'];
+const categories = [
+  'General',
+  'OBC',
+  'SC',
+  'ST'
+];
 
-// Define types for our form data
-type BankDetails = {
-  bankName: string;
-  accountNumber: string;
-  ifscCode: string;
-};
-
-type Applicant = {
-  name: string;
-  gender: string;
-  dateOfBirth: string;
-  age: number;
-  bankDetails: BankDetails;
-};
-
-type JobCardDetails = {
-  familyId: string;
-  headOfHouseholdName: string;
-  fatherHusbandName: string;
-  category: string;
-  dateOfRegistration: string;
-  state: string;
-  district: string;
-  village: string;
-  panchayat: string;
-  block: string;
-  address: string;
-  isBPL: boolean;
-  epicNo: string;
-  applicants: Applicant[];
-};
-
-type FormData = {
-  aadhaarNumber: string;
-  phoneNumber: string;
-  password: string;
-  dateOfBirth: string;
-  age: number;
-  jobCardDetails: JobCardDetails;
-};
-
-export default function ApplyJobCardPage() {
+export default function JobCardApplication() {
+  const router = useRouter();
   const [language, setLanguage] = useState<Language>('en');
   const { t } = useTranslation(language);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   
+  // Add reCAPTCHA v3 hook
+  const { executeRecaptcha } = useGoogleReCaptcha();
+
+  // Execute reCAPTCHA
+  const handleReCaptchaVerify = async (action: string) => {
+    console.log('Executing reCAPTCHA for action:', action);
+    console.log('executeRecaptcha available:', !!executeRecaptcha);
+    
+    if (!executeRecaptcha) {
+      console.log('Execute recaptcha not yet available - this is common during initial load');
+      // Don't return null immediately, wait a bit and try again
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!executeRecaptcha) {
+        console.log('Execute recaptcha still not available after waiting');
+        return null;
+      }
+    }
+    
+    try {
+      const token = await executeRecaptcha(action);
+      console.log('Recaptcha token received:', token);
+      setCaptchaToken(token);
+      return token;
+    } catch (error) {
+      console.error('Error executing reCAPTCHA:', error);
+      return null;
+    }
+  };
+
   // Form state
-  const [formState, setFormState] = useState<FormData>({
+  const [formState, setFormState] = useState({
     aadhaarNumber: '',
     phoneNumber: '',
     password: '',
-    dateOfBirth: '',
-    age: 0,
+    confirmPassword: '',
     jobCardDetails: {
       familyId: '',
       headOfHouseholdName: '',
       fatherHusbandName: '',
       category: '',
-      dateOfRegistration: new Date().toISOString().split('T')[0],
+      dateOfRegistration: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+      address: '', // Add missing address field
       state: '',
       district: '',
       village: '',
+      pincode: '',
       panchayat: '',
-      block: '',
-      address: '',
-      isBPL: false,
-      epicNo: '',
+      block: '', // Add missing block field
+      isBPL: false, // Add missing isBPL field
+      epicNo: '', // Add missing epicNo field
       applicants: [
         {
           name: '',
-          gender: 'Male',
+          fatherHusbandName: '',
+          relationship: 'Father',
           dateOfBirth: '',
-          age: 0,
-          bankDetails: {
-            bankName: '',
-            accountNumber: '',
-            ifscCode: ''
-          }
+          age: '',
+          gender: 'Male',
+          aadhaarNumber: '',
+          bankName: '', // Changed from bankDetails to specific bank fields
+          accountNumber: '', // Added account number field
+          ifscCode: '' // Added IFSC code field
         }
       ]
     }
   });
 
+  // UI state
+  const [currentStep, setCurrentStep] = useState(1);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Handle language change
+  const handleLanguageChange = (newLanguage: Language) => {
+    setLanguage(newLanguage);
+  };
+
   // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
+    const { name, value } = e.target;
     
-    if (name.startsWith('jobCardDetails.')) {
-      const key = name.split('.')[1] as keyof JobCardDetails;
-      setFormState({
-        ...formState,
-        jobCardDetails: {
-          ...formState.jobCardDetails,
-          [key]: type === 'checkbox' ? checked : value
+    // Handle nested state updates
+    if (name.includes('.')) {
+      const [parent, child] = name.split('.');
+      setFormState(prev => ({
+        ...prev,
+        [parent]: {
+          ...(prev as any)[parent],
+          [child]: value
         }
+      }));
+    } else {
+      setFormState(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
       });
-    } else if (name.startsWith('applicants.')) {
-      const parts = name.split('.');
-      const applicantIndex = parseInt(parts[1]);
-      
-      if (parts.length === 3) {
-        // Handle direct applicant fields (name, gender, dateOfBirth)
-        const field = parts[2];
-        if (field === 'gender' || field === 'dateOfBirth' || field === 'name') {
-          const updatedApplicants = [...formState.jobCardDetails.applicants];
-          updatedApplicants[applicantIndex] = {
-            ...updatedApplicants[applicantIndex],
-            [field]: type === 'checkbox' ? checked : value
-          };
-          
-          // Calculate age when date of birth changes
-          if (field === 'dateOfBirth') {
-            const dob = new Date(value);
-            const today = new Date();
-            const age = Math.floor((today.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-            updatedApplicants[applicantIndex].age = age;
-          }
-          
-          setFormState({
-            ...formState,
-            jobCardDetails: {
-              ...formState.jobCardDetails,
-              applicants: updatedApplicants
-            }
-          });
+    }
+  };
+
+  // Handle job card details changes
+  const handleJobCardDetailsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    // Handle nested state updates for jobCardDetails
+    if (name.startsWith('jobCardDetails.')) {
+      const fieldName = name.split('.')[1];
+      setFormState(prev => ({
+        ...prev,
+        jobCardDetails: {
+          ...prev.jobCardDetails,
+          [fieldName]: value
         }
-      } else if (parts.length === 4 && parts[2] === 'bankDetails') {
-        // Handle bankDetails fields (bankName, accountNumber, ifscCode)
-        const bankField = parts[3] as keyof BankDetails;
-        const updatedApplicants = [...formState.jobCardDetails.applicants];
-        updatedApplicants[applicantIndex] = {
-          ...updatedApplicants[applicantIndex],
-          bankDetails: {
-            ...updatedApplicants[applicantIndex].bankDetails,
-            [bankField]: value
-          }
-        };
-        
-        setFormState({
-          ...formState,
-          jobCardDetails: {
-            ...formState.jobCardDetails,
-            applicants: updatedApplicants
-          }
+      })); // Fixed: Added missing closing parenthesis
+      
+      // Clear error when user starts typing
+      if (errors[fieldName]) {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldName];
+          return newErrors;
         });
       }
     } else {
-      setFormState({
-        ...formState,
-        [name]: type === 'checkbox' ? checked : value
-      });
-    }
-  };
-
-  // Handle textarea change specifically
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    if (name === 'jobCardDetails.address') {
-      setFormState({
-        ...formState,
-        jobCardDetails: {
-          ...formState.jobCardDetails,
-          address: value
-        }
-      });
-    }
-  };
-
-  // Calculate age when date of birth changes for head of household
-  const handleDOBChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setFormState({
-      ...formState,
-      dateOfBirth: value
-    });
-    
-    if (value) {
-      const dob = new Date(value);
-      const today = new Date();
-      const age = Math.floor((today.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
       setFormState(prev => ({
         ...prev,
-        age: age
-      }));
+        jobCardDetails: {
+          ...prev.jobCardDetails,
+          [name]: value
+        }
+      })); // Fixed: Added missing closing parenthesis
+      
+      // Clear error when user starts typing
+      if (errors[name]) {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[name];
+          return newErrors;
+        });
+      }
     }
   };
 
-  // Add a new applicant
+  // Handle applicant changes
+  const handleApplicantChange = (index: number, field: string, value: string) => {
+    setFormState(prev => {
+      const updatedApplicants = [...prev.jobCardDetails.applicants];
+      updatedApplicants[index] = {
+        ...updatedApplicants[index],
+        [field]: value
+      };
+      
+      return {
+        ...prev,
+        jobCardDetails: {
+          ...prev.jobCardDetails,
+          applicants: updatedApplicants
+        }
+      };
+    });
+    
+    // Clear error when user starts typing
+    const errorKey = `applicant-${index}-${field}`;
+    if (errors[errorKey]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[errorKey];
+        return newErrors;
+      });
+    }
+  };
+
+  // Add new applicant
   const addApplicant = () => {
-    setFormState({
-      ...formState,
+    setFormState(prev => ({
+      ...prev,
       jobCardDetails: {
-        ...formState.jobCardDetails,
+        ...prev.jobCardDetails,
         applicants: [
-          ...formState.jobCardDetails.applicants,
+          ...prev.jobCardDetails.applicants,
           {
             name: '',
-            gender: 'Male',
+            fatherHusbandName: '',
+            relationship: 'Father',
             dateOfBirth: '',
-            age: 0,
-            bankDetails: {
-              bankName: '',
-              accountNumber: '',
-              ifscCode: ''
-            }
+            age: '',
+            gender: 'Male',
+            aadhaarNumber: '',
+            bankName: '', // Changed from bankDetails to specific bank fields
+            accountNumber: '', // Added account number field
+            ifscCode: '' // Added IFSC code field
           }
         ]
       }
-    });
+    }));
   };
 
-  // Remove an applicant
+  // Remove applicant
   const removeApplicant = (index: number) => {
     if (formState.jobCardDetails.applicants.length > 1) {
       const updatedApplicants = [...formState.jobCardDetails.applicants];
@@ -276,109 +286,341 @@ export default function ApplyJobCardPage() {
     }
   };
 
+  // Handle image upload
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file type
+      if (!file.type.match('image.*')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size should be less than 5MB');
+        return;
+      }
+      
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Validate form
+  const validateForm = () => {
+    console.log('Starting form validation');
+    const newErrors: {[key: string]: string} = {};
+    
+    // Validate personal details
+    if (!formState.aadhaarNumber) {
+      newErrors.aadhaarNumber = 'Aadhaar number is required';
+    } else if (!/^\d{12}$/.test(formState.aadhaarNumber)) {
+      newErrors.aadhaarNumber = 'Aadhaar number must be 12 digits';
+    }
+    
+    if (!formState.phoneNumber) {
+      newErrors.phoneNumber = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(formState.phoneNumber)) {
+      newErrors.phoneNumber = 'Phone number must be 10 digits';
+    }
+    
+    if (!formState.password) {
+      newErrors.password = 'Password is required';
+    } else if (formState.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/.test(formState.password)) {
+      newErrors.password = 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character';
+    }
+    
+    if (formState.password !== formState.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    // Validate job card details
+    if (!formState.jobCardDetails.familyId) {
+      newErrors.familyId = 'Family ID is required';
+    }
+    
+    if (!formState.jobCardDetails.headOfHouseholdName) {
+      newErrors.headOfHouseholdName = 'Head of household name is required';
+    }
+    
+    if (!formState.jobCardDetails.fatherHusbandName) {
+      newErrors.fatherHusbandName = 'Father/Husband name is required';
+    }
+    
+    if (!formState.jobCardDetails.category) {
+      newErrors.category = 'Category is required';
+    }
+    
+    if (!formState.jobCardDetails.state) {
+      newErrors.state = 'State is required';
+    }
+    
+    if (!formState.jobCardDetails.district) {
+      newErrors.district = 'District is required';
+    }
+    
+    if (!formState.jobCardDetails.village) {
+      newErrors.village = 'Village is required';
+    }
+    
+    // Validate address
+    if (!formState.jobCardDetails.address) {
+      newErrors.address = 'Address is required';
+    }
+    
+    // Validate block
+    if (!formState.jobCardDetails.block) {
+      newErrors.block = 'Block is required';
+    }
+    
+    // Pincode is auto-populated, so only validate format if present
+    if (formState.jobCardDetails.pincode && !/^\d{6}$/.test(formState.jobCardDetails.pincode)) {
+      newErrors.pincode = 'Pincode must be 6 digits';
+    }
+    
+    if (!formState.jobCardDetails.panchayat) {
+      newErrors.panchayat = 'Panchayat is required';
+    }
+    
+    // Validate applicants
+    formState.jobCardDetails.applicants.forEach((applicant, index) => {
+      if (!applicant.name) {
+        newErrors[`applicant-${index}-name`] = 'Name is required';
+      }
+      
+      if (!applicant.fatherHusbandName) {
+        newErrors[`applicant-${index}-fatherHusbandName`] = 'Father/Husband name is required';
+      }
+      
+      // Validate DOB and calculate age
+      if (!applicant.dateOfBirth) {
+        newErrors[`applicant-${index}-dateOfBirth`] = 'Date of birth is required';
+      } else {
+        // Calculate age from DOB
+        const dob = new Date(applicant.dateOfBirth);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        
+        // Adjust age if birthday hasn't occurred this year
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+          age--;
+        }
+        
+        // Check if age is below 18
+        if (age < 18) {
+          newErrors[`applicant-${index}-dateOfBirth`] = 'Applicant must be at least 18 years old';
+        }
+      }
+      
+      if (!applicant.aadhaarNumber) {
+        newErrors[`applicant-${index}-aadhaarNumber`] = 'Aadhaar number is required';
+      } else if (!/^\d{12}$/.test(applicant.aadhaarNumber)) {
+        newErrors[`applicant-${index}-aadhaarNumber`] = 'Aadhaar number must be 12 digits';
+      }
+      
+      // Validate bank details
+      if (!applicant.bankName) {
+        newErrors[`applicant-${index}-bankName`] = 'Bank name is required';
+      }
+      
+      if (!applicant.accountNumber) {
+        newErrors[`applicant-${index}-accountNumber`] = 'Account number is required';
+      }
+      
+      if (!applicant.ifscCode) {
+        newErrors[`applicant-${index}-ifscCode`] = 'IFSC code is required';
+      } else if (!/^[A-Z]{4}[0-9]{1}[A-Z0-9]{6}$/.test(applicant.ifscCode.toUpperCase())) {
+        newErrors[`applicant-${index}-ifscCode`] = 'Invalid IFSC code format (should be 11 characters: AAAA0XXXXXX)';
+      }
+    });
+    
+    console.log('Validation errors:', newErrors);
+    setErrors(newErrors);
+    
+    // If there are errors, scroll to the first error
+    if (Object.keys(newErrors).length > 0) {
+      console.log('Form has validation errors, submission prevented');
+      // Find the first error element and scroll to it
+      const firstErrorKey = Object.keys(newErrors)[0];
+      const errorElement = document.querySelector(`[name*="${firstErrorKey}"]`);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (errorElement as HTMLElement).focus();
+      }
+    }
+    
+    return Object.keys(newErrors).length === 0;
+  };
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submission started');
+    console.log('Current form state:', formState);
+    
+    // Validate form
+    if (!validateForm()) {
+      console.log('Form validation failed');
+      return;
+    }
+    
+    console.log('Form validation passed');
+    
     try {
+      // For local development, we can bypass reCAPTCHA
+      // In production, you would want to properly implement reCAPTCHA
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      let recaptchaToken = null;
+      
+      if (!isDevelopment) {
+        // Execute reCAPTCHA for job card application
+        recaptchaToken = await handleReCaptchaVerify('apply_job_card');
+        console.log('Recaptcha token:', recaptchaToken);
+        
+        if (!recaptchaToken) {
+          alert('reCAPTCHA verification failed. Please try again.');
+          return;
+        }
+      } else {
+        // In development, use a dummy token
+        recaptchaToken = 'dummy-development-token';
+        console.log('Using dummy token for development');
+      }
+      
       // Prepare job card application data to match backend validation schema
       const applicationData = {
         aadhaarNumber: formState.aadhaarNumber,
         phoneNumber: formState.phoneNumber,
-        captchaToken: 'dummy-captcha-token', // In a real app, you would use an actual captcha token
+        captchaToken: recaptchaToken,
         password: formState.password,
         jobCardDetails: {
           familyId: formState.jobCardDetails.familyId,
           headOfHouseholdName: formState.jobCardDetails.headOfHouseholdName,
           fatherHusbandName: formState.jobCardDetails.fatherHusbandName,
           category: formState.jobCardDetails.category,
-          dateOfRegistration: formState.jobCardDetails.dateOfRegistration, // Already a string in ISO format
+          dateOfRegistration: formState.jobCardDetails.dateOfRegistration,
           address: formState.jobCardDetails.address,
+          state: formState.jobCardDetails.state,
+          district: formState.jobCardDetails.district,
           village: formState.jobCardDetails.village,
+          pincode: formState.jobCardDetails.pincode,
           panchayat: formState.jobCardDetails.panchayat,
           block: formState.jobCardDetails.block,
-          district: formState.jobCardDetails.district,
           isBPL: formState.jobCardDetails.isBPL,
-          epicNo: formState.jobCardDetails.epicNo,
-          applicants: formState.jobCardDetails.applicants.map(applicant => ({
-            name: applicant.name,
-            gender: applicant.gender,
-            age: applicant.age,
-            bankDetails: `${applicant.bankDetails.bankName}, Account: ${applicant.bankDetails.accountNumber}, IFSC: ${applicant.bankDetails.ifscCode}`
-          }))
+          epicNo: formState.jobCardDetails.epicNo || null,
+          applicants: formState.jobCardDetails.applicants.map(applicant => {
+            let age = 0;
+            if (applicant.dateOfBirth) {
+              const dob = new Date(applicant.dateOfBirth);
+              const today = new Date();
+              age = today.getFullYear() - dob.getFullYear();
+              const monthDiff = today.getMonth() - dob.getMonth();
+              
+              if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                age--;
+              }
+            }
+            
+            const bankDetails = `${applicant.bankName}|${applicant.accountNumber}|${applicant.ifscCode}`;
+            
+            return {
+              name: applicant.name,
+              fatherHusbandName: applicant.fatherHusbandName,
+              relationship: applicant.relationship,
+              dateOfBirth: applicant.dateOfBirth,
+              age: age,
+              gender: applicant.gender,
+              aadhaarNumber: applicant.aadhaarNumber,
+              bankDetails: bankDetails
+            };
+          })
         }
       };
+
+      console.log('Sending application data:', applicationData);
+
+      // Create FormData for multipart/form-data submission
+      const formData = new FormData();
+      formData.append('applicationData', JSON.stringify(applicationData));
       
-      // Send request to backend
+      // Append image file if available
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      // Submit the application
       const response = await fetch('http://localhost:3001/api/v1/job-card-applications/submit', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(applicationData),
+        // Don't set Content-Type header, let browser set it with boundary
+        body: formData,
       });
+
+      console.log('Response status:', response.status);
       
+      const result = await response.json();
+      console.log('Response data:', result);
+
       if (response.ok) {
-        const result = await response.json();
-        console.log('Job card application submitted successfully:', result);
         // Redirect to success page with tracking ID
-        window.location.href = `/jobcardregistrationsuccess?trackingId=${result.data.trackingId}`;
-      } else {
-        const error = await response.json();
-        console.error('Error submitting job card application:', error);
-        // Display more detailed error message
-        let errorMessage = `Error: ${error.error?.message || 'Failed to submit job card application'}`;
-        if (error.error?.details) {
-          errorMessage += '\n\nValidation errors:\n';
-          error.error.details.forEach((detail: any) => {
-            errorMessage += `- ${detail.field}: ${detail.message}\n`;
-          });
+        console.log('Response is OK, result:', result);
+        console.log('Result data:', result.data);
+        
+        // Check if trackingId exists in the response
+        if (result.data && result.data.trackingId) {
+          console.log('Redirecting to success page with tracking ID:', result.data.trackingId);
+          router.push(`/jobcardregistrationsuccess?trackingId=${result.data.trackingId}`);
+        } else {
+          console.error('Tracking ID not found in response:', result);
+          alert('Application submitted successfully, but tracking ID not found. Please check the console for details.');
         }
-        alert(errorMessage);
+      } else {
+        console.error('Server returned error:', result);
+        alert(result.error?.message || 'Failed to submit application');
       }
     } catch (error) {
-      console.error('Error submitting job card application:', error);
-      alert('An error occurred while submitting the job card application');
+      console.error('Error submitting application:', error);
+      alert('An error occurred while submitting the application. Please try again.');
     }
   };
 
-  // Get states from location data
-  const states = Object.keys(locationData);
-  
-  // Get districts based on selected state
+  // Update districts when state changes
   const districts = formState.jobCardDetails.state 
-    ? Object.keys(locationData[formState.jobCardDetails.state] || {})
+    ? Object.keys(locationData[formState.jobCardDetails.state] || {}) 
     : [];
-  
-  // Get villages and panchayats based on selected district
-  const districtData = formState.jobCardDetails.state && formState.jobCardDetails.district
-    ? locationData[formState.jobCardDetails.state]?.[formState.jobCardDetails.district]
+
+  // Log form state for debugging
+  useEffect(() => {
+    console.log('Form State:', formState);
+  }, [formState]);
+
+  // Update villages and panchayats when district changes
+  const villageData = formState.jobCardDetails.state && formState.jobCardDetails.district 
+    ? locationData[formState.jobCardDetails.state]?.[formState.jobCardDetails.district] 
     : null;
-  
-  const villages = districtData ? districtData.villages || [] : [];
-  const panchayats = districtData ? districtData.panchayats || [] : [];
-  const pincode = districtData ? districtData.pincode || '' : '';
 
-  // Add state for image selection
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // Handle image selection
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedImage(file);
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setImagePreview(e.target.result as string);
+  // Update pincode when village/panchayat changes
+  useEffect(() => {
+    if (villageData?.pincode) {
+      setFormState(prev => ({
+        ...prev,
+        jobCardDetails: {
+          ...prev.jobCardDetails,
+          pincode: villageData.pincode
         }
-      };
-      reader.readAsDataURL(file);
+      }));
     }
-  };
+  }, [formState.jobCardDetails.district, villageData?.pincode]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
@@ -396,7 +638,7 @@ export default function ApplyJobCardPage() {
                   {t('home')}
                 </a>
                 <button 
-                  onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+                  onClick={() => handleLanguageChange(language === 'en' ? 'hi' : 'en')}
                   className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors duration-200"
                 >
                   {language === 'en' ? t('hindi') : t('english')}
@@ -427,6 +669,7 @@ export default function ApplyJobCardPage() {
                     placeholder={t('enterAadhaar')}
                     required
                   />
+                  {errors.aadhaarNumber && <p className="mt-1 text-xs text-red-500">{errors.aadhaarNumber}</p>}
                 </div>
                 
                 <div>
@@ -442,6 +685,7 @@ export default function ApplyJobCardPage() {
                     placeholder={t('enterPhone')}
                     required
                   />
+                  {errors.phoneNumber && <p className="mt-1 text-xs text-red-500">{errors.phoneNumber}</p>}
                 </div>
                 
                 <div>
@@ -460,33 +704,23 @@ export default function ApplyJobCardPage() {
                   <p className="mt-1 text-xs text-gray-500">
                     Password must be at least 8 characters and include uppercase, lowercase, number, and special character
                   </p>
+                  {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-800 mb-1">
-                    {t('dateOfBirth')} *
+                    {t('confirmPassword')} *
                   </label>
                   <input
-                    type="date"
-                    name="dateOfBirth"
-                    value={formState.dateOfBirth}
-                    onChange={handleDOBChange}
+                    type="password"
+                    name="confirmPassword"
+                    value={formState.confirmPassword}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+                    placeholder={t('confirmPassword')}
                     required
                   />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-800 mb-1">
-                    {t('age')}
-                  </label>
-                  <input
-                    type="number"
-                    name="age"
-                    value={formState.age}
-                    readOnly
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-gray-100 text-gray-800"
-                  />
+                  {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>}
                 </div>
               </div>
             </div>
@@ -503,11 +737,12 @@ export default function ApplyJobCardPage() {
                     type="text"
                     name="jobCardDetails.familyId"
                     value={formState.jobCardDetails.familyId}
-                    onChange={handleInputChange}
+                    onChange={handleJobCardDetailsChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                     placeholder={t('enterFamilyId')}
                     required
                   />
+                  {errors.familyId && <p className="mt-1 text-xs text-red-500">{errors.familyId}</p>}
                 </div>
                 
                 <div>
@@ -518,11 +753,12 @@ export default function ApplyJobCardPage() {
                     type="text"
                     name="jobCardDetails.headOfHouseholdName"
                     value={formState.jobCardDetails.headOfHouseholdName}
-                    onChange={handleInputChange}
+                    onChange={handleJobCardDetailsChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                     placeholder={t('enterFullName')}
                     required
                   />
+                  {errors.headOfHouseholdName && <p className="mt-1 text-xs text-red-500">{errors.headOfHouseholdName}</p>}
                 </div>
                 
                 <div>
@@ -533,11 +769,12 @@ export default function ApplyJobCardPage() {
                     type="text"
                     name="jobCardDetails.fatherHusbandName"
                     value={formState.jobCardDetails.fatherHusbandName}
-                    onChange={handleInputChange}
+                    onChange={handleJobCardDetailsChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                     placeholder={t('enterFatherHusbandName')}
                     required
                   />
+                  {errors.fatherHusbandName && <p className="mt-1 text-xs text-red-500">{errors.fatherHusbandName}</p>}
                 </div>
                 
                 <div>
@@ -547,7 +784,7 @@ export default function ApplyJobCardPage() {
                   <select
                     name="jobCardDetails.category"
                     value={formState.jobCardDetails.category}
-                    onChange={handleInputChange}
+                    onChange={handleJobCardDetailsChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                     required
                   >
@@ -556,42 +793,9 @@ export default function ApplyJobCardPage() {
                       <option key={category} value={category}>{category}</option>
                     ))}
                   </select>
+                  {errors.category && <p className="mt-1 text-xs text-red-500">{errors.category}</p>}
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-800 mb-1">
-                    {t('epicNo')} *
-                  </label>
-                  <input
-                    type="text"
-                    name="jobCardDetails.epicNo"
-                    value={formState.jobCardDetails.epicNo}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
-                    placeholder={t('enterEpicNo')}
-                    required
-                  />
-                </div>
-                
-                <div className="flex items-center pt-6">
-                  <input
-                    type="checkbox"
-                    name="jobCardDetails.isBPL"
-                    checked={formState.jobCardDetails.isBPL}
-                    onChange={handleInputChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 block text-sm text-gray-800">
-                    {t('isBPL')}
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Address Information Section */}
-            <div className="border-b border-gray-200 pb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">{t('addressInformation')}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-800 mb-1">
                     {t('state')} *
@@ -599,15 +803,16 @@ export default function ApplyJobCardPage() {
                   <select
                     name="jobCardDetails.state"
                     value={formState.jobCardDetails.state}
-                    onChange={handleInputChange}
+                    onChange={handleJobCardDetailsChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                     required
                   >
                     <option value="">{t('selectState')}</option>
-                    {states.map(state => (
+                    {Object.keys(locationData).map(state => (
                       <option key={state} value={state}>{state}</option>
                     ))}
                   </select>
+                  {errors.state && <p className="mt-1 text-xs text-red-500">{errors.state}</p>}
                 </div>
                 
                 <div>
@@ -617,7 +822,7 @@ export default function ApplyJobCardPage() {
                   <select
                     name="jobCardDetails.district"
                     value={formState.jobCardDetails.district}
-                    onChange={handleInputChange}
+                    onChange={handleJobCardDetailsChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                     required
                     disabled={!formState.jobCardDetails.state}
@@ -627,6 +832,7 @@ export default function ApplyJobCardPage() {
                       <option key={district} value={district}>{district}</option>
                     ))}
                   </select>
+                  {errors.district && <p className="mt-1 text-xs text-red-500">{errors.district}</p>}
                 </div>
                 
                 <div>
@@ -636,16 +842,17 @@ export default function ApplyJobCardPage() {
                   <select
                     name="jobCardDetails.village"
                     value={formState.jobCardDetails.village}
-                    onChange={handleInputChange}
+                    onChange={handleJobCardDetailsChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                     required
                     disabled={!formState.jobCardDetails.district}
                   >
                     <option value="">{t('selectVillage')}</option>
-                    {villages.map((village: string) => (
+                    {villageData?.villages?.map((village: string) => (
                       <option key={village} value={village}>{village}</option>
                     ))}
                   </select>
+                  {errors.village && <p className="mt-1 text-xs text-red-500">{errors.village}</p>}
                 </div>
                 
                 <div>
@@ -655,31 +862,17 @@ export default function ApplyJobCardPage() {
                   <select
                     name="jobCardDetails.panchayat"
                     value={formState.jobCardDetails.panchayat}
-                    onChange={handleInputChange}
+                    onChange={handleJobCardDetailsChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                     required
                     disabled={!formState.jobCardDetails.district}
                   >
                     <option value="">{t('selectPanchayat')}</option>
-                    {panchayats.map((panchayat: string) => (
+                    {villageData?.panchayats?.map((panchayat: string) => (
                       <option key={panchayat} value={panchayat}>{panchayat}</option>
                     ))}
                   </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-800 mb-1">
-                    {t('block')} *
-                  </label>
-                  <input
-                    type="text"
-                    name="jobCardDetails.block"
-                    value={formState.jobCardDetails.block}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
-                    placeholder={t('enterBlockName')}
-                    required
-                  />
+                  {errors.panchayat && <p className="mt-1 text-xs text-red-500">{errors.panchayat}</p>}
                 </div>
                 
                 <div>
@@ -689,25 +882,88 @@ export default function ApplyJobCardPage() {
                   <input
                     type="text"
                     name="jobCardDetails.pincode"
-                    value={pincode}
+                    value={formState.jobCardDetails.pincode}
                     readOnly
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-gray-100 text-gray-800"
                   />
+                  {errors.pincode && <p className="mt-1 text-xs text-red-500">{errors.pincode}</p>}
                 </div>
                 
-                <div className="md:col-span-2">
+                {/* Add missing address field */}
+                <div>
                   <label className="block text-sm font-medium text-gray-800 mb-1">
-                    {t('fullAddress')} *
+                    {t('address')} *
                   </label>
-                  <textarea
+                  <input
+                    type="text"
                     name="jobCardDetails.address"
                     value={formState.jobCardDetails.address}
-                    onChange={handleTextareaChange}
-                    rows={3}
+                    onChange={handleJobCardDetailsChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
-                    placeholder={t('enterCompleteAddress')}
+                    placeholder="Enter complete address"
                     required
                   />
+                  {errors.address && <p className="mt-1 text-xs text-red-500">{errors.address}</p>}
+                </div>
+                
+                {/* Add missing block field */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-800 mb-1">
+                    {t('block')} *
+                  </label>
+                  <input
+                    type="text"
+                    name="jobCardDetails.block"
+                    value={formState.jobCardDetails.block}
+                    onChange={handleJobCardDetailsChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+                    placeholder="Enter block name"
+                    required
+                  />
+                  {errors.block && <p className="mt-1 text-xs text-red-500">{errors.block}</p>}
+                </div>
+                
+                {/* Add missing isBPL field */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-800 mb-1">
+                    {t('isBPL')} *
+                  </label>
+                  <select
+                    name="jobCardDetails.isBPL"
+                    value={formState.jobCardDetails.isBPL ? 'true' : 'false'}
+                    onChange={(e) => {
+                      // Create a proper event-like object
+                      const event = {
+                        target: {
+                          name: 'jobCardDetails.isBPL',
+                          value: e.target.value === 'true'
+                        }
+                      } as unknown as React.ChangeEvent<HTMLSelectElement>;
+                      handleJobCardDetailsChange(event);
+                    }}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+                    required
+                  >
+                    <option value="false">{t('no')}</option>
+                    <option value="true">{t('yes')}</option>
+                  </select>
+                  {errors.isBPL && <p className="mt-1 text-xs text-red-500">{errors.isBPL}</p>}
+                </div>
+                
+                {/* Add missing epicNo field */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-800 mb-1">
+                    {t('epicNo')}
+                  </label>
+                  <input
+                    type="text"
+                    name="jobCardDetails.epicNo"
+                    value={formState.jobCardDetails.epicNo}
+                    onChange={handleJobCardDetailsChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+                    placeholder="Enter EPIC number"
+                  />
+                  {errors.epicNo && <p className="mt-1 text-xs text-red-500">{errors.epicNo}</p>}
                 </div>
               </div>
             </div>
@@ -748,11 +1004,49 @@ export default function ApplyJobCardPage() {
                         type="text"
                         name={`applicants.${index}.name`}
                         value={applicant.name}
-                        onChange={handleInputChange}
+                        onChange={(e) => handleApplicantChange(index, 'name', e.target.value)}
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                         placeholder={t('enterFullName')}
                         required
                       />
+                      {errors[`applicant-${index}-name`] && <p className="mt-1 text-xs text-red-500">{errors[`applicant-${index}-name`]}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-800 mb-1">
+                        {t('fatherHusbandName')} *
+                      </label>
+                      <input
+                        type="text"
+                        name={`applicants.${index}.fatherHusbandName`}
+                        value={applicant.fatherHusbandName}
+                        onChange={(e) => handleApplicantChange(index, 'fatherHusbandName', e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+                        placeholder={t('enterFatherHusbandName')}
+                        required
+                      />
+                      {errors[`applicant-${index}-fatherHusbandName`] && <p className="mt-1 text-xs text-red-500">{errors[`applicant-${index}-fatherHusbandName`]}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-800 mb-1">
+                        {t('relationship')} *
+                      </label>
+                      <select
+                        name={`applicants.${index}.relationship`}
+                        value={applicant.relationship}
+                        onChange={(e) => handleApplicantChange(index, 'relationship', e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+                        required
+                      >
+                        <option value="Self">{t('self')}</option>
+                        <option value="Father">{t('father')}</option>
+                        <option value="Husband">{t('husband')}</option>
+                        <option value="Mother">{t('mother')}</option>
+                        <option value="Wife">{t('wife')}</option>
+                        <option value="Son">{t('son')}</option>
+                        <option value="Daughter">{t('daughter')}</option>
+                      </select>
                     </div>
                     
                     <div>
@@ -763,46 +1057,11 @@ export default function ApplyJobCardPage() {
                         type="date"
                         name={`applicants.${index}.dateOfBirth`}
                         value={applicant.dateOfBirth}
-                        onChange={(e) => {
-                          const { value } = e.target;
-                          const updatedApplicants = [...formState.jobCardDetails.applicants];
-                          updatedApplicants[index] = {
-                            ...updatedApplicants[index],
-                            dateOfBirth: value
-                          };
-                          
-                          // Calculate age when date of birth changes
-                          if (value) {
-                            const dob = new Date(value);
-                            const today = new Date();
-                            const age = Math.floor((today.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
-                            updatedApplicants[index].age = age;
-                          }
-                          
-                          setFormState({
-                            ...formState,
-                            jobCardDetails: {
-                              ...formState.jobCardDetails,
-                              applicants: updatedApplicants
-                            }
-                          });
-                        }}
+                        onChange={(e) => handleApplicantChange(index, 'dateOfBirth', e.target.value)}
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                         required
                       />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-800 mb-1">
-                        {t('age')}
-                      </label>
-                      <input
-                        type="number"
-                        name={`applicants.${index}.age`}
-                        value={applicant.age}
-                        readOnly
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-gray-100 text-gray-800"
-                      />
+                      {errors[`applicant-${index}-dateOfBirth`] && <p className="mt-1 text-xs text-red-500">{errors[`applicant-${index}-dateOfBirth`]}</p>}
                     </div>
                     
                     <div>
@@ -816,7 +1075,7 @@ export default function ApplyJobCardPage() {
                             name={`applicants.${index}.gender`}
                             value="Male"
                             checked={applicant.gender === 'Male'}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleApplicantChange(index, 'gender', e.target.value)}
                             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                           />
                           <span className="ml-2 text-gray-800">Male</span>
@@ -827,7 +1086,7 @@ export default function ApplyJobCardPage() {
                             name={`applicants.${index}.gender`}
                             value="Female"
                             checked={applicant.gender === 'Female'}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleApplicantChange(index, 'gender', e.target.value)}
                             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                           />
                           <span className="ml-2 text-gray-800">Female</span>
@@ -838,7 +1097,7 @@ export default function ApplyJobCardPage() {
                             name={`applicants.${index}.gender`}
                             value="Other"
                             checked={applicant.gender === 'Other'}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleApplicantChange(index, 'gender', e.target.value)}
                             className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                           />
                           <span className="ml-2 text-gray-800">Other</span>
@@ -848,83 +1107,75 @@ export default function ApplyJobCardPage() {
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-800 mb-1">
-                        {t('bankName')} *
-                      </label>
-                      <select
-                        name={`applicants.${index}.bankDetails.bankName`}
-                        value={applicant.bankDetails.bankName}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
-                        required
-                      >
-                        <option value="">{t('selectBank')}</option>
-                        <optgroup label="Public Sector Banks">
-                          <option value="Bank of Baroda">Bank of Baroda</option>
-                          <option value="Bank of India">Bank of India</option>
-                          <option value="Bank of Maharashtra">Bank of Maharashtra</option>
-                          <option value="Canara Bank">Canara Bank</option>
-                          <option value="Central Bank of India">Central Bank of India</option>
-                          <option value="Indian Bank">Indian Bank</option>
-                          <option value="Indian Overseas Bank">Indian Overseas Bank</option>
-                          <option value="Punjab and Sind Bank">Punjab and Sind Bank</option>
-                          <option value="Punjab National Bank">Punjab National Bank</option>
-                          <option value="State Bank of India (SBI)">State Bank of India (SBI)</option>
-                          <option value="UCO Bank">UCO Bank</option>
-                          <option value="Union Bank of India">Union Bank of India</option>
-                        </optgroup>
-                        <optgroup label="Private Sector Banks">
-                          <option value="Axis Bank">Axis Bank</option>
-                          <option value="Bandhan Bank">Bandhan Bank</option>
-                          <option value="CSB Bank">CSB Bank</option>
-                          <option value="City Union Bank">City Union Bank</option>
-                          <option value="DCB Bank">DCB Bank</option>
-                          <option value="Dhanlaxmi Bank">Dhanlaxmi Bank</option>
-                          <option value="Federal Bank">Federal Bank</option>
-                          <option value="HDFC Bank">HDFC Bank</option>
-                          <option value="ICICI Bank">ICICI Bank</option>
-                          <option value="IDBI Bank">IDBI Bank</option>
-                          <option value="IDFC First Bank">IDFC First Bank</option>
-                          <option value="IndusInd Bank">IndusInd Bank</option>
-                          <option value="Jammu & Kashmir Bank">Jammu & Kashmir Bank</option>
-                          <option value="Karnataka Bank">Karnataka Bank</option>
-                          <option value="Karur Vysya Bank">Karur Vysya Bank</option>
-                          <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
-                          <option value="Nainital Bank">Nainital Bank</option>
-                          <option value="RBL Bank">RBL Bank</option>
-                          <option value="South Indian Bank">South Indian Bank</option>
-                          <option value="Tamilnad Mercantile Bank">Tamilnad Mercantile Bank</option>
-                        </optgroup>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-800 mb-1">
-                        {t('accountNumber')} *
+                        {t('aadhaarNumber')} *
                       </label>
                       <input
                         type="text"
-                        name={`applicants.${index}.bankDetails.accountNumber`}
-                        value={applicant.bankDetails.accountNumber}
-                        onChange={handleInputChange}
+                        name={`applicants.${index}.aadhaarNumber`}
+                        value={applicant.aadhaarNumber}
+                        onChange={(e) => handleApplicantChange(index, 'aadhaarNumber', e.target.value)}
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
-                        placeholder={t('enterAccountNumber')}
+                        placeholder={t('enterAadhaar')}
                         required
                       />
+                      {errors[`applicant-${index}-aadhaarNumber`] && <p className="mt-1 text-xs text-red-500">{errors[`applicant-${index}-aadhaarNumber`]}</p>}
                     </div>
                     
-                    <div>
-                      <label className="block text-sm font-medium text-gray-800 mb-1">
-                        {t('ifscCode')} *
-                      </label>
-                      <input
-                        type="text"
-                        name={`applicants.${index}.bankDetails.ifscCode`}
-                        value={applicant.bankDetails.ifscCode}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
-                        placeholder={t('enterIfscCode')}
-                        required
-                      />
+                    {/* Replace the existing bankDetails field with separate bank fields */}
+                    <div className="col-span-1 md:col-span-2">
+                      <h4 className="text-md font-semibold text-gray-800 mb-3">{t('bankDetails')}</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-800 mb-1">
+                            {t('bankName')} *
+                          </label>
+                          <input
+                            type="text"
+                            name={`applicants.${index}.bankName`}
+                            value={applicant.bankName}
+                            onChange={(e) => handleApplicantChange(index, 'bankName', e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+                            placeholder={t('enterBankName')}
+                            required
+                          />
+                          {errors[`applicant-${index}-bankName`] && <p className="mt-1 text-xs text-red-500">{errors[`applicant-${index}-bankName`]}</p>}
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-800 mb-1">
+                            {t('accountNumber')} *
+                          </label>
+                          <input
+                            type="text"
+                            name={`applicants.${index}.accountNumber`}
+                            value={applicant.accountNumber}
+                            onChange={(e) => handleApplicantChange(index, 'accountNumber', e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+                            placeholder={t('enterAccountNumber')}
+                            required
+                          />
+                          {errors[`applicant-${index}-accountNumber`] && <p className="mt-1 text-xs text-red-500">{errors[`applicant-${index}-accountNumber`]}</p>}
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-800 mb-1">
+                            {t('ifscCode')} *
+                          </label>
+                          <input
+                            type="text"
+                            name={`applicants.${index}.ifscCode`}
+                            value={applicant.ifscCode}
+                            onChange={(e) => handleApplicantChange(index, 'ifscCode', e.target.value.toUpperCase())}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+                            placeholder="AAAA0XXXXXX"
+                            required
+                          />
+                          <p className="mt-1 text-xs text-gray-500">
+                            11-character code (e.g., SBIN0002499)
+                          </p>
+                          {errors[`applicant-${index}-ifscCode`] && <p className="mt-1 text-xs text-red-500">{errors[`applicant-${index}-ifscCode`]}</p>}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -942,7 +1193,7 @@ export default function ApplyJobCardPage() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleImageChange}
+                    onChange={handleImageUpload}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
                   />
                 </div>
@@ -965,7 +1216,56 @@ export default function ApplyJobCardPage() {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-end">
+            <div className="flex justify-end space-x-4">
+              {/* Test button for debugging - remove in production */}
+              <button
+                type="button"
+                onClick={async () => {
+                  console.log('Test submission clicked');
+                  // Fill form with test data for debugging
+                  setFormState({
+                    aadhaarNumber: '123456789012',
+                    phoneNumber: '9876543210',
+                    password: 'TestPass123!',
+                    confirmPassword: 'TestPass123!',
+                    jobCardDetails: {
+                      familyId: 'TEST001',
+                      headOfHouseholdName: 'Test User',
+                      fatherHusbandName: 'Test Father',
+                      category: 'General',
+                      dateOfRegistration: new Date().toISOString().split('T')[0],
+                      address: 'Test Address',
+                      state: 'Uttar Pradesh',
+                      district: 'Lucknow',
+                      village: 'Test Village',
+                      pincode: '226001',
+                      panchayat: 'Test Panchayat',
+                      block: 'Test Block',
+                      isBPL: false,
+                      epicNo: 'TEST001',
+                      applicants: [
+                        {
+                          name: 'Test Applicant',
+                          fatherHusbandName: 'Test Father',
+                          relationship: 'Father',
+                          dateOfBirth: '1990-01-01',
+                          age: '35',
+                          gender: 'Male',
+                          aadhaarNumber: '123456789012',
+                          bankName: 'Test Bank',
+                          accountNumber: '1234567890',
+                          ifscCode: 'TEST0000001'
+                        }
+                      ]
+                    }
+                  });
+                  console.log('Form state updated with test data');
+                }}
+                className="px-6 py-3 bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-medium rounded-lg shadow-md hover:from-yellow-700 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all duration-200"
+              >
+                Fill Test Data
+              </button>
+              
               <button
                 type="submit"
                 className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg shadow-md hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"

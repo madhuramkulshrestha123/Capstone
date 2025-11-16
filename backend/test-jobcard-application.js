@@ -24,7 +24,7 @@ const testApplicationData = {
         name: 'Robert Johnson',
         gender: 'Male',
         age: 35,
-        bankDetails: 'Bank of Baroda, Account: 1122334455, IFSC: BARB0001122'
+        bankDetails: 'State Bank of India|12345678901234|SBIN0002499' // Updated format: bankName|accountNumber|ifscCode
       }
     ]
   }

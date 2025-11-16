@@ -1,47 +1,88 @@
 import { Request, Response, NextFunction } from 'express';
 import { JobCardApplicationService } from '../services/JobCardApplicationService';
+import { CloudinaryService } from '../services/CloudinaryService';
 import { AppError } from '../middlewares/errorMiddleware';
 import { ApiResponse } from '../types';
 
 export class JobCardApplicationController {
   private jobCardApplicationService: JobCardApplicationService;
+  private cloudinaryService: CloudinaryService;
 
   constructor() {
     this.jobCardApplicationService = new JobCardApplicationService();
+    this.cloudinaryService = new CloudinaryService();
   }
 
   public submitApplication = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Extract application data from request body
-      const applicationData = {
-        aadhaar_number: req.body.aadhaarNumber,
-        phone_number: req.body.phoneNumber,
-        family_id: req.body.jobCardDetails.familyId,
-        head_of_household_name: req.body.jobCardDetails.headOfHouseholdName,
-        father_or_husband_name: req.body.jobCardDetails.fatherHusbandName,
-        category: req.body.jobCardDetails.category,
-        date_of_registration: new Date(req.body.jobCardDetails.dateOfRegistration),
-        full_address: req.body.jobCardDetails.address,
-        village: req.body.jobCardDetails.village || null,
-        panchayat: req.body.jobCardDetails.panchayat,
-        block: req.body.jobCardDetails.block,
-        district: req.body.jobCardDetails.district,
-        is_bpl: req.body.jobCardDetails.isBPL,
-        epic_number: req.body.jobCardDetails.epicNo || null,
-        applicants: req.body.jobCardDetails.applicants,
-        image_url: null, // Will be handled separately if image is uploaded
-        status: 'pending' as const,
-        job_card_id: null
-      };
-
+      console.log('Received job card application request');
+      console.log('Request body:', req.body);
+      console.log('Request file:', req.file);
+      
+      let imageUrl: string | null = null;
+      
       // Handle image if uploaded
       if (req.file) {
-        // In a real implementation, you would upload the image to cloud storage
-        // and set the image_url field
-        (applicationData as any).image_url = `placeholder-image-url-for-${req.body.aadhaarNumber}`;
+        try {
+          // Extract aadhaar number from the request body for filename
+          let aadhaarNumber = 'unknown';
+          if (req.body.applicationData) {
+            const applicationData = JSON.parse(req.body.applicationData);
+            aadhaarNumber = applicationData.aadhaarNumber || 'unknown';
+          } else if (req.body.aadhaarNumber) {
+            aadhaarNumber = req.body.aadhaarNumber;
+          }
+          
+          const fileName = `jobcard-${aadhaarNumber}-${Date.now()}`;
+          console.log('Uploading image to Cloudinary with filename:', fileName);
+          imageUrl = await this.cloudinaryService.uploadImage(req.file.buffer, fileName, 'jobcard-applications');
+          console.log('Image uploaded successfully, URL:', imageUrl);
+        } catch (uploadError) {
+          console.error('Error uploading image to Cloudinary:', uploadError);
+          // Continue with application submission even if image upload fails
+        }
+      } else {
+        console.log('No image file received');
       }
 
-      const result = await this.jobCardApplicationService.submitApplication(applicationData);
+      // Parse application data from form data
+      let applicationData;
+      if (req.body.applicationData) {
+        applicationData = JSON.parse(req.body.applicationData);
+      } else {
+        // Fallback to original method for JSON requests or direct form data
+        applicationData = req.body;
+      }
+      
+      console.log('Parsed application data:', applicationData);
+
+      // Extract application data from request body
+      const applicationDataForDB = {
+        aadhaar_number: applicationData.aadhaarNumber,
+        phone_number: applicationData.phoneNumber,
+        family_id: applicationData.jobCardDetails.familyId,
+        head_of_household_name: applicationData.jobCardDetails.headOfHouseholdName,
+        father_or_husband_name: applicationData.jobCardDetails.fatherHusbandName,
+        category: applicationData.jobCardDetails.category,
+        date_of_registration: new Date(applicationData.jobCardDetails.dateOfRegistration),
+        full_address: applicationData.jobCardDetails.address,
+        village: applicationData.jobCardDetails.village || null,
+        panchayat: applicationData.jobCardDetails.panchayat,
+        block: applicationData.jobCardDetails.block,
+        district: applicationData.jobCardDetails.district,
+        pincode: applicationData.jobCardDetails.pincode || null,
+        is_bpl: applicationData.jobCardDetails.isBPL,
+        epic_number: applicationData.jobCardDetails.epicNo || null,
+        applicants: applicationData.jobCardDetails.applicants,
+        image_url: imageUrl,
+        status: 'pending' as const,
+        job_card_id: null,
+        captchaToken: applicationData.captchaToken // Add captchaToken to the data passed to the service
+      };
+      
+      console.log('Application data for DB:', applicationDataForDB);
+
+      const result = await this.jobCardApplicationService.submitApplication(applicationDataForDB);
 
       const response: ApiResponse = {
         success: true,
@@ -50,6 +91,7 @@ export class JobCardApplicationController {
 
       res.status(201).json(response);
     } catch (error) {
+      console.error('Error in submitApplication:', error);
       next(error);
     }
   };

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Replacement Instructions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        h1, h2 {
+            color: #4F46E5;
+        }
+        .image-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border: 2px dashed #4F46E5;
+            border-radius: 8px;
+        }
+        .instructions {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        .step {
+            margin: 15px 0;
+            padding-left: 20px;
+            border-left: 4px solid #4F46E5;
+        }
+        code {
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard Image Replacement Guide</h1>
+    
+    <div class="instructions">
+        <h2>How to Replace Placeholder Images</h2>
+        
+        <div class="step">
+            <h3>Step 1: Prepare Your Images</h3>
+            <p>Create or select images that match the recommended sizes:</p>
+            <ul>
+                <li><strong>Carousel Images</strong>: 1200x400 pixels (JPG, PNG, or WEBP format)</li>
+                <li><strong>Gallery Images</strong>: 600x400 pixels (JPG, PNG, or WEBP format)</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Rename Your Images</h3>
+            <p>Rename your images to match these exact filenames:</p>
+            <ul>
+                <li><code>carousel1.jpg</code></li>
+                <li><code>carousel2.jpg</code></li>
+                <li><code>carousel3.jpg</code></li>
+                <li><code>carousel4.jpg</code></li>
+                <li><code>gallery1.jpg</code></li>
+                <li><code>gallery2.jpg</code></li>
+                <li><code>gallery3.jpg</code></li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Replace the Files</h3>
+            <p>Copy your renamed images to this folder, replacing the existing placeholder files:</p>
+            <p><code>/public/images/</code></p>
+            <p>Your dashboard will automatically use the new images.</p>
+        </div>
+    </div>
+    
+    <h2>Current Placeholder Images</h2>
+    
+    <div class="image-container">
+        <h3>Carousel Image 1</h3>
+        <img src="carousel1.jpg" alt="Carousel 1">
+        <p>File: <code>carousel1.jpg</code> (1200x400)</p>
+    </div>
+    
+    <div class="image-container">
+        <h3>Carousel Image 2</h3>
+        <img src="carousel2.jpg" alt="Carousel 2">
+        <p>File: <code>carousel2.jpg</code> (1200x400)</p>
+    </div>
+    
+    <div class="image-container">
+        <h3>Gallery Image 1</h3>
+        <img src="gallery1.jpg" alt="Gallery 1">
+        <p>File: <code>gallery1.jpg</code> (600x400)</p>
+    </div>
+    
+    <div class="image-container">
+        <h3>Gallery Image 2</h3>
+        <img src="gallery2.jpg" alt="Gallery 2">
+        <p>File: <code>gallery2.jpg</code> (600x400)</p>
+    </div>
+</body>
+</html>

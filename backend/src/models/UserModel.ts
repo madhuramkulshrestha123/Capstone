@@ -329,4 +329,45 @@ export class UserModel {
     const isValid = await bcrypt.compare(password, user.password_hash);
     return isValid ? user : null;
   }
+
+  // Method to get job card by user ID
+  async getJobCardByUserId(userId: string): Promise<any> {
+    // First get the user to get their aadhaar number
+    const user = await this.findById(userId);
+    if (!user) {
+      return null;
+    }
+    
+    // Then get the job card using the aadhaar number
+    const result = await this.db.query(
+      'SELECT * FROM job_cards WHERE aadhaar_number = $1 LIMIT 1',
+      [user.aadhaar_number]
+    );
+    
+    return result.rows.length > 0 ? result.rows[0] : null;
+  }
+
+  // Method to get job card by job card ID
+  async getJobCardById(jobCardId: string): Promise<any> {
+    const result = await this.db.query(
+      'SELECT * FROM job_cards WHERE job_card_id = $1 LIMIT 1',
+      [jobCardId]
+    );
+    
+    return result.rows.length > 0 ? result.rows[0] : null;
+  }
+
+  // Method to get work history by user ID
+  async getWorkHistoryByUserId(userId: string): Promise<any[]> {
+    const result = await this.db.query(
+      `SELECT p.*, wdr.allocated_at, p.wage_per_worker
+       FROM work_demand_requests wdr
+       JOIN projects p ON wdr.project_id = p.id
+       WHERE wdr.worker_id = $1
+       ORDER BY wdr.allocated_at DESC`,
+      [userId]
+    );
+    
+    return result.rows;
+  }
 }

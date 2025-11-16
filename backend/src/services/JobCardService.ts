@@ -4,6 +4,7 @@ import { AppError } from '../middlewares/errorMiddleware';
 import { JobCardRegistrationRequest, JobCardDetails, CreateRegistrationRequest } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { CloudinaryService } from '../services/CloudinaryService';
+import axios from 'axios';
 
 export class JobCardService {
   private jobCardModel: JobCardModel;
@@ -27,9 +28,9 @@ export class JobCardService {
       throw new AppError('Invalid phone number', 400);
     }
 
-    // Validate captcha (in a real app, you would verify with a captcha service)
-    if (!this.isValidCaptcha(registrationData.captchaToken)) {
-      throw new AppError('Invalid captcha', 400);
+    // Validate Google reCAPTCHA
+    if (!await this.isValidCaptcha(registrationData.captchaToken)) {
+      throw new AppError('Invalid reCAPTCHA verification', 400);
     }
 
     // Check if a job card with this Aadhaar number already exists
@@ -63,36 +64,36 @@ export class JobCardService {
       phone_number: registrationData.phoneNumber,
       aadhaar_number: registrationData.aadhaarNumber,
       email: this.generateEmail(registrationData.aadhaarNumber),
-      panchayat_id: uuidv4(), // Generate a random panchayat ID for now
-      government_id: `GOV${registrationData.aadhaarNumber}`,
       password: registrationData.password,
-      state: '', // Placeholder
-      district: registrationData.jobCardDetails.district,
+      state: registrationData.jobCardDetails.state || '',
+      district: registrationData.jobCardDetails.district || '',
       village_name: registrationData.jobCardDetails.village || '',
-      pincode: '' // Placeholder
+      pincode: registrationData.jobCardDetails.pincode || '',
+      panchayat_id: uuidv4(), // Generate a new UUID for panchayat_id
+      government_id: `GOV${Math.floor(100000 + Math.random() * 900000)}` // Generate a government ID
     };
 
-    const user = await this.userModel.createRegistration(createUserData);
-    
+    const user = await this.userModel.create(createUserData);
+
     // Create job card
     const jobCardData = {
       aadhaar_number: registrationData.aadhaarNumber,
       phone_number: registrationData.phoneNumber,
-      password_hash: '', // Will be set properly in the model
-      date_of_birth: new Date(), // Placeholder
-      age: 0, // Placeholder
+      password_hash: '', // Will be set by the model
+      date_of_birth: new Date(), // Placeholder - should be collected in form
+      age: 0, // Placeholder - should be calculated
       family_id: registrationData.jobCardDetails.familyId,
       head_of_household_name: registrationData.jobCardDetails.headOfHouseholdName,
       father_or_husband_name: registrationData.jobCardDetails.fatherHusbandName,
       category: registrationData.jobCardDetails.category,
       epic_number: registrationData.jobCardDetails.epicNo || '',
       belongs_to_bpl: registrationData.jobCardDetails.isBPL,
-      state: '', // Placeholder
+      state: registrationData.jobCardDetails.state,
       district: registrationData.jobCardDetails.district,
       village: registrationData.jobCardDetails.village || '',
       panchayat: registrationData.jobCardDetails.panchayat,
       block: registrationData.jobCardDetails.block,
-      pincode: '', // Placeholder
+      pincode: registrationData.jobCardDetails.pincode,
       full_address: registrationData.jobCardDetails.address,
       bank_name: '', // Placeholder
       account_number: '', // Placeholder
@@ -125,10 +126,26 @@ export class JobCardService {
     return phoneRegex.test(phone);
   }
 
-  private isValidCaptcha(captchaToken: string): boolean {
-    // In a real app, you would verify the captcha token with a service like Google reCAPTCHA
-    // For now, we'll just check if it's not empty
-    return !!captchaToken && captchaToken.length > 0;
+  private async isValidCaptcha(captchaToken: string): Promise<boolean> {
+    // Verify Google reCAPTCHA token with Google's API
+    try {
+      const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+      
+      if (!secretKey) {
+        console.error('RECAPTCHA_SECRET_KEY is not set in environment variables');
+        return false;
+      }
+      
+      const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+      
+      const response = await axios.post(verificationUrl);
+      const data = response.data;
+      
+      return data.success === true;
+    } catch (error) {
+      console.error('Error verifying reCAPTCHA:', error);
+      return false;
+    }
   }
 
   private generateUsername(aadhaar: string): string {
@@ -137,5 +154,18 @@ export class JobCardService {
 
   private generateEmail(aadhaar: string): string {
     return `${aadhaar}@jobcardapp.com`;
+  }
+
+  private generateJobCardId(): string {
+    // Generate a job card ID in the format: 4 uppercase letters + 8 digits
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let result = '';
+    for (let i = 0; i < 4; i++) {
+      result += letters.charAt(Math.floor(Math.random() * letters.length));
+    }
+    for (let i = 0; i < 8; i++) {
+      result += Math.floor(Math.random() * 10);
+    }
+    return result;
   }
 }

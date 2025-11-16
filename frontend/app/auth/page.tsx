@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -25,6 +26,27 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
+  // Add reCAPTCHA v3 hook
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  
+  // Execute reCAPTCHA on form submission
+  const handleReCaptchaVerify = async (action: string) => {
+    if (!executeRecaptcha) {
+      console.log('Execute recaptcha not yet available');
+      return null;
+    }
+    
+    try {
+      const token = await executeRecaptcha(action);
+      setCaptchaToken(token);
+      return token;
+    } catch (error) {
+      console.error('Error executing reCAPTCHA:', error);
+      return null;
+    }
+  };
 
   // Reset form states
   const resetForm = () => {
@@ -47,6 +69,7 @@ export default function AuthPage() {
     setOtpVerified(false);
     setError('');
     setSuccess('');
+    setCaptchaToken(null);
   };
 
   // Toggle between login and register
@@ -69,6 +92,14 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
+      // Execute reCAPTCHA for registration
+      const recaptchaToken = await handleReCaptchaVerify('register');
+      if (!recaptchaToken) {
+        setError('reCAPTCHA verification failed. Please try again.');
+        setLoading(false);
+        return;
+      }
+
       // Step 1: Send OTP
       if (!otpSent) {
         const response = await fetch('http://localhost:3001/api/v1/users/register/send-otp', {
@@ -173,6 +204,7 @@ export default function AuthPage() {
           village_name: village,
           pincode,
           role: userType, // 'admin' or 'supervisor'
+          captchaToken: recaptchaToken // Add reCAPTCHA token
         };
 
         const response = await fetch('http://localhost:3001/api/v1/users/register/complete', {
@@ -211,6 +243,14 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
+      // Execute reCAPTCHA for login
+      const recaptchaToken = await handleReCaptchaVerify('login');
+      if (!recaptchaToken) {
+        setError('reCAPTCHA verification failed. Please try again.');
+        setLoading(false);
+        return;
+      }
+
       // Step 1: Send OTP for login
       if (!otpSent) {
         const identifier = userType === 'user' ? jobCardNumber : employmentId;
@@ -640,27 +680,7 @@ export default function AuthPage() {
                 </div>
               )}
               
-              {/* CAPTCHA */}
-              <div>
-                <label htmlFor="captcha" className="block text-sm font-medium text-gray-700 mb-1">
-                  CAPTCHA
-                </label>
-                <div className="flex space-x-3">
-                  <input
-                    id="captcha"
-                    name="captcha"
-                    type="text"
-                    required
-                    value={captcha}
-                    onChange={(e) => setCaptcha(e.target.value)}
-                    className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-colors duration-200 bg-white/50"
-                    placeholder="Enter CAPTCHA"
-                  />
-                  <div className="px-4 py-3 rounded-lg bg-indigo-100 border border-indigo-200 text-indigo-800 font-mono font-bold flex items-center">
-                    A3B2
-                  </div>
-                </div>
-              </div>
+              {/* reCAPTCHA v3 is handled automatically */}
             </div>
 
             <div className="pt-2">

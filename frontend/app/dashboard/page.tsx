@@ -1,49 +1,220 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '../lib/useTranslation';
-import { Language } from '../lib/translations';
+import { adminApi } from '../lib/api';
+import Chatbot from '../components/Chatbot';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+
+/*
+ * CUSTOMIZATION INSTRUCTIONS:
+ * 
+ * To customize this dashboard with your own images and data:
+ * 
+ * 1. REPLACE IMAGES:
+ *    - Carousel images: /public/images/carousel1.jpg through carousel3.jpg
+ *    - Gallery images: /public/images/gallery1.jpg through gallery3.jpg (optional)
+ *    - Recommended sizes:
+ *      * Carousel images: 1200x400 pixels
+ *      * Gallery images: 600x400 pixels
+ * 
+ * 2. UPDATE TEXT CONTENT:
+ *    - Modify the translations in /app/lib/translations.ts
+ *    - Change the custom data in the arrays (navItems, applySteps, quickLinks, etc.)
+ * 
+ * 3. ADD/REMOVE SECTIONS:
+ *    - Copy existing sections and modify them
+ *    - Remove sections by deleting the relevant code blocks
+ * 
+ * 4. CHANGE COLORS:
+ *    - Modify the gradient colors in the className attributes
+ *    - Update the theme colors in the useState hooks
+ */
 
 export default function Dashboard() {
+  const [language, setLanguage] = useState<'en' | 'hi'>('en');
+  const { t } = useTranslation(language);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const [language, setLanguage] = useState<Language>('en'); // 'en' or 'hi'
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { t, tWithParams } = useTranslation(language);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  
+  // Add reCAPTCHA v3 hook
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
+  // Demand Job Modal State
+  const [isDemandJobModalOpen, setIsDemandJobModalOpen] = useState(false);
+  const [jobId, setJobId] = useState('');
+  const [aadhaarNumber, setAadhaarNumber] = useState('');
+  const [workerDetails, setWorkerDetails] = useState<any>(null);
+  const [isVerified, setIsVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Notice board data
+  const notices = [
+    { title: 'newGuidelines', description: 'newGuidelinesDesc', date: '2025-10-01' },
+    { title: 'workshop', description: 'workshopDesc', date: '2025-09-25' },
+    { title: 'paymentUpdate', description: 'paymentUpdateDesc', date: '2025-10-20' },
+    { title: 'newApp', description: 'newAppDesc', date: '2025-09-30' }
+  ];
+  
+  // Upcoming features data
+  const upcomingFeatures = [
+    { title: 'payments', description: 'paymentsDescription' },
+    { title: 'mobileAttendance', description: 'mobileAttendanceDescription' },
+    { title: 'jobDemand', description: 'jobDemandDescription' },
+    { title: 'mobileOtp', description: 'mobileOtpDescription' }
+  ];
+  
+  // Resources data
+  const resources = [
+    'documentation', 'guidelines', 'trainingMaterials', 'reports'
+  ];
+  
+  // Social media data
+  const socialMedia = [
+    'facebook', 'twitter', 'youtube', 'instagram', 'linkedin'
+  ];
+  
   const toggleTheme = () => setIsDarkTheme(!isDarkTheme);
   const toggleLanguage = () => setLanguage(language === 'en' ? 'hi' : 'en');
 
+  // Execute reCAPTCHA
+  const handleReCaptchaVerify = async (action: string) => {
+    if (!executeRecaptcha) {
+      console.log('Execute recaptcha not yet available');
+      return null;
+    }
+    
+    try {
+      const token = await executeRecaptcha(action);
+      setCaptchaToken(token);
+      return token;
+    } catch (error) {
+      console.error('Error executing reCAPTCHA:', error);
+      return null;
+    }
+  };
+
+  // Updated carousel images to use local placeholder images
   const carouselImages = [
-    'https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+    '/images/carousel1.jpg',  // Replace with your own images
+    '/images/carousel2.jpg',  // Replace with your own images
+    '/images/carousel3.jpg',  // Replace with your own images
   ];
 
+  // Updated navigation items with custom data
   const navItems = [
     'aboutMinistry', 'aboutScheme', 'keyFeatures', 'schemeComponents',
     'mobileApps', 'raiseComplaint', 'login'
   ];
 
-  const applySteps = ['step1', 'step2', 'step3', 'step4', 'step5'];
-
-  const quickLinks = ['home', 'aboutUs', 'contact', 'faq'];
-
-  const resources = ['documentation', 'guidelines', 'trainingMaterials', 'reports'];
-
-  const socialMedia = ['facebook', 'twitter', 'youtube', 'instagram'];
-
-  const notices = [
-    { title: 'newGuidelines', description: 'newGuidelinesDesc', date: 'Sep 10, 2025' },
-    { title: 'workshop', description: 'workshopDesc', date: 'Sep 5, 2025' },
-    { title: 'paymentUpdate', description: 'paymentUpdateDesc', date: 'Sep 1, 2025' },
-    { title: 'newApp', description: 'newAppDesc', date: 'Aug 28, 2025' }
+  // Updated application steps with custom data
+  const applySteps = [
+    'Visit your nearest Panchayat office',
+    'Fill out the job card application form',
+    'Submit required documents',
+    'Verification by authorities',
+    'Receive your job card'
   ];
 
-  const upcomingFeatures = ['payments', 'mobileAttendance', 'jobDemand', 'mobileOtp'];
+  // Updated quick links with custom data
+  const quickLinks = [
+    { id: 'checkStatus', icon: '🔍', title: 'Check Application Status', description: 'Track your job card application progress' },
+    { id: 'downloadForm', icon: '📄', title: 'Download Forms', description: 'Get application forms and guidelines' },
+    { id: 'contactSupport', icon: '📞', title: 'Contact Support', description: 'Get help from our support team' },
+    { id: 'faq', icon: '❓', title: 'FAQ', description: 'Find answers to common questions' }
+  ];
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev === carouselImages.length - 1 ? 0 : prev + 1));
-  const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? carouselImages.length - 1 : prev - 1));
+  // Updated gallery images with custom data
+  const galleryImages = [
+    { src: '/images/gallery1.jpg', alt: 'Community Work 1' },
+    { src: '/images/gallery2.jpg', alt: 'Community Work 2' },
+    { src: '/images/gallery3.jpg', alt: 'Community Work 3' }
+  ];
+
+  // Handle navigation
+  const handleNavClick = (item: string) => {
+    // Scroll to the section or handle navigation
+    const element = document.getElementById(item);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Handle quick link click
+  const handleQuickLinkClick = (id: string) => {
+    // Handle quick link actions
+    console.log(`Quick link clicked: ${id}`);
+  };
+
+  // Carousel navigation
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev === carouselImages.length - 1 ? 0 : prev + 1));
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev === 0 ? carouselImages.length - 1 : prev - 1));
+  };
+
+  // Auto-advance carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Demand Job Modal Functions
+  const openDemandJobModal = () => setIsDemandJobModalOpen(true);
+  const closeDemandJobModal = () => {
+    setIsDemandJobModalOpen(false);
+    resetDemandJobForm();
+  };
+
+  const resetDemandJobForm = () => {
+    setJobId('');
+    setAadhaarNumber('');
+    setWorkerDetails(null);
+    setIsVerified(false);
+    setError('');
+    setCaptchaToken(null);
+  };
+
+  // Verify Worker
+  const verifyWorker = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const response = await adminApi.verifyWorker(aadhaarNumber, jobId);
+      setWorkerDetails(response.data);
+      setIsVerified(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to verify worker details. Please check your information and try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Demand Work
+  const demandWork = async () => {
+    try {
+      // Execute reCAPTCHA for demanding work
+      const recaptchaToken = await handleReCaptchaVerify('demand_work');
+      if (!recaptchaToken) {
+        alert('reCAPTCHA verification failed. Please try again.');
+        return;
+      }
+
+      const response = await adminApi.demandWork(jobId, recaptchaToken);
+      alert('Work demand submitted successfully!');
+      closeDemandJobModal();
+    } catch (err: any) {
+      alert(err.message || 'Failed to submit work demand. Please try again.');
+    }
+  };
 
   return (
     <div className={`min-h-screen ${isDarkTheme ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 text-gray-900'}`}>
@@ -132,26 +303,74 @@ export default function Dashboard() {
               className="flex transition-transform duration-700 ease-in-out will-change-transform" 
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
-              {carouselImages.map((image, index) => (
-                <div key={index} className="w-full flex-shrink-0">
-                  <div className="relative h-96 md:h-[28rem]">
-                    <img 
-                      src={image} 
-                      alt={`Slide ${index + 1}`} 
-                      className="w-full h-full object-cover rounded-3xl"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent rounded-3xl"></div>
-                    <div className="absolute bottom-8 left-8 text-white max-w-xl select-text">
-                      <h3 className="text-3xl font-extrabold drop-shadow-lg">
-                        {tWithParams('slideTitle', { index: index + 1 })}
-                      </h3>
-                      <p className="mt-3 text-lg font-light drop-shadow-md max-w-lg">
-                        {t('slideDescription')}
-                      </p>
-                    </div>
+              {/* Slide 1 */}
+              <div className="w-full flex-shrink-0">
+                <div className="relative h-96 md:h-[28rem]">
+                  <img 
+                    src="/images/carousel1.jpg" 
+                    alt="Daily Wage Job at your Convenience" 
+                    className="w-full h-full object-cover rounded-3xl"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/1200x400/4F46E5/FFFFFF?text=Daily+Wage+Job+at+your+Convenience';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent rounded-3xl"></div>
+                  <div className="absolute bottom-8 left-8 text-white max-w-xl select-text">
+                    <h3 className="text-3xl font-extrabold drop-shadow-lg">
+                      {t('slide1Title')}
+                    </h3>
+                    <p className="mt-3 text-lg font-light drop-shadow-md max-w-lg">
+                      {t('slide1Description')}
+                    </p>
                   </div>
                 </div>
-              ))}
+              </div>
+              
+              {/* Slide 2 */}
+              <div className="w-full flex-shrink-0">
+                <div className="relative h-96 md:h-[28rem]">
+                  <img 
+                    src="/images/carousel2.jpg" 
+                    alt="Transparent and Fast" 
+                    className="w-full h-full object-cover rounded-3xl"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/1200x400/7C3AED/FFFFFF?text=Transparent+and+Fast';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent rounded-3xl"></div>
+                  <div className="absolute bottom-8 left-8 text-white max-w-xl select-text">
+                    <h3 className="text-3xl font-extrabold drop-shadow-lg">
+                      {t('slide2Title')}
+                    </h3>
+                    <p className="mt-3 text-lg font-light drop-shadow-md max-w-lg">
+                      {t('slide2Description')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Slide 3 */}
+              <div className="w-full flex-shrink-0">
+                <div className="relative h-96 md:h-[28rem]">
+                  <img 
+                    src="/images/carousel3.jpg" 
+                    alt="Zero Paper Work and Secure" 
+                    className="w-full h-full object-cover rounded-3xl"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/1200x400/2563EB/FFFFFF?text=Zero+Paper+Work+and+Secure';
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent rounded-3xl"></div>
+                  <div className="absolute bottom-8 left-8 text-white max-w-xl select-text">
+                    <h3 className="text-3xl font-extrabold drop-shadow-lg">
+                      {t('slide3Title')}
+                    </h3>
+                    <p className="mt-3 text-lg font-light drop-shadow-md max-w-lg">
+                      {t('slide3Description')}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <button 
@@ -175,7 +394,7 @@ export default function Dashboard() {
             </button>
             
             <div className="absolute bottom-6 left-0 right-0 flex justify-center space-x-3">
-              {carouselImages.map((_, index) => (
+              {[0, 1, 2].map((index) => (
                 <button 
                   key={index} 
                   onClick={() => setCurrentSlide(index)}
@@ -196,7 +415,7 @@ export default function Dashboard() {
               {t('vision')}
             </h2>
             <p className="text-lg leading-relaxed select-text">
-              {t('visionText')}
+              Our vision is to provide sustainable employment opportunities to all rural households and improve their quality of life through various employment schemes. We aim to empower communities through digital transformation and transparent governance.
             </p>
           </div>
         </section>
@@ -241,16 +460,16 @@ export default function Dashboard() {
                 {t('trackButton')}
               </a>
               
-              <a 
-                href="#"
+              <button 
+                onClick={openDemandJobModal}
                 className={`p-10 rounded-3xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] flex items-center justify-center text-2xl font-semibold ${
                   isDarkTheme 
                     ? 'bg-indigo-700 hover:bg-indigo-800 text-white' 
                     : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                 }`}
               >
-                Download Job Card
-              </a>
+                {t('demandJob')}
+              </button>
             </div>
           </div>
         </section>
@@ -264,7 +483,7 @@ export default function Dashboard() {
             isDarkTheme ? 'bg-gray-900/90 divide-gray-700' : 'bg-white/90 divide-gray-200'
           }`}>
             <ul>
-              {notices.map((notice, index) => (
+              {notices.map((notice: any, index: number) => (
                 <li key={index} className="p-6 hover:bg-indigo-600/10 hover:transition-colors cursor-pointer transition-colors duration-300">
                   <div className="flex justify-between items-start gap-6">
                     <div>
@@ -289,9 +508,9 @@ export default function Dashboard() {
             {t('upcomingFeaturesTitle')}
           </h2>
           <div className={`p-8 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <p className="text-lg mb-6 select-text">{t('upcomingFeaturesDescription')}</p>
+            <p className="text-lg mb-6 select-text">Soon you will be able to access all services online instead of visiting your panchayat office. Our digital transformation will make the process more efficient and transparent.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {upcomingFeatures.map((feature, index) => (
+              {upcomingFeatures.map((feature: any, index: number) => (
                 <div 
                   key={index} 
                   className={`p-6 rounded-xl flex items-start transition-transform duration-300 hover:scale-[1.02] ${
@@ -317,9 +536,9 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-2 select-text">{t(feature as any)}</h3>
+                    <h3 className="text-xl font-semibold mb-2 select-text">{t(feature.title)}</h3>
                     <p className={`text-sm ${isDarkTheme ? 'text-gray-300' : 'text-gray-600'} select-text`}>
-                      {t(`${feature}Description` as any)}
+                      {t(feature.description)}
                     </p>
                   </div>
                 </div>
@@ -345,7 +564,7 @@ export default function Dashboard() {
                       isDarkTheme ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-indigo-700'
                     }`}
                   >
-                    {t(link as any)}
+                    {t(link.title as any)}
                   </a>
                 </li>
               ))}
@@ -357,7 +576,7 @@ export default function Dashboard() {
               {t('resources')}
             </h3>
             <ul className="space-y-4 font-medium text-lg">
-              {resources.map((link, index) => (
+              {resources.map((resource: any, index: number) => (
                 <li key={index}>
                   <a 
                     href="#" 
@@ -365,7 +584,7 @@ export default function Dashboard() {
                       isDarkTheme ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-indigo-700'
                     }`}
                   >
-                    {t(link as any)}
+                    {t(resource as any)}
                   </a>
                 </li>
               ))}
@@ -398,7 +617,7 @@ export default function Dashboard() {
               {t('followUs')}
             </h3>
             <div className="flex gap-6">
-              {socialMedia.map((social, index) => (
+              {socialMedia.map((social: any, index: number) => (
                 <a 
                   key={index} 
                   href="#" 
@@ -423,24 +642,169 @@ export default function Dashboard() {
         </div>
       </footer>
 
-      {/* Floating Chatbot */}
-      <div className="fixed bottom-7 right-7 z-50">
-        <button 
-          className={`px-5 py-4 rounded-full shadow-2xl transform transition-transform duration-300 hover:scale-110 focus:outline-none ${
-            isDarkTheme 
-              ? 'bg-indigo-700 text-white shadow-indigo-900' 
-              : 'bg-indigo-600 text-white shadow-indigo-700'
-          }`}
-          aria-label="Chatbot"
-        >
-          <div className="flex items-center space-x-3 select-none">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            <span className="font-semibold">{t('chatbotMessage')}</span>
+      {/* Chatbot */}
+      <Chatbot language={language} isDarkTheme={isDarkTheme} />
+      
+      {/* Demand Job Modal */}
+      {isDemandJobModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto ${
+            isDarkTheme ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
+          }`}>
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <h3 className="text-2xl font-bold">{t('demandJob')}</h3>
+                <button 
+                  onClick={closeDemandJobModal}
+                  className={`text-gray-500 hover:text-gray-700 ${
+                    isDarkTheme ? 'hover:text-gray-300' : ''
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {!isVerified ? (
+                <form onSubmit={verifyWorker}>
+                  {error && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                      {error}
+                    </div>
+                  )}
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        {t('aadhaarNumber')}
+                      </label>
+                      <input
+                        type="text"
+                        value={aadhaarNumber}
+                        onChange={(e) => setAadhaarNumber(e.target.value)}
+                        className={`w-full px-4 py-2 rounded-lg border ${
+                          isDarkTheme 
+                            ? 'bg-gray-800 border-gray-700 text-white' 
+                            : 'bg-white border-gray-300 text-gray-900'
+                        } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                        placeholder={t('enterAadhaar') as string}
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        {t('jobCardId')}
+                      </label>
+                      <input
+                        type="text"
+                        value={jobId}
+                        onChange={(e) => setJobId(e.target.value)}
+                        className={`w-full px-4 py-2 rounded-lg border ${
+                          isDarkTheme 
+                            ? 'bg-gray-800 border-gray-700 text-white' 
+                            : 'bg-white border-gray-300 text-gray-900'
+                        } focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+                        placeholder={t('enterJobCardId') as string}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={closeDemandJobModal}
+                      className={`px-4 py-2 rounded-lg font-medium ${
+                        isDarkTheme 
+                          ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                          : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                      }`}
+                    >
+                      {t('cancel')}
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className={`px-4 py-2 rounded-lg font-medium text-white ${
+                        isLoading 
+                          ? 'bg-indigo-400 cursor-not-allowed' 
+                          : 'bg-indigo-600 hover:bg-indigo-700'
+                      }`}
+                    >
+                      {isLoading ? t('verifying') : t('verify')}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div>
+                  <div className="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg mb-6">
+                    <h4 className="font-bold text-lg mb-2">{t('workerDetails')}</h4>
+                    <div className="space-y-2">
+                      <p><span className="font-medium">{t('name')}:</span> {workerDetails?.name || 'N/A'}</p>
+                      <p><span className="font-medium">{t('aadhaarNumber')}:</span> {workerDetails?.aadhaar_number || 'N/A'}</p>
+                      <p><span className="font-medium">{t('jobCardId')}:</span> {jobId}</p>
+                      <p><span className="font-medium">{t('currentStatus')}:</span> 
+                        <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                          workerDetails?.current_status === 'available' 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200' 
+                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200'
+                        }`}>
+                          {workerDetails?.current_status || 'N/A'}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <h4 className="font-bold text-lg mb-2">{t('workHistory')}</h4>
+                    {workerDetails?.work_history && workerDetails.work_history.length > 0 ? (
+                      <div className="space-y-3">
+                        {workerDetails.work_history.map((work: any, index: number) => (
+                          <div 
+                            key={index} 
+                            className={`p-3 rounded-lg ${
+                              isDarkTheme ? 'bg-gray-800' : 'bg-gray-100'
+                            }`}
+                          >
+                            <p className="font-medium">{work.name || work.project_name || 'Unnamed Project'}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {work.start_date ? new Date(work.start_date).toLocaleDateString() : 'N/A'} to {work.end_date ? new Date(work.end_date).toLocaleDateString() : 'N/A'} - ₹{work.wage_per_worker || work.wage || 0}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 italic">{t('noWorkHistory')}</p>
+                    )}
+                  </div>
+                  
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={closeDemandJobModal}
+                      className={`px-4 py-2 rounded-lg font-medium ${
+                        isDarkTheme 
+                          ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                          : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                      }`}
+                    >
+                      {t('close')}
+                    </button>
+                    <button
+                      onClick={demandWork}
+                      className="px-4 py-2 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                    >
+                      {t('demandWork')}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

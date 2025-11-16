@@ -1,10 +1,27 @@
 import Database from '../config/database';
 import { JobCardDetails } from '../types';
-import { v4 as uuidv4 } from 'uuid';
+
+// Function to generate a job card ID with 4 uppercase letters followed by 8 digits
+function generateJobCardId(): string {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let result = '';
+  
+  // Generate 4 random uppercase letters
+  for (let i = 0; i < 4; i++) {
+    result += letters.charAt(Math.floor(Math.random() * letters.length));
+  }
+  
+  // Generate 8 random digits
+  for (let i = 0; i < 8; i++) {
+    result += Math.floor(Math.random() * 10);
+  }
+  
+  return result;
+}
 
 // Define the JobCard type based on the database schema
 interface JobCard {
-  job_card_id: string; // UUID
+  job_card_id: string; // Now using custom format instead of UUID
   aadhaar_number: string;
   phone_number: string;
   password_hash: string;
@@ -34,7 +51,7 @@ interface JobCard {
 // Define the Applicant type based on the database schema
 interface Applicant {
   applicant_id: string; // UUID
-  job_card_id: string; // UUID, foreign key
+  job_card_id: string; // Now using custom format
   full_name: string;
   date_of_birth: Date;
   age: number;
@@ -51,8 +68,26 @@ export class JobCardModel {
   }
 
   async createJobCard(jobCardData: Omit<JobCard, 'job_card_id' | 'created_at' | 'updated_at'>): Promise<JobCard> {
-    // Generate a UUID for job_card_id
-    const jobCardId = uuidv4();
+    // Generate a custom job card ID with 4 letters and 8 digits
+    let jobCardId = generateJobCardId();
+    
+    // Ensure uniqueness by checking if ID already exists
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (attempts < maxAttempts) {
+      const existingJobCard = await this.findById(jobCardId);
+      if (!existingJobCard) {
+        break;
+      }
+      
+      jobCardId = generateJobCardId();
+      attempts++;
+    }
+    
+    if (attempts >= maxAttempts) {
+      throw new Error('Unable to generate unique job card ID after maximum attempts');
+    }
     
     // Set timestamps
     const now = new Date();

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 import { WorkDemandRequestService } from '../services/WorkDemandRequestService';
 import { ApiResponse } from '../types';
-import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 
 export class WorkDemandRequestController {
   private workDemandRequestService: WorkDemandRequestService;
@@ -10,13 +10,13 @@ export class WorkDemandRequestController {
     this.workDemandRequestService = new WorkDemandRequestService();
   }
 
-  public getAllRequests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  public getRequests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const status = req.query.status as string;
 
-      const result = await this.workDemandRequestService.getAllRequests(page, limit, status);
+      const result = await this.workDemandRequestService.getRequests(page, limit, status);
 
       const response: ApiResponse = {
         success: true,
@@ -41,11 +41,13 @@ export class WorkDemandRequestController {
       if (!id) {
         res.status(400).json({
           success: false,
-          error: 'Request ID is required'
+          error: {
+            message: 'Request ID is required',
+          },
         });
         return;
       }
-      
+
       const request = await this.workDemandRequestService.getRequestById(id);
 
       const response: ApiResponse = {
@@ -61,20 +63,19 @@ export class WorkDemandRequestController {
 
   public createRequest = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Only workers can create work demand requests
+      // Only supervisors can create work demand requests
       if (req.user?.role !== 'supervisor') {
         res.status(403).json({
           success: false,
-          error: 'Only workers can create work demand requests'
+          error: 'Only supervisors can create work demand requests'
         });
         return;
       }
 
-      // Set worker ID from authenticated user
-      const requestData = {
-        ...req.body,
-        worker_id: req.user.user_id
-      };
+      const requestData = req.body;
+      
+      // Set the worker_id to the authenticated user's ID
+      requestData.worker_id = req.user.user_id;
 
       const request = await this.workDemandRequestService.createRequest(requestData);
 
@@ -91,15 +92,6 @@ export class WorkDemandRequestController {
 
   public updateRequest = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { id } = req.params;
-      if (!id) {
-        res.status(400).json({
-          success: false,
-          error: 'Request ID is required'
-        });
-        return;
-      }
-      
       // Only admins can update work demand requests
       if (req.user?.role !== 'admin') {
         res.status(403).json({
@@ -109,7 +101,17 @@ export class WorkDemandRequestController {
         return;
       }
 
-      const request = await this.workDemandRequestService.updateRequest(id, req.body);
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: 'Request ID is required'
+        });
+        return;
+      }
+
+      const requestData = req.body;
+      const request = await this.workDemandRequestService.updateRequest(id, requestData);
 
       const response: ApiResponse = {
         success: true,
@@ -124,20 +126,20 @@ export class WorkDemandRequestController {
 
   public deleteRequest = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { id } = req.params;
-      if (!id) {
-        res.status(400).json({
-          success: false,
-          error: 'Request ID is required'
-        });
-        return;
-      }
-      
       // Only admins can delete work demand requests
       if (req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
           error: 'Only admins can delete work demand requests'
+        });
+        return;
+      }
+
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: 'Request ID is required'
         });
         return;
       }
@@ -167,12 +169,12 @@ export class WorkDemandRequestController {
         return;
       }
 
-      // Get user ID from authenticated user
       const workerId = req.user.user_id;
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
+      const status = req.query.status as string;
 
-      const result = await this.workDemandRequestService.getRequestsByWorkerId(workerId, page, limit);
+      const result = await this.workDemandRequestService.getRequestsByWorkerId(workerId, page, limit, status);
 
       const response: ApiResponse = {
         success: true,
@@ -191,8 +193,17 @@ export class WorkDemandRequestController {
     }
   };
 
-  public getRequestsByProject = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  public getRequestsByProject = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
+      // Only admins can get requests by project
+      if (req.user?.role !== 'admin') {
+        res.status(403).json({
+          success: false,
+          error: 'Only admins can get work demand requests by project'
+        });
+        return;
+      }
+
       const { projectId } = req.params;
       if (!projectId) {
         res.status(400).json({
@@ -201,11 +212,12 @@ export class WorkDemandRequestController {
         });
         return;
       }
-      
+
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
+      const status = req.query.status as string;
 
-      const result = await this.workDemandRequestService.getRequestsByProjectId(projectId, page, limit);
+      const result = await this.workDemandRequestService.getRequestsByProjectId(projectId, page, limit, status);
 
       const response: ApiResponse = {
         success: true,
@@ -244,8 +256,8 @@ export class WorkDemandRequestController {
         return;
       }
 
-      const { allocatedAt } = req.body;
-      const request = await this.workDemandRequestService.approveRequest(id, allocatedAt);
+      const { allocatedAt, projectId } = req.body;
+      const request = await this.workDemandRequestService.approveRequest(id, allocatedAt, projectId);
 
       const response: ApiResponse = {
         success: true,

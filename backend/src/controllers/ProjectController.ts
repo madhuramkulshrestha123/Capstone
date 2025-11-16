@@ -219,4 +219,108 @@ export class ProjectController {
       next(error);
     }
   };
+
+  public assignWorkersToProject = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { workerIds } = req.body;
+      
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: 'Project ID is required'
+        });
+        return;
+      }
+      
+      if (!workerIds || !Array.isArray(workerIds) || workerIds.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: 'Worker IDs are required'
+        });
+        return;
+      }
+      
+      // Only admins can assign workers to projects
+      if (req.user?.role !== 'admin') {
+        res.status(403).json({
+          success: false,
+          error: 'Only admins can assign workers to projects'
+        });
+        return;
+      }
+
+      // Assign workers to the project
+      const result = await this.projectService.assignWorkersToProject(id, workerIds);
+
+      const response: ApiResponse = {
+        success: true,
+        data: result,
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getAvailableWorkers = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      // Only admins can get available workers
+      if (req.user?.role !== 'admin') {
+        res.status(403).json({
+          success: false,
+          error: 'Only admins can get available workers'
+        });
+        return;
+      }
+
+      // Get available workers
+      const workers = await this.projectService.getAvailableWorkers();
+
+      const response: ApiResponse = {
+        success: true,
+        data: workers,
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+  
+  public getAssignedWorkersByProjectId = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: 'Project ID is required'
+        });
+        return;
+      }
+      
+      // Only admins can get assigned workers
+      if (req.user?.role !== 'admin') {
+        res.status(403).json({
+          success: false,
+          error: 'Only admins can get assigned workers'
+        });
+        return;
+      }
+
+      // Get assigned workers for this project
+      const workers = await this.projectService.getAssignedWorkersByProjectId(id);
+
+      const response: ApiResponse = {
+        success: true,
+        data: workers,
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

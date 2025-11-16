@@ -250,4 +250,65 @@ export class UserService {
       throw error;
     }
   }
+
+  // Get workers with job card details and work history (Admin only)
+  async getWorkersWithDetails(): Promise<any[]> {
+    try {
+      // Get all users with role 'supervisor' (workers in this system)
+      const users = await this.userModel.getUsersByRole('supervisor');
+      
+      // For each worker, get their job card details and work history
+      const workersWithDetails = await Promise.all(users.map(async (user) => {
+        try {
+          // Get job card details
+          const jobCard = await this.userModel.getJobCardByUserId(user.user_id);
+          
+          // Get work history (projects assigned to this worker)
+          const workHistory = await this.userModel.getWorkHistoryByUserId(user.user_id);
+          
+          // Calculate total amount to be paid
+          let totalAmount = 0;
+          let paymentDeadline = null;
+          let currentStatus = 'available';
+          
+          if (workHistory.length > 0) {
+            // Get the most recent project assignment
+            const latestProject = workHistory[workHistory.length - 1];
+            if (latestProject) {
+              totalAmount = latestProject.wage_per_worker || 374;
+              currentStatus = 'assigned';
+              
+              // Calculate payment deadline (15 days from project assignment date)
+              if (latestProject.allocated_at) {
+                const assignedDate = new Date(latestProject.allocated_at);
+                assignedDate.setDate(assignedDate.getDate() + 15);
+                paymentDeadline = assignedDate.toISOString().split('T')[0];
+              }
+            }
+          }
+          
+          return {
+            id: user.user_id,
+            name: user.name,
+            aadhaar_number: user.aadhaar_number,
+            job_card_id: jobCard?.job_card_id || null,
+            current_status: currentStatus,
+            work_history: workHistory,
+            total_amount: totalAmount,
+            payment_deadline: paymentDeadline,
+            district: user.district,
+            panchayat_id: user.panchayat_id
+          };
+        } catch (workerError) {
+          console.error(`Error processing worker ${user.user_id}:`, workerError);
+          throw workerError;
+        }
+      }));
+      
+      return workersWithDetails;
+    } catch (error: any) {
+      console.error('Error in getWorkersWithDetails:', error);
+      throw new AppError('Failed to fetch workers with details: ' + (error.message || 'Unknown error'), 500);
+    }
+  }
 }

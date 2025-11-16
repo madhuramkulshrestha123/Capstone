@@ -1,8 +1,11 @@
-import { translations, Language, TranslationKey } from './translations';
+import { translations, Language } from './translations';
+
+// Create a more explicit type for translation keys
+type TranslationKey = keyof typeof translations.en;
 
 export function useTranslation(language: Language = 'en') {
   const t = (key: TranslationKey): string => {
-    return translations[language][key] || key;
+    return (translations[language] as any)[key] || key;
   };
 
   // Function to replace placeholders in translations
