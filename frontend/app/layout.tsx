@@ -5,6 +5,9 @@ import RecaptchaProvider from './components/RecaptchaProvider';
 export const metadata: Metadata = {
   title: 'Job Portal',
   description: 'Job Portal Application',
+  icons: {
+    icon: '/favicon.ico.png',
+  },
 };
 
 export default function RootLayout({
