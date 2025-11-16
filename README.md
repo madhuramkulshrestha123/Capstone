@@ -1,4 +1,6 @@
-# Unskilled Labour Job Portal
+# Unskilled Labour Job Portal (SMART ROZGAAR PORTAL)
+
+<img width="1366" height="606" alt="home " src="https://github.com/user-attachments/assets/9820c86d-fc84-493a-8fd1-91cd61db639c" />
 
 ## Project Summary
 
@@ -21,30 +23,38 @@ The primary objective of this project is to digitize and optimize the rural empl
 - Email and phone number verification via OTP
 - Password reset functionality
 - Profile management with image upload capability
+  <img width="1366" height="607" alt="supervisor dashboard" src="https://github.com/user-attachments/assets/70032c81-50d1-4294-b980-9c9269bc5380" />
 
 ### Job Card System
 - Digital job card registration
 - Family details management
 - Status tracking (pending, approved, rejected)
 - Integration with government databases
+  <img width="1366" height="605" alt="job card apply" src="https://github.com/user-attachments/assets/9a2df89f-e845-490e-ba81-e8bd26f28b4b" />
+
 
 ### Work Demand Management
 - Work demand request submission
 - Approval workflow with supervisor review
 - Priority-based request handling
 - Status tracking and notifications
+  <img width="1366" height="605" alt="job demand" src="https://github.com/user-attachments/assets/98ca640c-8814-40f7-ac26-7af5270919ef" />
+
 
 ### Project Management
 - Create, read, update, and delete projects
 - Worker assignment to projects
 - Project progress tracking
 - Location-based project management
+  <img width="1366" height="608" alt="admin-projects" src="https://github.com/user-attachments/assets/da542c73-1562-470d-8c11-d8cce48ba97b" />
+
 
 ### Attendance & Payments
 - Digital attendance tracking
 - Work hour calculation
 - Payment processing integration
 - Payment history and reports
+<img width="1366" height="604" alt="UI buttons" src="https://github.com/user-attachments/assets/af6db317-1336-476c-b3c5-264888e63533" />
 
 ### Admin Dashboard
 - User management and role assignment
@@ -58,6 +68,9 @@ The primary objective of this project is to digitize and optimize the rural empl
 - Role-based access control
 - Rate limiting to prevent abuse
 - Secure image upload with Cloudinary integration
+
+  <img width="363" height="518" alt="image" src="https://github.com/user-attachments/assets/77928ad9-ba94-43d9-933d-02632e373804" />
+
 
 ## Technology Stack
 
@@ -102,6 +115,9 @@ graph TD
 ```
 
 ### Architecture Components
+
+<img width="1269" height="3529" alt="diagram-export-11-16-2025-5_43_32-PM" src="https://github.com/user-attachments/assets/364a9d3e-09a5-491d-b7d2-c60fae7ba71c" />
+
 
 1. **Frontend Layer**
    - Next.js application providing the user interface
