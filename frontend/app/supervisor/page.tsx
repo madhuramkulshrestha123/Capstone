@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from '../lib/useTranslation';
+import { supervisorApi, setAuthToken } from '../lib/api';
 
 export default function SupervisorDashboard() {
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const { t } = useTranslation(language);
   
-  // State for statistics - in a real app, this would come from API calls
+  // State for statistics
   const [stats, setStats] = useState({
     totalProjects: 0,
     totalJobCardApplications: 0,
@@ -17,36 +18,44 @@ export default function SupervisorDashboard() {
     managedEmployees: 0
   });
   
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch statistics
+  // Set auth token from localStorage when component mounts
   useEffect(() => {
-    const fetchStatistics = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setAuthToken(token);
+    } else {
+      // Redirect to login if no token
+      window.location.href = '/auth';
+    }
+  }, []);
+
+  // Fetch statistics and activities
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        // In a real implementation, these would be actual API calls
-        // For now, we'll use mock data
+        setLoading(true);
         
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Fetch all data in parallel
+        const [statsData, activitiesData] = await Promise.all([
+          supervisorApi.getDashboardStats(),
+          supervisorApi.getRecentActivities()
+        ]);
         
-        setStats({
-          totalProjects: 12,
-          totalJobCardApplications: 42,
-          totalActiveWorkers: 128,
-          pendingPayments: 8,
-          upcomingDeadlines: 3,
-          managedEmployees: 15
-        });
+        setStats(statsData);
+        setRecentActivities(activitiesData);
       } catch (err) {
-        setError('Failed to load statistics');
-        console.error('Error fetching statistics:', err);
+        setError('Failed to load dashboard data');
+        console.error('Error fetching dashboard data:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStatistics();
+    fetchData();
   }, []);
 
   // Navigation items for supervisor
@@ -60,13 +69,16 @@ export default function SupervisorDashboard() {
     { id: 'settings', label: 'settings', icon: '⚙️' }
   ];
 
-  // Mock data for recent activities
-  const recentActivities = [
-    { id: 1, action: 'Attendance marked for Project A', time: '2 hours ago' },
-    { id: 2, action: 'New worker registered', time: '5 hours ago' },
-    { id: 3, action: 'Payment approved for Project B', time: '1 day ago' },
-    { id: 4, action: 'Deadline approaching for Project C', time: '1 day ago' }
-  ];
+  // Handle logout
+  const handleLogout = () => {
+    // Clear tokens from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    
+    // Redirect to login page
+    window.location.href = '/auth';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -87,6 +99,12 @@ export default function SupervisorDashboard() {
                   <span className="font-bold">S</span>
                 </div>
                 <span>Supervisor</span>
+                <button 
+                  onClick={handleLogout}
+                  className="ml-4 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200 text-sm"
+                >
+                  Logout
+                </button>
               </div>
             </div>
           </div>
@@ -222,16 +240,30 @@ export default function SupervisorDashboard() {
           <section>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('recentActivities')}</h2>
             <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden">
-              <ul className="divide-y divide-gray-200">
-                {recentActivities.map((activity) => (
-                  <li key={activity.id} className="p-6 hover:bg-indigo-50/50 transition-colors duration-200">
-                    <div className="flex justify-between">
-                      <p className="text-gray-800 font-medium">{activity.action}</p>
-                      <span className="text-gray-500 text-sm">{activity.time}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              {loading ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+                </div>
+              ) : error ? (
+                <div className="p-6 text-center text-red-500">
+                  Failed to load activities
+                </div>
+              ) : recentActivities.length === 0 ? (
+                <div className="p-6 text-center text-gray-500">
+                  No recent activities
+                </div>
+              ) : (
+                <ul className="divide-y divide-gray-200">
+                  {recentActivities.map((activity) => (
+                    <li key={activity.id} className="p-6 hover:bg-indigo-50/50 transition-colors duration-200">
+                      <div className="flex justify-between">
+                        <p className="text-gray-800 font-medium">{activity.action}</p>
+                        <span className="text-gray-500 text-sm">{activity.time}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </section>
         </main>

@@ -371,3 +371,56 @@ export const adminApi = {
     }
   }
 };
+
+// Supervisor Dashboard API functions
+export const supervisorApi = {
+  // Fetch dashboard statistics for supervisor
+  getDashboardStats: async () => {
+    try {
+      // Since there's no specific supervisor dashboard endpoint, we'll need to fetch
+      // data from various endpoints that supervisors have access to
+      
+      // Fetch supervisor's profile to get their information
+      const profileResponse = await apiFetch('/users/profile');
+      const profile = profileResponse.data;
+      
+      // Fetch projects (supervisors can view all projects)
+      const projectsResponse = await apiFetch('/projects');
+      const projects = projectsResponse.data?.projects || [];
+      
+      // For now, we'll return a simplified set of statistics that are relevant to supervisors
+      return {
+        totalProjects: projects.length,
+        totalJobCardApplications: 0,
+        totalActiveWorkers: 0,
+        pendingPayments: 0,
+        upcomingDeadlines: 0,
+        managedEmployees: 0
+      };
+    } catch (error) {
+      console.error('Error fetching supervisor dashboard stats:', error);
+      // Return default values on error
+      return {
+        totalProjects: 0,
+        totalJobCardApplications: 0,
+        totalActiveWorkers: 0,
+        pendingPayments: 0,
+        upcomingDeadlines: 0,
+        managedEmployees: 0
+      };
+    }
+  },
+
+  // Fetch recent activities for supervisor
+  getRecentActivities: async () => {
+    try {
+      // For now, we'll return an empty array since there's no direct endpoint
+      // for supervisors to get recent activities
+      return [];
+    } catch (error) {
+      console.error('Error fetching supervisor recent activities:', error);
+      // Return empty array on error
+      return [];
+    }
+  }
+};
