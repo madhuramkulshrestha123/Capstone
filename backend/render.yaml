@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     preDeployCommand: chmod +x predeploy.sh && ./predeploy.sh
-    buildCommand: npm run build
+    buildCommand: cd backend && npm install && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV

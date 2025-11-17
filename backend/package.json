@@ -20,7 +20,7 @@
     "db:migrate:helper": "node run-migrations.js",
     "db:setup": "node setup-database.js",
     "db:setup:neon": "node setup-neon-db.js",
-    "postinstall": "npm ls"
+    "postinstall": "npm ls && tsc --noEmit --watch false"
   },
   "keywords": [
     "typescript",
