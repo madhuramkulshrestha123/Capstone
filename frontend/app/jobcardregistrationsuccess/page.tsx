@@ -3,8 +3,9 @@
 import { useTranslation } from '../lib/useTranslation';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function JobCardRegistrationSuccess() {
+function JobCardRegistrationSuccessContent() {
   const { t } = useTranslation('en');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,5 +84,13 @@ export default function JobCardRegistrationSuccess() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function JobCardRegistrationSuccess() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <JobCardRegistrationSuccessContent />
+    </Suspense>
   );
 }
