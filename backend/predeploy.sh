@@ -1,5 +1,6 @@
 #!/bin/bash
 echo "Running pre-deploy script..."
 npm install --legacy-peer-deps || npm install
-echo "Build dependencies installed"
+echo "Dependencies installed"
+npm list || echo "Some dependencies may be missing, but continuing build..."
 npm run build
