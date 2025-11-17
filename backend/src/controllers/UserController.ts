@@ -335,20 +335,20 @@ export class UserController {
 
   public completeRegistration = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Extract all fields from the request body
+      // Extract all fields from the request body (using the actual field names sent by frontend)
       const { 
         email, 
         name, 
-        aadhaarNumber, 
-        jobCardId, 
-        password,
+        aadhaar_number, 
+        jobCardId,
         phone_number,
         panchayat_id,
         government_id,
         state,
         district,
         village_name,
-        pincode
+        pincode,
+        password
       } = req.body;
       
       // Handle image upload if file is provided
@@ -373,7 +373,7 @@ export class UserController {
       const userData = {
         email,
         name,
-        aadhaar_number: aadhaarNumber,
+        aadhaar_number: aadhaar_number || '', // Use the actual field name
         job_card_id: jobCardId,
         password,
         image_url: imageUrl,
