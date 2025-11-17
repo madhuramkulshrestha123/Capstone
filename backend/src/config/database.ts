@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { EventEmitter } from 'events';
 
 dotenv.config();
 

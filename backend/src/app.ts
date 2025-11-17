@@ -1,5 +1,5 @@
 // TypeScript imports
-import express, { Application } from 'express';
+import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -71,7 +71,7 @@ class App {
 
   private initializeRoutes(): void {
     // Health check route
-    this.app.get('/health', (req, res) => {
+    this.app.get('/health', (req: express.Request, res: express.Response) => {
       res.status(200).json({
         status: 'OK',
         timestamp: new Date().toISOString(),
@@ -91,7 +91,7 @@ class App {
     this.app.use('/api/v1/chatbot', chatbotRoutes);
 
     // Welcome route
-    this.app.get('/', (req, res) => {
+    this.app.get('/', (req: express.Request, res: express.Response) => {
       res.json({
         message: 'Welcome to Capstone Backend API',
         version: '1.0.0',
