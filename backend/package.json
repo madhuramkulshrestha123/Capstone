@@ -12,6 +12,7 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "typecheck": "tsc --noEmit",
+    "prebuild": "npm ls",
     "test:sample-registration": "ts-node testSampleRegistration.ts",
     "db:seed:sample": "node seed-database.js",
     "db:seed:projects": "node seed-projects.js",
@@ -20,7 +21,7 @@
     "db:migrate:helper": "node run-migrations.js",
     "db:setup": "node setup-database.js",
     "db:setup:neon": "node setup-neon-db.js",
-    "postinstall": "npm ls && tsc --noEmit --watch false"
+    "postinstall": "npm ls"
   },
   "keywords": [
     "typescript",
