@@ -16,7 +16,15 @@ class Database {
         connectionString: config.database.url,
         ssl: {
           rejectUnauthorized: false
-        }
+        },
+        // Connection pool settings for Neon PostgreSQL
+        max: 10, // Maximum number of clients in the pool
+        min: 2, // Minimum number of clients in the pool
+        idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+        connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
+        // Handle connection termination for serverless databases
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 10000
       });
     } else {
       console.log('Using individual environment variables for connection');
@@ -27,14 +35,27 @@ class Database {
         password: process.env.DB_PASSWORD || '12345678',
         database: process.env.DB_NAME || 'capstone_db',
         max: 20,
+        min: 2,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
       });
     }
 
+    // Handle connection errors
+    this.pool.on('error', (err) => {
+      console.error('Unexpected error on idle client', err);
+      // Don't exit the process, just log the error
+    });
+
     // Handle process exit events for proper cleanup
     process.on('beforeExit', async () => {
       console.log('Process beforeExit event triggered');
+      try {
+        await this.pool.end();
+        console.log('Database pool closed successfully');
+      } catch (error) {
+        console.error('Error closing database pool:', error);
+      }
     });
 
     process.on('exit', () => {
@@ -44,13 +65,23 @@ class Database {
     // Handle signals for graceful shutdown
     process.on('SIGTERM', async () => {
       console.log('SIGTERM signal received');
-      await this.pool.end();
+      try {
+        await this.pool.end();
+        console.log('Database pool closed successfully');
+      } catch (error) {
+        console.error('Error closing database pool:', error);
+      }
       process.exit(0);
     });
 
     process.on('SIGINT', async () => {
       console.log('SIGINT signal received');
-      await this.pool.end();
+      try {
+        await this.pool.end();
+        console.log('Database pool closed successfully');
+      } catch (error) {
+        console.error('Error closing database pool:', error);
+      }
       process.exit(0);
     });
   }
@@ -91,8 +122,12 @@ class Database {
   }
 
   public async close(): Promise<void> {
-    await this.pool.end();
-    console.log('Database connection closed');
+    try {
+      await this.pool.end();
+      console.log('Database connection closed');
+    } catch (error) {
+      console.error('Error closing database connection:', error);
+    }
   }
   
   public async query(text: string, params?: any[]): Promise<any> {

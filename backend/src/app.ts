@@ -138,10 +138,28 @@ class App {
   public async connectToDatabase(): Promise<void> {
     try {
       console.log('Attempting to connect to database...');
-      const isConnected = await this.database.testConnection();
-      if (!isConnected) {
-        throw new Error('Failed to connect to database');
+      
+      // Retry logic for database connection
+      let isConnected = false;
+      let attempts = 0;
+      const maxAttempts = 3;
+      const retryDelay = 2000; // 2 seconds
+      
+      while (!isConnected && attempts < maxAttempts) {
+        if (attempts > 0) {
+          console.log(`Retrying database connection (attempt ${attempts + 1}/${maxAttempts})...`);
+          // Wait before retrying
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
+        
+        isConnected = await this.database.testConnection();
+        attempts++;
       }
+      
+      if (!isConnected) {
+        throw new Error('Failed to connect to database after multiple attempts');
+      }
+      
       console.log('Database connection successful');
     } catch (error) {
       console.error('Database connection error:', error);
