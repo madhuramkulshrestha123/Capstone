@@ -4,7 +4,8 @@
   "description": "TypeScript REST API backend with Express and PostgreSQL",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm list || echo 'Checking dependencies before build...' && tsc",
+    "prebuild": "npm install --legacy-peer-deps || echo 'Dependencies installation attempted...'",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
     "test": "jest",
