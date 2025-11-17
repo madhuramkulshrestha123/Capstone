@@ -33,8 +33,7 @@
       "@routes/*": ["routes/*"],
       "@middlewares/*": ["middlewares/*"],
       "@config/*": ["config/*"],
-      "@utils/*": ["utils/*"],
-      "@types/*": ["types/*"]
+      "@utils/*": ["utils/*"]
     }
   },
   "include": [
