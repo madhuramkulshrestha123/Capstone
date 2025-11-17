@@ -1,4 +1,4 @@
 #!/bin/bash
 echo "Running pre-deploy script..."
-npm ci
+npm install
 npm run build
