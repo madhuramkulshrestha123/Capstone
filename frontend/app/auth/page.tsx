@@ -102,47 +102,24 @@ export default function AuthPage() {
 
       // Step 1: Send OTP
       if (!otpSent) {
-        const response = await fetch('http://localhost:3001/api/v1/users/register/send-otp', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
+        try {
+          const response = await authApi.sendRegistrationOtp(email);
           setOtpSent(true);
           setSuccess('OTP sent to your email');
-        } else {
-          setError(data.error?.message || 'Failed to send OTP');
+        } catch (error: any) {
+          setError(error.message || 'Failed to send OTP');
         }
         return;
       }
 
       // Step 2: Verify OTP
       if (otpSent && !otpVerified) {
-        const response = await fetch('http://localhost:3001/api/v1/users/register/verify-otp', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email,
-            otp,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
+        try {
+          const response = await authApi.verifyRegistrationOtp(email, otp);
           setOtpVerified(true);
           setSuccess('OTP verified successfully');
-        } else {
-          setError(data.error?.message || 'Failed to verify OTP');
+        } catch (error: any) {
+          setError(error.message || 'Failed to verify OTP');
         }
         return;
       }
@@ -207,24 +184,15 @@ export default function AuthPage() {
           captchaToken: recaptchaToken // Add reCAPTCHA token
         };
 
-        const response = await fetch('http://localhost:3001/api/v1/users/register/complete', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(registrationData),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
+        try {
+          const response = await authApi.completeRegistration(registrationData);
           setSuccess('Registration completed successfully! You can now login.');
           setTimeout(() => {
             setIsLogin(true);
             resetForm();
           }, 2000);
-        } else {
-          setError(data.error?.message || 'Registration failed');
+        } catch (error: any) {
+          setError(error.message || 'Registration failed');
         }
       }
     } catch (err) {
@@ -268,24 +236,12 @@ export default function AuthPage() {
           return;
         }
 
-        const response = await fetch('http://localhost:3001/api/v1/users/login/send-otp', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: identifier,
-            password,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
+        try {
+          const response = await authApi.sendLoginOtp(identifier, password);
           setOtpSent(true);
           setSuccess('OTP sent to your email');
-        } else {
-          setError(data.error?.message || 'Failed to send OTP');
+        } catch (error: any) {
+          setError(error.message || 'Failed to send OTP');
         }
         return;
       }
@@ -294,39 +250,28 @@ export default function AuthPage() {
       if (otpSent) {
         const identifier = userType === 'user' ? jobCardNumber : employmentId;
         
-        const response = await fetch('http://localhost:3001/api/v1/users/login/verify-otp', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: identifier,
-            otp,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
+        try {
+          const response = await authApi.verifyLoginOtp(identifier, otp);
+          
           // Store token in localStorage and redirect
-          localStorage.setItem('token', data.data.token);
-          localStorage.setItem('refreshToken', data.data.refreshToken);
-          localStorage.setItem('user', JSON.stringify(data.data.user));
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+          localStorage.setItem('user', JSON.stringify(response.data.user));
           
           setSuccess('Login successful! Redirecting...');
           
           // Redirect based on user role
           setTimeout(() => {
-            if (data.data.user.role === 'admin') {
+            if (response.data.user.role === 'admin') {
               window.location.href = '/admin/dashboard';
-            } else if (data.data.user.role === 'supervisor') {
+            } else if (response.data.user.role === 'supervisor') {
               window.location.href = '/supervisor';
             } else {
               window.location.href = '/dashboard';
             }
           }, 1000);
-        } else {
-          setError(data.error?.message || 'Failed to verify OTP');
+        } catch (error: any) {
+          setError(error.message || 'Failed to verify OTP');
         }
       }
     } catch (err) {
