@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslation } from '../lib/useTranslation';
 import jsPDF from 'jspdf';
+import { apiFetch } from '../lib/api';
 
 export default function TrackApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
@@ -27,7 +28,7 @@ export default function TrackApplicationPage() {
     setApplicationData(null);
 
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/job-card-applications/track/${trackingId}`);
+      const response = await apiFetch(`/job-card-applications/track/${trackingId}`);
       
       if (response.ok) {
         const result = await response.json();
