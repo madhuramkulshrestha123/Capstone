@@ -43,7 +43,8 @@ export class EmailService {
 
       await sgMail.send(msg);
       console.log('Email sent successfully via SendGrid');
-      console.log(`[TESTING] OTP for ${to}: ${otp}`); // Still log for testing visibility
+      // Always log OTP for testing visibility
+      console.log(`[TESTING] OTP for ${to}: ${otp}`);
       return true;
     } catch (error) {
       console.error('Error sending email via SendGrid:', error);
