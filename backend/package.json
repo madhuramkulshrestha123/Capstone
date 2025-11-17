@@ -18,7 +18,8 @@
     "db:check": "node check-database-connection.js",
     "db:setup:supabase": "node setup-supabase.js",
     "db:migrate:helper": "node run-migrations.js",
-    "db:setup": "node setup-database.js"
+    "db:setup": "node setup-database.js",
+    "db:setup:neon": "node setup-neon-db.js"
   },
   "keywords": [
     "typescript",

@@ -45,7 +45,7 @@ const config: Config = {
     nodeEnv: process.env.NODE_ENV || 'development',
   },
   database: {
-    url: `postgresql://${process.env.DB_USERNAME || 'postgres'}:${process.env.DB_PASSWORD || '12345678'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'capstone_db'}?schema=public`,
+    url: process.env.DATABASE_URL || `postgresql://${process.env.DB_USERNAME || 'neondb_owner'}:${process.env.DB_PASSWORD || 'npg_TUy0sgCA5lKH'}@${process.env.DB_HOST || 'ep-withered-block-a1h91z9p-pooler.ap-southeast-1.aws.neon.tech'}:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'neondb'}?sslmode=require&channel_binding=require`,
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'your_jwt_secret_here',
