@@ -68,13 +68,24 @@ class Database {
 
   public async testConnection(): Promise<boolean> {
     try {
+      console.log('Testing database connection...');
       const client = await this.pool.connect();
+      console.log('Database connection established');
       await client.query('SELECT 1');
       client.release();
       console.log('Database connection test successful');
       return true;
     } catch (error) {
       console.error('Database connection test failed:', error);
+      // Log additional information about the connection
+      if (config.database.url) {
+        console.error('Using DATABASE_URL for connection');
+      } else {
+        console.error('Using individual environment variables for connection');
+        console.error('Host:', process.env.DB_HOST || 'localhost');
+        console.error('Port:', process.env.DB_PORT || '5432');
+        console.error('Database:', process.env.DB_NAME || 'capstone_db');
+      }
       return false;
     }
   }

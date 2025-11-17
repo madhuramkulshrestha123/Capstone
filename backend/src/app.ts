@@ -78,6 +78,33 @@ class App {
         environment: config.server.nodeEnv,
       });
     });
+    
+    // Database health check route
+    this.app.get('/health/db', async (req: express.Request, res: express.Response) => {
+      try {
+        const isConnected = await this.database.testConnection();
+        if (isConnected) {
+          res.status(200).json({
+            status: 'OK',
+            database: 'Connected',
+            timestamp: new Date().toISOString(),
+          });
+        } else {
+          res.status(503).json({
+            status: 'ERROR',
+            database: 'Disconnected',
+            timestamp: new Date().toISOString(),
+          });
+        }
+      } catch (error) {
+        res.status(503).json({
+          status: 'ERROR',
+          database: 'Connection failed',
+          error: (error as Error).message,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    });
 
     // API routes
     this.app.use('/api/v1/users', userRoutes);
