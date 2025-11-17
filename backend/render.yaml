@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: capstone-backend
+    name: Capstone-Backend
     env: node
     plan: free
     preDeployCommand: chmod +x predeploy.sh && ./predeploy.sh
