@@ -20,7 +20,7 @@
     "db:migrate:helper": "node run-migrations.js",
     "db:setup": "node setup-database.js",
     "db:setup:neon": "node setup-neon-db.js",
-    "postinstall": "tsc --noEmit"
+    "postinstall": "npm ls"
   },
   "keywords": [
     "typescript",
@@ -46,7 +46,6 @@
     "@types/morgan": "^1.9.4",
     "@types/multer": "^2.0.0",
     "@types/node": "^20.19.13",
-    "@types/express-serve-static-core": "^4.17.33",
     "@types/nodemailer": "^7.0.1",
     "@types/pg": "^8.10.2",
     "@types/serve-static": "^1.15.5",
