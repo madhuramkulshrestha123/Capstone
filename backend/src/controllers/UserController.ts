@@ -261,14 +261,15 @@ export class UserController {
     }
   };
 
+  // New OTP-based registration methods
   public sendRegistrationOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, phone_number } = req.body;
+      const { email } = req.body;
       
       // Check if user already exists
-      const existingUser = await this.userService.getUserModel().findByEmail(email);
+      const existingUser = await this.userService.getUserByEmail(email);
       if (existingUser) {
-        res.status(409).json({
+        res.status(400).json({
           success: false,
           error: {
             message: 'User with this email already exists',
@@ -276,27 +277,21 @@ export class UserController {
         });
         return;
       }
-
-      // Send OTP via email and SMS if phone number is provided
-      const result = await this.otpService.sendOtp(email, phone_number);
-
+      
+      // Send OTP
+      const result = await this.otpService.sendOtp(email);
+      
       if (result.success) {
-        const responseData: any = {
-          message: 'OTP sent successfully',
-          is_verified: false,
-        };
-        
-        // In development, include the OTP for testing
-        if (process.env.NODE_ENV === 'development' && result.otp) {
-          responseData.otp = result.otp;
-        }
-        
-        res.status(200).json({
+        const response: ApiResponse = {
           success: true,
-          data: responseData,
-        });
+          data: {
+            message: result.message,
+            otp: result.otp // Only included in development
+          },
+        };
+        res.status(200).json(response);
       } else {
-        res.status(400).json({
+        res.status(500).json({
           success: false,
           error: {
             message: result.message,
@@ -311,17 +306,20 @@ export class UserController {
   public verifyRegistrationOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { email, otp } = req.body;
-
+      
+      // Verify OTP
       const result = await this.otpService.verifyOtp(email, otp);
-
+      
       if (result.success) {
-        res.status(200).json({
+        const response: ApiResponse = {
           success: true,
           data: {
-            message: 'OTP verified successfully',
+            message: result.message,
             email: email,
+            otpVerified: true
           },
-        });
+        };
+        res.status(200).json(response);
       } else {
         res.status(400).json({
           success: false,
@@ -337,71 +335,13 @@ export class UserController {
 
   public completeRegistration = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Check if OTP is verified
-      const isVerified = await this.otpService.isOtpVerified(req.body.email);
-      if (!isVerified) {
-        res.status(400).json({
-          success: false,
-          error: {
-            message: 'OTP not verified. Please verify OTP first.',
-          },
-        });
-        return;
-      }
-
-      // Check if user already exists by email, phone, aadhaar, or government ID
-      const [existingUserByEmail, existingUserByPhone, existingUserByAadhaar, existingUserByGovId] = await Promise.all([
-        this.userService.getUserModel().findByEmail(req.body.email),
-        this.userService.getUserModel().findByPhoneNumber(req.body.phone_number),
-        this.userService.getUserModel().findByAadhaar(req.body.aadhaar_number),
-        this.userService.getUserModel().findByGovernmentId(req.body.government_id),
-      ]);
-
-      if (existingUserByEmail) {
-        res.status(409).json({
-          success: false,
-          error: {
-            message: 'User with this email already exists',
-          },
-        });
-        return;
-      }
-
-      if (existingUserByPhone) {
-        res.status(409).json({
-          success: false,
-          error: {
-            message: 'User with this phone number already exists',
-          },
-        });
-        return;
-      }
-
-      if (existingUserByAadhaar) {
-        res.status(409).json({
-          success: false,
-          error: {
-            message: 'User with this Aadhaar number already exists',
-          },
-        });
-        return;
-      }
-
-      if (existingUserByGovId) {
-        res.status(409).json({
-          success: false,
-          error: {
-            message: 'User with this government ID already exists',
-          },
-        });
-        return;
-      }
-
+      const { email, name, aadhaarNumber, jobCardId, password } = req.body;
+      
       // Handle image upload if file is provided
       let imageUrl: string | undefined;
       if (req.file) {
         try {
-          const fileName = `user_${req.body.email}_${Date.now()}`;
+          const fileName = `user_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
           imageUrl = await this.cloudinaryService.uploadImage(req.file.buffer, fileName);
         } catch (uploadError) {
           console.error('Error uploading image to Cloudinary:', uploadError);
@@ -414,73 +354,77 @@ export class UserController {
           return;
         }
       }
-
-      // Add image URL to registration data
-      const registrationData = { ...req.body };
-      if (imageUrl) {
-        registrationData.image_url = imageUrl;
-      }
-
-      const user = await this.userService.createRegistration(registrationData);
-
-      res.status(201).json({
+      
+      // Create user with minimal required data for registration
+      const userData = {
+        email,
+        name,
+        aadhaar_number: aadhaarNumber,
+        job_card_id: jobCardId,
+        password,
+        image_url: imageUrl,
+        role: 'supervisor', // Default role for new registrations
+        phone_number: '', // Required field
+        panchayat_id: '', // Required field
+        government_id: '', // Required field
+        state: '', // Required field
+        district: '', // Required field
+        village_name: '', // Required field
+        pincode: '' // Required field
+      };
+      
+      // Use createRegistration method from UserService
+      const userModel = this.userService.getUserModel();
+      const user = await userModel.createRegistration(userData);
+      
+      // Map user to response format
+      const { password_hash, ...userResponse } = user;
+      
+      const response: ApiResponse = {
         success: true,
         data: {
-          user,
           message: 'Registration completed successfully',
+          user: userResponse
         },
-      });
+      };
+      
+      res.status(201).json(response);
     } catch (error) {
       next(error);
     }
   };
 
+  // New OTP-based login methods
   public sendLoginOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, password } = req.body;
+      const { email } = req.body;
       
-      // Check if user exists and verify password
-      const user = await this.userService.getUserModel().verifyPassword(email, password);
-      if (!user) {
-        res.status(401).json({
+      // Check if user exists
+      const existingUser = await this.userService.getUserByEmail(email);
+      if (!existingUser) {
+        res.status(404).json({
           success: false,
           error: {
-            message: 'Invalid email or password',
+            message: 'No user found with this email',
           },
         });
         return;
       }
-
-      // Check if user is active
-      if (!user.is_active) {
-        res.status(403).json({
-          success: false,
-          error: {
-            message: 'Account is deactivated',
-          },
-        });
-        return;
-      }
-
-      // Send OTP via email and SMS using the user's phone number
-      const result = await this.otpService.sendOtp(email, user.phone_number);
-
+      
+      // Send OTP
+      const result = await this.otpService.sendOtp(email);
+      
       if (result.success) {
-        const responseData: any = {
-          message: 'OTP sent successfully for login',
-        };
-        
-        // In development, include the OTP for testing
-        if (process.env.NODE_ENV === 'development' && result.otp) {
-          responseData.otp = result.otp;
-        }
-        
-        res.status(200).json({
+        const response: ApiResponse = {
           success: true,
-          data: responseData,
-        });
+          data: {
+            message: result.message,
+            otp: result.otp // Only included in development
+          },
+        };
+        res.status(200).json(response);
       } else {
-        res.status(400).json({
+        res.status(500).json({
           success: false,
           error: {
             message: result.message,
@@ -495,12 +439,13 @@ export class UserController {
   public verifyLoginOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { email, otp } = req.body;
-
+      
+      // Verify OTP
       const result = await this.otpService.verifyOtp(email, otp);
-
+      
       if (result.success) {
-        // Get user and generate tokens
-        const user = await this.userService.getUserModel().findByEmail(email);
+        // Get user details
+        const user = await this.userService.getUserByEmail(email);
         if (!user) {
           res.status(404).json({
             success: false,
@@ -510,29 +455,20 @@ export class UserController {
           });
           return;
         }
-
-        const tokens = this.userService.generateTokens(user);
         
-        res.status(200).json({
+        // Generate JWT tokens using the existing method
+        const tokens = this.userService.generateTokens(user as any);
+        
+        const response: ApiResponse = {
           success: true,
           data: {
-            user: {
-              user_id: user.user_id,
-              name: user.name,
-              email: user.email,
-              phone_number: user.phone_number,
-              aadhaar_number: user.aadhaar_number,
-              role: user.role,
-              image_url: user.image_url,
-              is_active: user.is_active,
-              created_at: user.created_at,
-              updated_at: user.updated_at,
-            },
-            token: tokens.token,
-            refreshToken: tokens.refreshToken,
             message: 'Login successful',
+            user: user,
+            token: tokens.token,
+            refreshToken: tokens.refreshToken
           },
-        });
+        };
+        res.status(200).json(response);
       } else {
         res.status(400).json({
           success: false,

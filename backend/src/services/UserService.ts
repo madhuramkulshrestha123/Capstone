@@ -86,6 +86,15 @@ export class UserService {
     return this.mapUserToResponse(user);
   }
 
+  // Add a method to get user by email
+  async getUserByEmail(email: string): Promise<UserResponse | null> {
+    const user = await this.userModel.findByEmail(email);
+    if (!user) {
+      return null;
+    }
+    return this.mapUserToResponse(user);
+  }
+
   async createUser(userData: CreateUserRequest): Promise<UserResponse> {
     // Check if user already exists
     const [existingUserByEmail, existingUserByPhone, existingUserByAadhaar, existingUserByGovId] = await Promise.all([

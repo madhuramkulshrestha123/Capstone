@@ -17,7 +17,7 @@ export interface Config {
     refreshExpiresIn: string;
   };
   cors: {
-    origin: string;
+    origin: string | string[];
   };
   rateLimit: {
     windowMs: number;
@@ -45,7 +45,7 @@ const config: Config = {
     nodeEnv: process.env.NODE_ENV || 'development',
   },
   database: {
-    url: process.env.DATABASE_URL || `postgresql://${process.env.DB_USERNAME || 'neondb_owner'}:${process.env.DB_PASSWORD || 'npg_TUy0sgCA5lKH'}@${process.env.DB_HOST || 'ep-withered-block-a1h91z9p-pooler.ap-southeast-1.aws.neon.tech'}:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'neondb'}?sslmode=require&channel_binding=require`,
+    url: process.env.DATABASE_URL || '',
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'your_jwt_secret_here',
@@ -54,7 +54,9 @@ const config: Config = {
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: process.env.CORS_ORIGIN ? 
+      process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) : 
+      ['http://localhost:3000', 'https://capstone-phi-two.vercel.app'],
   },
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes

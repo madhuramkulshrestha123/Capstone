@@ -109,9 +109,16 @@ class App {
   }
 
   public async connectToDatabase(): Promise<void> {
-    const isConnected = await this.database.testConnection();
-    if (!isConnected) {
-      throw new Error('Failed to connect to database');
+    try {
+      console.log('Attempting to connect to database...');
+      const isConnected = await this.database.testConnection();
+      if (!isConnected) {
+        throw new Error('Failed to connect to database');
+      }
+      console.log('Database connection successful');
+    } catch (error) {
+      console.error('Database connection error:', error);
+      throw new Error('Database configuration error');
     }
   }
 

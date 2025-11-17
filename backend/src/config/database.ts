@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import config from './index';
 
 dotenv.config();
 
@@ -8,16 +9,28 @@ class Database {
   private static instance: Database;
 
   private constructor() {
-    this.pool = new Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      user: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || '12345678',
-      database: process.env.DB_NAME || 'capstone_db',
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-    });
+    // Use DATABASE_URL if available (for Render deployment), otherwise use individual env vars
+    if (config.database.url) {
+      console.log('Using DATABASE_URL for connection');
+      this.pool = new Pool({
+        connectionString: config.database.url,
+        ssl: {
+          rejectUnauthorized: false
+        }
+      });
+    } else {
+      console.log('Using individual environment variables for connection');
+      this.pool = new Pool({
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432'),
+        user: process.env.DB_USERNAME || 'postgres',
+        password: process.env.DB_PASSWORD || '12345678',
+        database: process.env.DB_NAME || 'capstone_db',
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
+      });
+    }
 
     // Handle process exit events for proper cleanup
     process.on('beforeExit', async () => {
