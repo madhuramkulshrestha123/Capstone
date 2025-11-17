@@ -3,7 +3,8 @@ services:
     name: capstone-backend
     env: node
     plan: free
-    buildCommand: npm install && npm run build
+    preDeployCommand: chmod +x predeploy.sh && ./predeploy.sh
+    buildCommand: npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
