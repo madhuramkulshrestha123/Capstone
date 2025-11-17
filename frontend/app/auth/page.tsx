@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { authApi } from '../lib/api';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);

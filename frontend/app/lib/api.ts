@@ -1,7 +1,7 @@
 // Store token in memory (in a real app, you'd use localStorage or a more secure method)
 let authToken: string | null = null;
 
-const API_BASE_URL = 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 // Set authentication token
 export const setAuthToken = (token: string | null) => {
@@ -61,6 +61,79 @@ export const userApi = {
       return response.data;
     } catch (error) {
       console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
+};
+
+// Auth API functions
+export const authApi = {
+  // Send OTP for registration
+  sendRegistrationOtp: async (email: string) => {
+    try {
+      const response = await apiFetch('/users/register/send-otp', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error sending registration OTP:', error);
+      throw error;
+    }
+  },
+  
+  // Verify OTP for registration
+  verifyRegistrationOtp: async (email: string, otp: string) => {
+    try {
+      const response = await apiFetch('/users/register/verify-otp', {
+        method: 'POST',
+        body: JSON.stringify({ email, otp }),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error verifying registration OTP:', error);
+      throw error;
+    }
+  },
+  
+  // Complete registration
+  completeRegistration: async (registrationData: any) => {
+    try {
+      const response = await apiFetch('/users/register/complete', {
+        method: 'POST',
+        body: JSON.stringify(registrationData),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error completing registration:', error);
+      throw error;
+    }
+  },
+  
+  // Send OTP for login
+  sendLoginOtp: async (identifier: string, password: string) => {
+    try {
+      const response = await apiFetch('/users/login/send-otp', {
+        method: 'POST',
+        body: JSON.stringify({ email: identifier, password }),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error sending login OTP:', error);
+      throw error;
+    }
+  },
+  
+  // Verify OTP for login
+  verifyLoginOtp: async (identifier: string, otp: string) => {
+    try {
+      const response = await apiFetch('/users/login/verify-otp', {
+        method: 'POST',
+        body: JSON.stringify({ email: identifier, otp }),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error verifying login OTP:', error);
       throw error;
     }
   }
