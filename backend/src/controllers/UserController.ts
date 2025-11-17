@@ -335,7 +335,21 @@ export class UserController {
 
   public completeRegistration = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, name, aadhaarNumber, jobCardId, password } = req.body;
+      // Extract all fields from the request body
+      const { 
+        email, 
+        name, 
+        aadhaarNumber, 
+        jobCardId, 
+        password,
+        phone_number,
+        panchayat_id,
+        government_id,
+        state,
+        district,
+        village_name,
+        pincode
+      } = req.body;
       
       // Handle image upload if file is provided
       let imageUrl: string | undefined;
@@ -355,7 +369,7 @@ export class UserController {
         }
       }
       
-      // Create user with minimal required data for registration
+      // Create user with all required data for registration
       const userData = {
         email,
         name,
@@ -364,13 +378,13 @@ export class UserController {
         password,
         image_url: imageUrl,
         role: 'supervisor', // Default role for new registrations
-        phone_number: '', // Required field
-        panchayat_id: '', // Required field
-        government_id: '', // Required field
-        state: '', // Required field
-        district: '', // Required field
-        village_name: '', // Required field
-        pincode: '' // Required field
+        phone_number: phone_number || '',
+        panchayat_id: panchayat_id || '',
+        government_id: government_id || '',
+        state: state || '',
+        district: district || '',
+        village_name: village_name || '',
+        pincode: pincode || ''
       };
       
       // Use createRegistration method from UserService
