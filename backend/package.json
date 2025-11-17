@@ -19,8 +19,7 @@
     "db:setup:supabase": "node setup-supabase.js",
     "db:migrate:helper": "node run-migrations.js",
     "db:setup": "node setup-database.js",
-    "db:setup:neon": "node setup-database.js",
-    "postinstall": "npm run db:setup"
+    "db:setup:neon": "node setup-database.js"
   },
   "keywords": [
     "typescript",
