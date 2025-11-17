@@ -21,7 +21,7 @@ import {
 const router = Router();
 const userController = new UserController();
 
-// Public routes
+// Public routes (these should come BEFORE the authenticateToken middleware)
 // New OTP-based registration flow
 router.post('/register/send-otp', validateRequest(sendOtpSchema), userController.sendRegistrationOtp);
 router.post('/register/verify-otp', validateRequest(verifyOtpSchema), userController.verifyRegistrationOtp);
@@ -43,7 +43,7 @@ router.post('/login', validateRequest(loginSchema), userController.login);
 
 router.post('/refresh-token', validateRequest(refreshTokenSchema), userController.refreshToken);
 
-// Protected routes
+// Protected routes (these come AFTER the authenticateToken middleware)
 router.use(authenticateToken);
 
 // Profile routes (All authenticated users)
