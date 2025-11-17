@@ -101,6 +101,12 @@ export class WorkDemandRequestService {
     }
   }
 
+  async getAllRequests(): Promise<WorkDemandRequest[]> {
+    // Get all work demand requests
+    const requests = await this.workDemandRequestModel.findAll(1000, 0);
+    return requests;
+  }
+
   async approveRequest(id: string, allocatedAt?: string, projectId?: string): Promise<WorkDemandRequest> {
     // First, get the current request to check if it already has a project
     const currentRequest = await this.getRequestById(id);

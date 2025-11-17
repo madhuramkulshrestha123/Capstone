@@ -21,6 +21,7 @@ import attendanceRoutes from './routes/attendanceRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import jobCardApplicationRoutes from './routes/jobCardApplicationRoutes';
 import adminJobCardApplicationRoutes from './routes/admin/jobCardApplicationRoutes';
+import adminDashboardRoutes from './routes/admin/dashboardRoutes';
 import chatbotRoutes from './routes/chatbotRoutes';
 
 dotenv.config();
@@ -115,6 +116,7 @@ class App {
     this.app.use('/api/v1/payments', paymentRoutes);
     this.app.use('/api/v1/job-card-applications', jobCardApplicationRoutes);
     this.app.use('/api/v1/admin', adminJobCardApplicationRoutes);
+    this.app.use('/api/v1/admin', adminDashboardRoutes);
     this.app.use('/api/v1/chatbot', chatbotRoutes);
 
     // Welcome route

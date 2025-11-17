@@ -10,10 +10,10 @@ export default function AdminDashboard() {
   
   // State for panchayat information
   const [panchayatInfo, setPanchayatInfo] = useState({
-    name: 'ग्राम पंचायत नई दिल्ली',
-    district: 'Central Delhi',
-    state: 'Delhi',
-    id: 'GP-DE-2025-001'
+    name: '',
+    district: '',
+    state: '',
+    id: ''
   });
   
   // State for statistics
@@ -62,13 +62,28 @@ export default function AdminDashboard() {
           adminApi.getPendingJobCardApplications()
         ]);
         
-        setPanchayatInfo(panchayatData);
+        // Set panchayat info with fallback values if empty
+        setPanchayatInfo({
+          name: panchayatData.name || 'ग्राम पंचायत',
+          district: panchayatData.district || 'Unknown District',
+          state: panchayatData.state || 'Unknown State',
+          id: panchayatData.id || 'N/A'
+        });
+        
         setStats(statsData);
         setRecentActivities(activitiesData);
         setPendingApplications(applicationsData);
       } catch (err) {
         setError('Failed to load dashboard data');
         console.error('Error fetching dashboard data:', err);
+        
+        // Set default values on error
+        setPanchayatInfo({
+          name: 'ग्राम पंचायत',
+          district: 'Unknown District',
+          state: 'Unknown State',
+          id: 'N/A'
+        });
       } finally {
         setLoading(false);
       }
@@ -77,10 +92,12 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  // Show a notification that data is currently mock data
+  // Show a notification if we're using fallback data
   useEffect(() => {
-    // In a real implementation, this would be removed
-  }, [loading, error]);
+    if (!loading && !error && (!panchayatInfo.name || panchayatInfo.name === 'ग्राम पंचायत')) {
+      console.log('Using fallback panchayat data');
+    }
+  }, [loading, error, panchayatInfo]);
 
   // Navigation items for admin
   const navItems = [
@@ -348,14 +365,13 @@ export default function AdminDashboard() {
                     <li key={application.id || index} className="p-6 hover:bg-blue-50 transition-colors duration-200">
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-gray-800 font-medium">{application.headOfHouseholdName || application.name}</p>
+                          <p className="text-gray-800 font-medium">{application.name}</p>
                           <p className="text-gray-500 text-sm">
-                            ID: {application.panchayat || application.panchayatId || 'N/A'} | 
                             {language === 'en' ? ' District: ' : ' जिला: '}
                             {application.district || 'N/A'}
                           </p>
                         </div>
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${application.status === 'approved' ? 'bg-green-100 text-green-800' : application.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
                           {application.status || 'New'}
                         </span>
                       </div>
@@ -379,13 +395,13 @@ export default function AdminDashboard() {
                     <li key={application.id || index} className="p-6 hover:bg-blue-50 transition-colors duration-200">
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-gray-800 font-medium">{application.headOfHouseholdName || application.name}</p>
+                          <p className="text-gray-800 font-medium">{application.name}</p>
                           <p className="text-gray-500 text-sm">
-                            ID: {application.panchayat || application.panchayatId || 'N/A'} | 
                             {language === 'en' ? ' District: ' : ' जिला: '}
                             {application.district || 'N/A'}
-                          </p>                        </div>
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                          </p>
+                        </div>
+                        <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
                           {t('pending')}
                         </span>
                       </div>
