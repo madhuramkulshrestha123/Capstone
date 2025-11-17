@@ -1,6 +1,7 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
 import { EventEmitter } from 'events';
+import config from './index';
 
 dotenv.config();
 
@@ -10,11 +11,7 @@ class Database {
 
   private constructor() {
     this.pool = new Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      user: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || '12345678',
-      database: process.env.DB_NAME || 'capstone_db',
+      connectionString: config.database.url,
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
