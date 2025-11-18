@@ -7,19 +7,24 @@ export interface JobCardApplication {
   tracking_id: string;
   aadhaar_number: string;
   phone_number: string;
+  date_of_birth: Date;
+  age: number;
   family_id: string;
   head_of_household_name: string;
   father_or_husband_name: string;
   category: string;
-  date_of_registration: Date;
-  full_address: string;
+  epic_number: string | null;
+  belongs_to_bpl: boolean;
+  state: string;
+  district: string;
   village: string | null;
   panchayat: string;
   block: string;
-  district: string;
   pincode: string | null;
-  is_bpl: boolean;
-  epic_number: string | null;
+  full_address: string;
+  bank_name: string;
+  account_number: string;
+  ifsc_code: string;
   applicants: any[];
   image_url: string | null;
   status: 'pending' | 'approved' | 'rejected';
@@ -50,28 +55,33 @@ export class JobCardApplicationModel {
     
     const result = await this.db.query(
       `INSERT INTO job_card_applications (
-        tracking_id, aadhaar_number, phone_number, family_id, head_of_household_name,
-        father_or_husband_name, category, date_of_registration, full_address, village,
-        panchayat, block, district, pincode, is_bpl, epic_number, applicants, image_url, status, job_card_id,
-        created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) RETURNING *`,
+        tracking_id, aadhaar_number, phone_number, date_of_birth, age, family_id, head_of_household_name,
+        father_or_husband_name, category, epic_number, belongs_to_bpl, state, district, village,
+        panchayat, block, pincode, full_address, bank_name, account_number, ifsc_code, applicants, 
+        image_url, status, job_card_id, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27) RETURNING *`,
       [
         trackingId,
         applicationData.aadhaar_number,
         applicationData.phone_number,
+        applicationData.date_of_birth,
+        applicationData.age,
         applicationData.family_id,
         applicationData.head_of_household_name,
         applicationData.father_or_husband_name,
         applicationData.category,
-        applicationData.date_of_registration,
-        applicationData.full_address,
+        applicationData.epic_number || null,
+        applicationData.belongs_to_bpl,
+        applicationData.state,
+        applicationData.district,
         applicationData.village || null,
         applicationData.panchayat,
         applicationData.block,
-        applicationData.district,
         applicationData.pincode || null,
-        applicationData.is_bpl,
-        applicationData.epic_number || null,
+        applicationData.full_address,
+        applicationData.bank_name,
+        applicationData.account_number,
+        applicationData.ifsc_code,
         JSON.stringify(applicationData.applicants),
         applicationData.image_url,
         applicationData.status,

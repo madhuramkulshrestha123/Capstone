@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS payments (
 -- Create job_card_applications table
 CREATE TABLE IF NOT EXISTS job_card_applications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tracking_id VARCHAR(50) UNIQUE NOT NULL, -- Add the missing tracking_id column
     aadhaar_number VARCHAR(12) NOT NULL,
     phone_number VARCHAR(15) NOT NULL,
     date_of_birth DATE NOT NULL,
@@ -176,6 +177,7 @@ CREATE INDEX IF NOT EXISTS idx_payments_project ON payments(project_id);
 CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status);
 CREATE INDEX IF NOT EXISTS idx_job_card_applications_aadhaar ON job_card_applications(aadhaar_number);
 CREATE INDEX IF NOT EXISTS idx_job_card_applications_status ON job_card_applications(status);
+CREATE INDEX IF NOT EXISTS idx_job_card_applications_tracking_id ON job_card_applications(tracking_id); -- Add index for tracking_id
 
 -- Create a function to update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
