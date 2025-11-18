@@ -465,33 +465,86 @@ export default function JobCardApplication() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+    
+    console.log('Form submission started');
+    console.log('Current form state:', formState);
+    
     // Validate form
     if (!validateForm()) {
+      console.log('Form validation failed');
       return;
     }
-
+    
+    console.log('Form validation passed');
+    
     try {
-      setIsSubmitting(true);
+      // For local development, we can bypass reCAPTCHA
+      // In production, you would want to properly implement reCAPTCHA
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      let recaptchaToken = null;
       
-      // Prepare application data
+      if (!isDevelopment) {
+        // Execute reCAPTCHA for job card application
+        recaptchaToken = await handleReCaptchaVerify('apply_job_card');
+        console.log('Recaptcha token:', recaptchaToken);
+        
+        if (!recaptchaToken) {
+          alert('reCAPTCHA verification failed. Please try again.');
+          return;
+        }
+      } else {
+        // In development, use a dummy token
+        recaptchaToken = 'dummy-development-token';
+        console.log('Using dummy token for development');
+      }
+      
+      // Prepare job card application data to match backend validation schema
       const applicationData = {
         aadhaarNumber: formState.aadhaarNumber,
         phoneNumber: formState.phoneNumber,
+        captchaToken: recaptchaToken,
         password: formState.password,
         jobCardDetails: {
           familyId: formState.jobCardDetails.familyId,
           headOfHouseholdName: formState.jobCardDetails.headOfHouseholdName,
           fatherHusbandName: formState.jobCardDetails.fatherHusbandName,
-          dateOfRegistration: new Date().toISOString().split('T')[0],
-          isBPL: formState.jobCardDetails.isBPL,
-          fullAddress: formState.jobCardDetails.fullAddress,
+          category: formState.jobCardDetails.category,
+          dateOfRegistration: formState.jobCardDetails.dateOfRegistration,
+          address: formState.jobCardDetails.address,
           state: formState.jobCardDetails.state,
           district: formState.jobCardDetails.district,
           village: formState.jobCardDetails.village,
-          panchayat: formState.jobCardDetails.panchayat,
           pincode: formState.jobCardDetails.pincode,
-          familyMembers: formState.jobCardDetails.familyMembers
+          panchayat: formState.jobCardDetails.panchayat,
+          block: formState.jobCardDetails.block,
+          isBPL: formState.jobCardDetails.isBPL,
+          epicNo: formState.jobCardDetails.epicNo || null,
+          applicants: formState.jobCardDetails.applicants.map(applicant => {
+            let age = 0;
+            if (applicant.dateOfBirth) {
+              const dob = new Date(applicant.dateOfBirth);
+              const today = new Date();
+              age = today.getFullYear() - dob.getFullYear();
+              const monthDiff = today.getMonth() - dob.getMonth();
+              
+              if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                age--;
+              }
+            }
+            
+            const bankDetails = `${applicant.bankName}|${applicant.accountNumber}|${applicant.ifscCode}`;
+            
+            return {
+              name: applicant.name,
+              fatherHusbandName: applicant.fatherHusbandName,
+              relationship: applicant.relationship,
+              dateOfBirth: applicant.dateOfBirth,
+              age: age,
+              gender: applicant.gender,
+              aadhaarNumber: applicant.aadhaarNumber,
+              bankDetails: bankDetails
+            };
+          })
         }
       };
 
@@ -506,9 +559,8 @@ export default function JobCardApplication() {
         formData.append('image', imageFile);
       }
 
-      // Submit the application using the proper API base URL
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-      const response = await fetch(`${API_BASE_URL}/job-card-applications/submit`, {
+      // Submit the application
+      const response = await fetch('http://localhost:3001/api/v1/job-card-applications/submit', {
         method: 'POST',
         // Don't set Content-Type header, let browser set it with boundary
         body: formData,
@@ -539,8 +591,6 @@ export default function JobCardApplication() {
     } catch (error) {
       console.error('Error submitting application:', error);
       alert('An error occurred while submitting the application. Please try again.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
