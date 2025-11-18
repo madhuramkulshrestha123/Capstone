@@ -560,7 +560,8 @@ export default function JobCardApplication() {
       }
 
       // Submit the application
-      const response = await fetch('http://localhost:3001/api/v1/job-card-applications/submit', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+      const response = await fetch(`${apiUrl}/job-card-applications/submit`, {
         method: 'POST',
         // Don't set Content-Type header, let browser set it with boundary
         body: formData,
