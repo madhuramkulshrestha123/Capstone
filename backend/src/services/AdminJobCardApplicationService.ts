@@ -81,7 +81,7 @@ export class AdminJobCardApplicationService {
       father_or_husband_name: application.father_or_husband_name,
       category: application.category,
       epic_number: application.epic_number || '',
-      belongs_to_bpl: application.is_bpl,
+      belongs_to_bpl: application.belongs_to_bpl,
       state: '', // Placeholder
       district: application.district,
       village: application.village || '',
