@@ -15,13 +15,14 @@ import {
   verifyOtpSchema,
   completeRegistrationSchema,
   verifyWorkerSchema,
-  demandWorkSchema
+  demandWorkSchema,
+  workerLoginSchema
 } from '../utils/validationSchemas';
 
 const router = Router();
 const userController = new UserController();
 
-// Public routes (these should come BEFORE the authenticateToken middleware)
+// Public routes
 // New OTP-based registration flow
 router.post('/register/send-otp', validateRequest(sendOtpSchema), userController.sendRegistrationOtp);
 router.post('/register/verify-otp', validateRequest(verifyOtpSchema), userController.verifyRegistrationOtp);
@@ -34,6 +35,9 @@ router.post('/login/verify-otp', validateRequest(verifyOtpSchema), userControlle
 // Worker verification route (public)
 router.post('/verify-worker', validateRequest(verifyWorkerSchema), userController.verifyWorker);
 
+// Worker login route (public)
+router.post('/worker-login', validateRequest(workerLoginSchema), userController.workerLogin);
+
 // Demand work route (public)
 router.post('/demand-work', validateRequest(demandWorkSchema), userController.demandWork);
 
@@ -43,7 +47,7 @@ router.post('/login', validateRequest(loginSchema), userController.login);
 
 router.post('/refresh-token', validateRequest(refreshTokenSchema), userController.refreshToken);
 
-// Protected routes (these come AFTER the authenticateToken middleware)
+// Protected routes
 router.use(authenticateToken);
 
 // Profile routes (All authenticated users)

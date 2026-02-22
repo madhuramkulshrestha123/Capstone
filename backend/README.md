@@ -2,14 +2,14 @@
 
 ## Overview
 
-This is the backend API for the Capstone project, implementing a role-based system for managing workers, supervisors, and administrators in a work management system.
+This is the backend API for the Capstone project, implementing a role-based system for managing workers and administrators in a work management system.
 
 ## Role-Based Access Control
 
 The system implements three distinct user roles:
 
 1. **Worker (WORKER)**: Registers once, asks for work, attends, gets paid in bank
-2. **Supervisor (SUPERVISOR)**: Marks digital attendance at the site
+2. **Admin (ADMIN)**: Manages the system, marks digital attendance at the site
 3. **Admin (ADMIN)**: Creates projects and approves payments online
 
 For detailed information about the role-based access control system, see [Role-Based Access Control Documentation](docs/role-based-access-control.md).
@@ -63,12 +63,12 @@ For detailed information about the role-based access control system, see [Role-B
 ### Attendance Management
 - `GET /api/v1/attendances` - Get all attendance records (Admin only)
 - `GET /api/v1/attendances/:id` - Get attendance record by ID (Admin only)
-- `POST /api/v1/attendances` - Mark attendance (Supervisor/Admin only)
-- `PUT /api/v1/attendances/:id` - Update attendance record (Supervisor/Admin only)
+- `POST /api/v1/attendances` - Mark attendance (Admin only)
+- `PUT /api/v1/attendances/:id` - Update attendance record (Admin only)
 - `DELETE /api/v1/attendances/:id` - Delete attendance record (Admin only)
 - `GET /api/v1/attendances/my/attendances` - Get attendance records for authenticated worker (Worker only)
-- `GET /api/v1/attendances/project/:projectId` - Get attendance records by project ID (Supervisor/Admin only)
-- `GET /api/v1/attendances/project/:projectId/date-range` - Get attendance records by project and date range (Supervisor/Admin only)
+- `GET /api/v1/attendances/project/:projectId` - Get attendance records by project ID (Admin only)
+- `GET /api/v1/attendances/project/:projectId/date-range` - Get attendance records by project and date range (Admin only)
 
 ### Payment Management
 - `GET /api/v1/payments` - Get all payments (Admin only)
@@ -171,7 +171,7 @@ Key test files:
 
 Test data files:
 - `admin-login.json` - Admin user credentials
-- `supervisor-login.json` - Supervisor user credentials
+- `admin-login.json` - Admin user credentials
 - `user-login.json` - Worker user credentials
 
 ## Sample Test Data
@@ -191,7 +191,7 @@ To help with testing, we provide sample test data and API endpoint examples:
 #### Supervisor User
 ```json
 {
-  "email": "supervisor@example.com",
+  "email": "admin@example.com",
   "password": "StrongPass123!"
 }
 ```
@@ -227,7 +227,7 @@ We provide a collection of sample projects for testing purposes. Each project ha
 curl -X POST http://localhost:3001/api/v1/users/register \
   -H "Content-Type: multipart/form-data" \
   -F "image=@/path/to/your/image.jpg" \
-  -F 'data={"role":"supervisor","name":"Test Worker","phone_number":"1234567890","aadhaar_number":"123456789012","email":"testworker@example.com","panchayat_id":"123e4567-e89b-12d3-a456-426614174000","government_id":"GOV123456789012","password":"TestPass123!","state":"Test State","district":"Test District","village_name":"Test Village","pincode":"123456"};application/json'
+  -F 'data={"role":"admin","name":"Test Worker","phone_number":"1234567890","aadhaar_number":"123456789012","email":"testworker@example.com","panchayat_id":"123e4567-e89b-12d3-a456-426614174000","government_id":"GOV123456789012","password":"TestPass123!","state":"Test State","district":"Test District","village_name":"Test Village","pincode":"123456"};application/json'
 ```
 
 ### Update Profile with Image

@@ -46,9 +46,12 @@ export class AttendanceService {
     // Validate that the date is not in the future
     const attendanceDate = new Date(attendanceData.date);
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
     
-    if (attendanceDate > today) {
+    // Compare only the date parts (year, month, day)
+    const attendanceDateOnly = new Date(attendanceDate.getFullYear(), attendanceDate.getMonth(), attendanceDate.getDate());
+    const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    if (attendanceDateOnly > todayDateOnly) {
       throw new AppError('Cannot mark attendance for future dates', 400);
     }
 

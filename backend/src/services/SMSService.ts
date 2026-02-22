@@ -5,7 +5,7 @@ export class SMSService {
   private client: any;
   private verifyServiceSid: string | null;
   private fromNumber: string | null;
-  private readonly verifiedPhoneNumber: string = '+918958166530';
+  private readonly verifiedPhoneNumber: string = config.twilio.verifiedPhoneNumber || '+918958166530';
   private isConfigured: boolean;
 
   constructor() {
@@ -67,6 +67,34 @@ export class SMSService {
       return true;
     } catch (error) {
       console.error('Error sending OTP via Twilio Verify:', error);
+      // Return true to not block the process even if SMS fails
+      return true;
+    }
+  }
+
+  // New method to send custom OTP via regular SMS
+  async sendOtpSmsWithCustomOtp(to: string, otp: string): Promise<boolean> {
+    // If Twilio is not configured, return true to not block the process
+    if (!this.isConfigured || !this.fromNumber) {
+      console.log('Twilio not configured. Custom OTP SMS not sent.');
+      return true;
+    }
+    
+    try {
+      const message = `Your OTP for Smart Rozgaar Portal is: ${otp}\n\nThis code will expire in 15 minutes. If you didn't request this OTP, please ignore this message.`;
+      
+      // Send regular SMS with custom OTP
+      const result = await this.client.messages.create({
+        body: message,
+        from: this.fromNumber,
+        to: this.verifiedPhoneNumber
+      });
+      
+      console.log(`Custom OTP SMS sent successfully. SID: ${result.sid}`);
+      console.log(`[TESTING] OTP for SMS: ${otp}`);
+      return true;
+    } catch (error) {
+      console.error('Error sending custom OTP SMS:', error);
       // Return true to not block the process even if SMS fails
       return true;
     }

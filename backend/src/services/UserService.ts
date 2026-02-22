@@ -86,15 +86,6 @@ export class UserService {
     return this.mapUserToResponse(user);
   }
 
-  // Add a method to get user by email
-  async getUserByEmail(email: string): Promise<UserResponse | null> {
-    const user = await this.userModel.findByEmail(email);
-    if (!user) {
-      return null;
-    }
-    return this.mapUserToResponse(user);
-  }
-
   async createUser(userData: CreateUserRequest): Promise<UserResponse> {
     // Check if user already exists
     const [existingUserByEmail, existingUserByPhone, existingUserByAadhaar, existingUserByGovId] = await Promise.all([
@@ -281,17 +272,51 @@ export class UserService {
           let currentStatus = 'available';
           
           if (workHistory.length > 0) {
-            // Get the most recent project assignment
-            const latestProject = workHistory[workHistory.length - 1];
-            if (latestProject) {
-              totalAmount = latestProject.wage_per_worker || 374;
+            // Check if any of the worker's projects are still active (haven't ended yet)
+            // If any project is still active, the worker is assigned
+            currentStatus = 'available'; // default to available
+            let hasActiveProject = false;
+            
+            for (const project of workHistory) {
+              if (project.end_date) {
+                const projectEndDate = new Date(project.end_date);
+                const now = new Date();
+                
+                // If project end date is in the future, worker is assigned
+                if (now <= projectEndDate) {
+                  hasActiveProject = true;
+                  break; // Found at least one active project
+                }
+              }
+            }
+            
+            if (hasActiveProject) {
               currentStatus = 'assigned';
               
-              // Calculate payment deadline (15 days from project assignment date)
-              if (latestProject.allocated_at) {
-                const assignedDate = new Date(latestProject.allocated_at);
-                assignedDate.setDate(assignedDate.getDate() + 15);
-                paymentDeadline = assignedDate.toISOString().split('T')[0];
+              // Get the most recent project for payment deadline calculation
+              const latestProject = workHistory[workHistory.length - 1];
+              if (latestProject) {
+                totalAmount = latestProject.wage_per_worker || 374;
+                
+                // Calculate payment deadline (15 days from project assignment date)
+                if (latestProject.allocated_at) {
+                  const assignedDate = new Date(latestProject.allocated_at);
+                  assignedDate.setDate(assignedDate.getDate() + 15);
+                  paymentDeadline = assignedDate.toISOString().split('T')[0];
+                }
+              }
+            } else {
+              // If no active projects, get the most recent one for payment deadline calculation
+              const latestProject = workHistory[workHistory.length - 1];
+              if (latestProject) {
+                totalAmount = latestProject.wage_per_worker || 374;
+                
+                // Calculate payment deadline (15 days from project assignment date)
+                if (latestProject.allocated_at) {
+                  const assignedDate = new Date(latestProject.allocated_at);
+                  assignedDate.setDate(assignedDate.getDate() + 15);
+                  paymentDeadline = assignedDate.toISOString().split('T')[0];
+                }
               }
             }
           }

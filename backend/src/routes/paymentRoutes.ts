@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { PaymentController } from '../controllers/PaymentController';
-import { authenticateToken, requireAdmin, requireSupervisor } from '../middlewares/authMiddleware';
+import { authenticateToken, requireAdmin } from '../middlewares/authMiddleware';
 import { validateRequest, validateQuery, validateParams } from '../middlewares/validationMiddleware';
 import {
   createPaymentSchema,
@@ -31,8 +31,8 @@ router.put('/:id', requireAdmin, validateParams(idParamSchema), validateRequest(
 // Delete payment (Admin only)
 router.delete('/:id', requireAdmin, validateParams(idParamSchema), paymentController.deletePayment);
 
-// Get my payments (Supervisor)
-router.get('/my/payments', requireSupervisor, validateQuery(paginationSchema), paymentController.getMyPayments);
+// Get my payments (Authenticated user - likely worker)
+router.get('/my/payments', validateQuery(paginationSchema), paymentController.getMyPayments);
 
 // Get payments by project (Admin)
 router.get('/project/:projectId', requireAdmin, validateParams(projectIdParamSchema), validateQuery(paginationSchema), paymentController.getPaymentsByProject);
@@ -45,5 +45,8 @@ router.patch('/:id/reject', requireAdmin, validateParams(idParamSchema), payment
 
 // Mark payment as paid (Admin only)
 router.patch('/:id/paid', requireAdmin, validateParams(idParamSchema), paymentController.markAsPaid);
+
+// Generate payments from attendance (Admin only)
+router.post('/generate-from-attendance/:projectId', requireAdmin, validateParams(projectIdParamSchema), paymentController.generatePaymentsFromAttendance);
 
 export default router;

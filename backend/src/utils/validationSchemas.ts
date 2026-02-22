@@ -953,6 +953,24 @@ export const demandWorkSchema = Joi.object({
     .messages({
       'any.required': 'Job card ID is required',
     }),
+});
+
+// Worker login schema
+export const workerLoginSchema = Joi.object({
+  jobCardNumber: Joi.string()
+    .required()
+    .messages({
+      'any.required': 'Job card number is required',
+    }),
+  aadhaarNumber: Joi.string()
+    .length(12)
+    .pattern(/^\d{12}$/)
+    .required()
+    .messages({
+      'string.length': 'Aadhaar number must be exactly 12 digits',
+      'string.pattern.base': 'Aadhaar number must contain only digits',
+      'any.required': 'Aadhaar number is required',
+    }),
   captchaToken: Joi.string()
     .required()
     .messages({

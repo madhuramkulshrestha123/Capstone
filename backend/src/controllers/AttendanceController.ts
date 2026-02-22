@@ -60,10 +60,10 @@ export class AttendanceController {
 
   public markAttendance = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Get supervisor ID from authenticated user
-      const supervisorId = req.user?.user_id;
+      // Get admin ID from authenticated user
+      const adminId = req.user?.user_id;
       
-      if (!supervisorId) {
+      if (!adminId) {
         res.status(401).json({
           success: false,
           error: 'Authentication required'
@@ -71,7 +71,7 @@ export class AttendanceController {
         return;
       }
 
-      const attendance = await this.attendanceService.markAttendance(req.body, supervisorId);
+      const attendance = await this.attendanceService.markAttendance(req.body, adminId);
 
       const response: ApiResponse = {
         success: true,
@@ -136,10 +136,10 @@ export class AttendanceController {
 
   public getMyAttendances = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Get worker ID from authenticated user
-      const workerId = req.user?.user_id;
+      // Get user ID from authenticated user (works for both admin and worker)
+      const userId = req.user?.user_id;
       
-      if (!workerId) {
+      if (!userId) {
         res.status(401).json({
           success: false,
           error: 'Authentication required'
@@ -150,7 +150,7 @@ export class AttendanceController {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
 
-      const result = await this.attendanceService.getAttendancesByWorkerId(workerId, page, limit);
+      const result = await this.attendanceService.getAttendancesByWorkerId(userId, page, limit);
 
       const response: ApiResponse = {
         success: true,

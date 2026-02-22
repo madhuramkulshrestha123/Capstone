@@ -50,8 +50,16 @@ export default function ProjectsPage() {
       }
     };
     
-    fetchProjects();
-  }, []);
+    // Only fetch if we don't have data yet
+    if (projects.length === 0) {
+      // Add small delay to prevent immediate rapid requests
+      const timer = setTimeout(() => {
+        fetchProjects();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [projects.length]);
   
   // Filter projects by type
   const getCurrentProjects = () => {
@@ -81,7 +89,7 @@ export default function ProjectsPage() {
   // Handle assign workers to project
   const handleAssignWorkers = (projectId: string) => {
     // Redirect to assign workers page
-    window.location.href = `/admin/projects/${projectId}/assign`;
+    window.location.href = `/admin/projects/${projectId}/assign-workers`;
   };
   
   // Handle progress check
@@ -180,12 +188,22 @@ export default function ProjectsPage() {
                       </div>
                       
                       <div className="flex space-x-3">
-                        <button
-                          onClick={() => handleAssignWorkers(project.id)}
-                          className="flex-1 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors duration-200"
-                        >
-                          {t('assignWorkers')}
-                        </button>
+                        {project.assigned_workers < project.worker_need && new Date(project.end_date) >= new Date() && (
+                          <button
+                            onClick={() => handleAssignWorkers(project.id)}
+                            className="flex-1 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors duration-200"
+                          >
+                            {t('assignWorkers')}
+                          </button>
+                        )}
+                        {project.assigned_workers >= project.worker_need && new Date(project.end_date) >= new Date() && (
+                          <button
+                            disabled
+                            className="flex-1 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed"
+                          >
+                            {t('requirementFull')}
+                          </button>
+                        )}
                         <button
                           onClick={() => handleCheckProgress(project.id)}
                           className="flex-1 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors duration-200"
@@ -247,12 +265,20 @@ export default function ProjectsPage() {
                       </div>
                       
                       <div className="flex space-x-3">
-                        {project.assigned_workers < project.worker_need && (
+                        {project.assigned_workers < project.worker_need && new Date(project.end_date) >= new Date() && (
                           <button
                             onClick={() => handleAssignWorkers(project.id)}
                             className="flex-1 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors duration-200"
                           >
                             {t('assignWorkers')}
+                          </button>
+                        )}
+                        {project.assigned_workers >= project.worker_need && new Date(project.end_date) >= new Date() && (
+                          <button
+                            disabled
+                            className="flex-1 px-4 py-2 bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed"
+                          >
+                            {t('requirementFull')}
                           </button>
                         )}
                         <button
@@ -319,12 +345,17 @@ export default function ProjectsPage() {
                               {project.assigned_workers || 0}/{project.worker_need}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <button
-                                onClick={() => handleAssignWorkers(project.id)}
-                                className="text-blue-600 hover:text-blue-900 mr-3"
-                              >
-                                {t('assign')}
-                              </button>
+                              {project.assigned_workers < project.worker_need && new Date(project.end_date) >= new Date() && (
+                                <button
+                                  onClick={() => handleAssignWorkers(project.id)}
+                                  className="text-blue-600 hover:text-blue-900 mr-3"
+                                >
+                                  {t('assign')}
+                                </button>
+                              )}
+                              {project.assigned_workers >= project.worker_need && new Date(project.end_date) >= new Date() && (
+                                <span className="text-gray-500 mr-3">{t('requirementFull')}</span>
+                              )}
                               <button
                                 onClick={() => handleCheckProgress(project.id)}
                                 className="text-green-600 hover:text-green-900"

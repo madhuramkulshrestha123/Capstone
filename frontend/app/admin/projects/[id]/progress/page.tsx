@@ -15,9 +15,15 @@ export default function ProjectProgressPage() {
   // Project and progress state
   const [project, setProject] = useState<any>(null);
   const [workers, setWorkers] = useState<any[]>([]);
-  const [attendance, setAttendance] = useState<any[]>([]);
+  const [attendanceData, setAttendanceData] = useState<any[]>([]);
+  const [filteredAttendance, setFilteredAttendance] = useState<any[]>([]);
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
+    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    end: new Date().toISOString().split('T')[0]
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [generatingPayments, setGeneratingPayments] = useState(false);
   
   // Set auth token from localStorage when component mounts
   useEffect(() => {
@@ -44,15 +50,51 @@ export default function ProjectProgressPage() {
         const workersResponse = await adminApi.getAssignedWorkersByProjectId(projectId);
         setWorkers(workersResponse || []);
         
-        // In a real implementation, you would fetch attendance data for those workers
-        // For now, we'll use mock data
-        setAttendance([
-          { date: '2025-10-01', present: 15, absent: 2 },
-          { date: '2025-10-02', present: 14, absent: 3 },
-          { date: '2025-10-03', present: 16, absent: 1 },
-          { date: '2025-10-04', present: 13, absent: 4 },
-          { date: '2025-10-05', present: 17, absent: 0 }
-        ]);
+        // Fetch real attendance data for this project
+        const attendanceResponse = await adminApi.get(`/attendances/project/${projectId}/date-range?startDate=${dateRange.start}&endDate=${dateRange.end}`);
+        
+        // Fetch all workers with details to get job card IDs
+        const allWorkersResponse = await adminApi.get('/users/workers/details');
+        const allWorkers = allWorkersResponse.data || [];
+        
+        // Process attendance data to group by date
+        const attendanceRecords = attendanceResponse.data || [];
+        
+        // Group attendance by date
+        const attendanceByDate: any = {};
+        attendanceRecords.forEach((record: any) => {
+          const date = record.date;
+          if (!attendanceByDate[date]) {
+            attendanceByDate[date] = { present: 0, absent: 0, records: [] };
+          }
+          
+          if (record.status === 'PRESENT') {
+            attendanceByDate[date].present += 1;
+          } else {
+            attendanceByDate[date].absent += 1;
+          }
+          
+          // Add worker details to the record
+          const worker = allWorkers.find((w: any) => w.id === record.worker_id);
+          attendanceByDate[date].records.push({
+            ...record,
+            worker_name: worker?.name || 'Unknown Worker',
+            job_card_id: worker?.job_card_id || 'N/A'
+          });
+        });
+        
+        // Convert to array format
+        const attendanceArray = Object.keys(attendanceByDate)
+          .sort()
+          .map(date => ({
+            date,
+            present: attendanceByDate[date].present,
+            absent: attendanceByDate[date].absent,
+            records: attendanceByDate[date].records
+          }));
+        
+        setAttendanceData(attendanceArray);
+        setFilteredAttendance(attendanceArray);
       } catch (err: any) {
         setError(err.message || 'Failed to load project data');
         console.error('Error fetching project data:', err);
@@ -64,7 +106,58 @@ export default function ProjectProgressPage() {
     if (projectId) {
       fetchData();
     }
-  }, [projectId]);
+  }, [projectId, dateRange]);
+  
+  // Filter attendance data based on date range
+  useEffect(() => {
+    const filtered = attendanceData.filter(item => {
+      const itemDate = new Date(item.date);
+      const startDate = new Date(dateRange.start);
+      const endDate = new Date(dateRange.end);
+      return itemDate >= startDate && itemDate <= endDate;
+    });
+    setFilteredAttendance(filtered);
+  }, [attendanceData, dateRange]);
+  
+  // Calculate attendance rate
+  const calculateAttendanceRate = () => {
+    if (filteredAttendance.length === 0) return 0;
+    
+    const totalPresent = filteredAttendance.reduce((sum, day) => sum + day.present, 0);
+    const totalAttendance = filteredAttendance.reduce((sum, day) => sum + day.present + day.absent, 0);
+    
+    return totalAttendance > 0 ? Math.round((totalPresent / totalAttendance) * 100) : 0;
+  };
+  
+  // Calculate total payments processed
+  const calculateTotalPayments = () => {
+    if (!project || filteredAttendance.length === 0) return 0;
+    
+    const dailyWage = project.wage_per_worker || 0;
+    const totalPresentDays = filteredAttendance.reduce((sum, day) => sum + day.present, 0);
+    
+    return dailyWage * totalPresentDays;
+  };
+  
+  // Generate payments from attendance
+  const generatePaymentsFromAttendance = async () => {
+    if (!project) return;
+    
+    try {
+      setGeneratingPayments(true);
+      const response = await adminApi.post(`/payments/generate-from-attendance/${projectId}`, {
+        startDate: dateRange.start,
+        endDate: dateRange.end
+      });
+      
+      alert(`${response.message || response.data?.message || `Successfully generated ${response.data?.length || 0} payment records`}. ${t('refreshPaymentManagement')}`);
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate payments');
+      console.error('Error generating payments:', err);
+    } finally {
+      setGeneratingPayments(false);
+    }
+  };
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
@@ -167,7 +260,7 @@ export default function ProjectProgressPage() {
                   </div>
                   <div>
                     <p className="text-gray-500 text-sm">{t('attendanceRate')}</p>
-                    <p className="text-2xl font-bold text-gray-800">92%</p>
+                    <p className="text-2xl font-bold text-gray-800">{calculateAttendanceRate()}%</p>
                   </div>
                 </div>
               </div>
@@ -181,9 +274,66 @@ export default function ProjectProgressPage() {
                   </div>
                   <div>
                     <p className="text-gray-500 text-sm">{t('paymentsProcessed')}</p>
-                    <p className="text-2xl font-bold text-gray-800">₹42,500</p>
+                    <p className="text-2xl font-bold text-gray-800">₹{calculateTotalPayments().toLocaleString('en-IN')}</p>
                   </div>
                 </div>
+              </div>
+            </div>
+            
+            {/* Date Range Filter */}
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 mb-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">{t('filterByDate')}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('startDate')}</label>
+                  <input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('endDate')}</label>
+                  <input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Generate Payments Button */}
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 mb-8">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800">{t('generatePayments')}</h3>
+                  <p className="text-gray-600">{t('generatePaymentsDescription')}</p>
+                </div>
+                <button
+                  onClick={generatePaymentsFromAttendance}
+                  disabled={generatingPayments}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                >
+                  {generatingPayments ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {t('generatingPayments')}
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      {t('generatePayments')}
+                    </>
+                  )}
+                </button>
               </div>
             </div>
             
@@ -236,20 +386,42 @@ export default function ProjectProgressPage() {
               <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6">
                 <h3 className="text-xl font-bold text-gray-800 mb-4">{t('attendance')}</h3>
                 <div className="space-y-4">
-                  {attendance.map((day, index) => (
-                    <div key={index}>
-                      <div className="flex justify-between text-sm text-gray-500 mb-1">
-                        <span>{day.date}</span>
-                        <span>{day.present} present, {day.absent} absent</span>
+                  {filteredAttendance.length > 0 ? (
+                    filteredAttendance.map((day, index) => (
+                      <div key={index}>
+                        <div className="flex justify-between text-sm text-gray-500 mb-1">
+                          <span>{new Date(day.date).toLocaleDateString('en-IN')}</span>
+                          <span>{day.present} present, {day.absent} absent</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-600 h-2 rounded-full" 
+                            style={{ width: `${(day.present / (day.present + day.absent)) * 100}%` }}
+                          ></div>
+                        </div>
+                        {/* Show worker details on hover */}
+                        <div className="mt-2 text-xs text-gray-400">
+                          {day.records.slice(0, 3).map((record: any, i: number) => (
+                            <div key={i} className="flex justify-between">
+                              <span>{record.worker_name}</span>
+                              <span className={record.status === 'PRESENT' ? 'text-green-600' : 'text-red-600'}>
+                                {record.status}
+                              </span>
+                            </div>
+                          ))}
+                          {day.records.length > 3 && (
+                            <div className="text-center text-gray-500 mt-1">
+                              +{day.records.length - 3} more workers
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-green-600 h-2 rounded-full" 
-                          style={{ width: `${(day.present / (day.present + day.absent)) * 100}%` }}
-                        ></div>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      {t('noAttendanceData')}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>

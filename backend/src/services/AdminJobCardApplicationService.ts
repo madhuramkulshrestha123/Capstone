@@ -81,7 +81,7 @@ export class AdminJobCardApplicationService {
       father_or_husband_name: application.father_or_husband_name,
       category: application.category,
       epic_number: application.epic_number || '',
-      belongs_to_bpl: application.belongs_to_bpl,
+      belongs_to_bpl: application.is_bpl,
       state: '', // Placeholder
       district: application.district,
       village: application.village || '',
@@ -106,7 +106,7 @@ export class AdminJobCardApplicationService {
     };
   }
 
-  async rejectApplication(trackingId: string): Promise<{ message: string }> {
+  async rejectApplication(trackingId: string, rejectionReason?: string): Promise<{ message: string }> {
     // Find the application
     const application = await this.jobCardApplicationModel.findByTrackingId(trackingId);
     
@@ -119,7 +119,7 @@ export class AdminJobCardApplicationService {
     }
 
     // Update the application status to rejected
-    await this.jobCardApplicationModel.updateStatus(trackingId, 'rejected');
+    await this.jobCardApplicationModel.updateStatus(trackingId, 'rejected', undefined, rejectionReason);
 
     return {
       message: 'Application rejected successfully'

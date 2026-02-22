@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the Role-Based Access Control (RBAC) system implemented in the Capstone Backend API. The system defines three distinct user roles with specific permissions and access levels.
+This document describes the Role-Based Access Control (RBAC) system implemented in the Capstone Backend API. The system defines two distinct user roles with specific permissions and access levels.
 
 ## User Roles
 
@@ -15,13 +15,7 @@ This document describes the Role-Based Access Control (RBAC) system implemented 
   - Attend assigned projects
   - Receive payments for work completed
 
-### 2. Supervisor (SUPERVISOR)
-- **Description**: Supervisors mark digital attendance at the project site.
-- **User Type**: Gram Rozgar Sevak (GRAM ROZGAR SEVAK)
-- **Key Responsibilities**:
-  - Mark attendance for workers at project sites
-  - Update attendance records as needed
-  - View attendance records for projects they supervise
+
 
 ### 3. Admin (ADMIN)
 - **Description**: Admins create projects and approve payments online.
@@ -35,42 +29,42 @@ This document describes the Role-Based Access Control (RBAC) system implemented 
 
 ## Role Permissions Matrix
 
-| Feature/Operation | Worker | Supervisor | Admin |
-|-------------------|--------|------------|-------|
+| Feature/Operation | Worker | Admin |
+|-------------------|--------|-------|
 | **User Management** |
-| View own profile | ✅ | ✅ | ✅ |
-| Update own profile | ✅ | ✅ | ✅ |
-| View all users | ❌ | ❌ | ✅ |
-| Update any user | ❌ | ❌ | ✅ |
-| Delete any user | ❌ | ❌ | ✅ |
-| Change user roles | ❌ | ❌ | ✅ |
+| View own profile | ✅ | ✅ |
+| Update own profile | ✅ | ✅ |
+| View all users | ❌ | ✅ |
+| Update any user | ❌ | ✅ |
+| Delete any user | ❌ | ✅ |
+| Change user roles | ❌ | ✅ |
 | **Project Management** |
-| View all projects | ✅ | ✅ | ✅ |
-| Create projects | ❌ | ❌ | ✅ |
-| Update projects | ❌ | ❌ | ✅ |
-| Delete projects | ❌ | ❌ | ✅ |
+| View all projects | ✅ | ✅ |
+| Create projects | ❌ | ✅ |
+| Update projects | ❌ | ✅ |
+| Delete projects | ❌ | ✅ |
 | **Work Demand Requests** |
-| Create requests | ✅ | ❌ | ❌ |
-| View own requests | ✅ | ❌ | ❌ |
-| View all requests | ❌ | ❌ | ✅ |
-| Approve/reject requests | ❌ | ❌ | ✅ |
-| Update requests | ❌ | ❌ | ✅ |
-| Delete requests | ❌ | ❌ | ✅ |
+| Create requests | ✅ | ❌ |
+| View own requests | ✅ | ❌ |
+| View all requests | ❌ | ✅ |
+| Approve/reject requests | ❌ | ✅ |
+| Update requests | ❌ | ✅ |
+| Delete requests | ❌ | ✅ |
 | **Attendance Management** |
-| Mark attendance | ❌ | ✅ | ✅ |
-| View own attendance | ✅ | ❌ | ❌ |
-| View project attendance | ❌ | ✅ | ✅ |
-| Update attendance | ❌ | ✅ | ✅ |
-| Delete attendance | ❌ | ❌ | ✅ |
+| Mark attendance | ❌ | ✅ |
+| View own attendance | ✅ | ❌ |
+| View project attendance | ❌ | ✅ |
+| Update attendance | ❌ | ✅ |
+| Delete attendance | ❌ | ✅ |
 | **Payment Management** |
-| View own payments | ✅ | ❌ | ❌ |
-| View all payments | ❌ | ❌ | ✅ |
-| Create payments | ❌ | ❌ | ✅ |
-| Approve payments | ❌ | ❌ | ✅ |
-| Reject payments | ❌ | ❌ | ✅ |
-| Mark payments as paid | ❌ | ❌ | ✅ |
-| Update payments | ❌ | ❌ | ✅ |
-| Delete payments | ❌ | ❌ | ✅ |
+| View own payments | ✅ | ❌ |
+| View all payments | ❌ | ✅ |
+| Create payments | ❌ | ✅ |
+| Approve payments | ❌ | ✅ |
+| Reject payments | ❌ | ✅ |
+| Mark payments as paid | ❌ | ✅ |
+| Update payments | ❌ | ✅ |
+| Delete payments | ❌ | ✅ |
 
 ## API Endpoints and Role Requirements
 
@@ -110,12 +104,12 @@ This document describes the Role-Based Access Control (RBAC) system implemented 
 ### Attendance Management
 - `GET /api/v1/attendances` - Admin only
 - `GET /api/v1/attendances/:id` - Admin only
-- `POST /api/v1/attendances` - Supervisor/Admin only
-- `PUT /api/v1/attendances/:id` - Supervisor/Admin only
+- `POST /api/v1/attendances` - Admin only
+- `PUT /api/v1/attendances/:id` - Admin only
 - `DELETE /api/v1/attendances/:id` - Admin only
 - `GET /api/v1/attendances/my/attendances` - Worker only
-- `GET /api/v1/attendances/project/:projectId` - Supervisor/Admin only
-- `GET /api/v1/attendances/project/:projectId/date-range` - Supervisor/Admin only
+- `GET /api/v1/attendances/project/:projectId` - Admin only
+- `GET /api/v1/attendances/project/:projectId/date-range` - Admin only
 
 ### Payment Management
 - `GET /api/v1/payments` - Admin only
@@ -143,9 +137,7 @@ Role validation is implemented at two levels:
 - `authenticateToken`: Verifies JWT tokens and extracts user information
 - `requireRole(roles)`: Checks if the authenticated user has one of the specified roles
 - `requireWorker`: Shortcut for requiring WORKER role
-- `requireSupervisor`: Shortcut for requiring SUPERVISOR role
 - `requireAdmin`: Shortcut for requiring ADMIN role
-- `requireSupervisorOrAdmin`: Shortcut for requiring either SUPERVISOR or ADMIN role
 
 ## Default Role Assignment
 

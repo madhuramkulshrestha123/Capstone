@@ -1,12 +1,18 @@
 import { PaymentModel } from '../models/PaymentModel';
+import { AttendanceModel } from '../models/AttendanceModel';
+import { ProjectModel } from '../models/ProjectModel';
 import { AppError } from '../middlewares/errorMiddleware';
 import { CreatePaymentRequest, UpdatePaymentRequest, Payment } from '../types';
 
 export class PaymentService {
   private paymentModel: PaymentModel;
+  private attendanceModel: AttendanceModel;
+  private projectModel: ProjectModel;
 
   constructor() {
     this.paymentModel = new PaymentModel();
+    this.attendanceModel = new AttendanceModel();
+    this.projectModel = new ProjectModel();
   }
 
   async getAllPayments(
@@ -139,5 +145,70 @@ export class PaymentService {
     };
 
     return this.updatePayment(id, paymentData);
+  }
+
+  async generatePaymentsFromAttendance(projectId: string, startDate?: string, endDate?: string): Promise<Payment[]> {
+    // Get the project to get wage information
+    const project = await this.projectModel.findById(projectId);
+    if (!project) {
+      throw new AppError('Project not found', 404);
+    }
+    
+    // Get attendance records for the project within the date range
+    let attendanceRecords;
+    if (startDate && endDate) {
+      attendanceRecords = await this.attendanceModel.findByDateRange(
+        projectId,
+        new Date(startDate),
+        new Date(endDate)
+      );
+    } else {
+      attendanceRecords = await this.attendanceModel.findByProjectId(projectId, 1000, 0); // Assuming a large limit
+    }
+    
+    // Group attendance by worker_id to calculate days worked per worker
+    const attendanceByWorker: Record<string, any[]> = {};
+    attendanceRecords.forEach(record => {
+      if (record && record.status === 'PRESENT') {
+        const workerId = record.worker_id;
+        if (!attendanceByWorker[workerId]) {
+          attendanceByWorker[workerId] = [];
+        }
+        attendanceByWorker[workerId].push(record);
+      }
+    });
+    
+    // Calculate payments for each worker
+    const payments: Payment[] = [];
+    
+    for (const [workerId, workerAttendance] of Object.entries(attendanceByWorker)) {
+      const daysWorked = workerAttendance.length;
+      const amount = daysWorked * (project.wage_per_worker || 0);
+      
+      if (amount > 0) {
+        // Check if a payment record already exists for this worker and project for the given date range
+        // We'll get all payments for this project and check if one already exists for this worker
+        // with similar amount that corresponds to the days worked in the given date range
+        const existingPaymentsForProject = await this.paymentModel.findByProjectId(projectId, 1000, 0);
+        const existingPaymentForWorkerInProject = existingPaymentsForProject.some(payment => 
+          payment.worker_id === workerId &&
+          payment.amount === amount // Match the exact amount which should correspond to days worked * wage
+        );
+        
+        if (!existingPaymentForWorkerInProject) {
+          // Create a new payment record
+          const paymentData: CreatePaymentRequest = {
+            worker_id: workerId,
+            project_id: projectId,
+            amount: amount,
+          };
+          
+          const payment = await this.createPayment(paymentData);
+          payments.push(payment);
+        }
+      }
+    }
+    
+    return payments;
   }
 }

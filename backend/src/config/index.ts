@@ -17,7 +17,7 @@ export interface Config {
     refreshExpiresIn: string;
   };
   cors: {
-    origin: string | string[];
+    origin: string;
   };
   rateLimit: {
     windowMs: number;
@@ -28,6 +28,11 @@ export interface Config {
     apiKey: string;
     apiSecret: string;
   };
+  mailjet: {
+    apiKeyPublic: string;
+    apiKeyPrivate: string;
+    senderEmail: string;
+  };
   sendgrid: {
     apiKey: string;
   };
@@ -36,6 +41,10 @@ export interface Config {
     authToken: string;
     verifyServiceSid: string;
     phoneNumber: string;
+    verifiedPhoneNumber: string;
+  };
+  recaptcha: {
+    secretKey: string;
   };
 }
 
@@ -45,7 +54,7 @@ const config: Config = {
     nodeEnv: process.env.NODE_ENV || 'development',
   },
   database: {
-    url: process.env.DATABASE_URL || '',
+    url: `postgresql://${process.env.DB_USERNAME || 'postgres'}:${process.env.DB_PASSWORD || '12345678'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'capstone_db'}?schema=public`,
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'your_jwt_secret_here',
@@ -54,9 +63,7 @@ const config: Config = {
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
   cors: {
-    origin: process.env.CORS_ORIGIN ? 
-      process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) : 
-      ['http://localhost:3000', 'https://capstone-phi-two.vercel.app'],
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   },
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
@@ -67,6 +74,11 @@ const config: Config = {
     apiKey: process.env.CLOUDINARY_API_KEY || '',
     apiSecret: process.env.CLOUDINARY_API_SECRET || '',
   },
+  mailjet: {
+    apiKeyPublic: process.env.MJ_APIKEY_PUBLIC || '',
+    apiKeyPrivate: process.env.MJ_APIKEY_PRIVATE || '',
+    senderEmail: process.env.MJ_SENDER_EMAIL || 'madhuramkulshrestha447@gmail.com',
+  },
   sendgrid: {
     apiKey: process.env.SENDGRID_API_KEY || '',
   },
@@ -75,6 +87,10 @@ const config: Config = {
     authToken: process.env.TWILIO_AUTH_TOKEN || '',
     verifyServiceSid: process.env.TWILIO_VERIFY_SERVICE_SID || '',
     phoneNumber: process.env.TWILIO_PHONE_NUMBER || '',
+    verifiedPhoneNumber: process.env.TWILIO_VERIFIED_PHONE_NUMBER || '',
+  },
+  recaptcha: {
+    secretKey: process.env.RECAPTCHA_SECRET_KEY || '',
   },
 };
 

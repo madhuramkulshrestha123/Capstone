@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '../lib/useTranslation';
 import { adminApi } from '../lib/api';
 import Chatbot from '../components/Chatbot';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+
 
 /*
  * CUSTOMIZATION INSTRUCTIONS:
@@ -36,10 +36,9 @@ export default function Dashboard() {
   const { t } = useTranslation(language);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
   
-  // Add reCAPTCHA v3 hook
-  const { executeRecaptcha } = useGoogleReCaptcha();
+
 
   // Demand Job Modal State
   const [isDemandJobModalOpen, setIsDemandJobModalOpen] = useState(false);
@@ -79,22 +78,7 @@ export default function Dashboard() {
   const toggleTheme = () => setIsDarkTheme(!isDarkTheme);
   const toggleLanguage = () => setLanguage(language === 'en' ? 'hi' : 'en');
 
-  // Execute reCAPTCHA
-  const handleReCaptchaVerify = async (action: string) => {
-    if (!executeRecaptcha) {
-      console.log('Execute recaptcha not yet available');
-      return null;
-    }
-    
-    try {
-      const token = await executeRecaptcha(action);
-      setCaptchaToken(token);
-      return token;
-    } catch (error) {
-      console.error('Error executing reCAPTCHA:', error);
-      return null;
-    }
-  };
+
 
   // Updated carousel images to use local placeholder images
   const carouselImages = [
@@ -135,10 +119,36 @@ export default function Dashboard() {
 
   // Handle navigation
   const handleNavClick = (item: string) => {
-    // Scroll to the section or handle navigation
-    const element = document.getElementById(item);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    // Navigate to different pages based on the item
+    switch(item) {
+      case 'aboutMinistry':
+        window.location.href = '/about-ministry';
+        break;
+      case 'aboutScheme':
+        window.location.href = '/about-scheme';
+        break;
+      case 'keyFeatures':
+        window.location.href = '/key-features';
+        break;
+      case 'schemeComponents':
+        window.location.href = '/scheme-components';
+        break;
+      case 'mobileApps':
+        window.location.href = '/mobile-apps';
+        break;
+      case 'raiseComplaint':
+        window.location.href = '/raise-complaint';
+        break;
+      case 'login':
+        window.location.href = '/auth';
+        break;
+      default:
+        // Scroll to section if it exists on the same page
+        const element = document.getElementById(item);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+        break;
     }
   };
 
@@ -178,7 +188,6 @@ export default function Dashboard() {
     setWorkerDetails(null);
     setIsVerified(false);
     setError('');
-    setCaptchaToken(null);
   };
 
   // Verify Worker
@@ -201,14 +210,7 @@ export default function Dashboard() {
   // Demand Work
   const demandWork = async () => {
     try {
-      // Execute reCAPTCHA for demanding work
-      const recaptchaToken = await handleReCaptchaVerify('demand_work');
-      if (!recaptchaToken) {
-        alert('reCAPTCHA verification failed. Please try again.');
-        return;
-      }
-
-      const response = await adminApi.demandWork(jobId, recaptchaToken);
+      const response = await adminApi.demandWork(jobId);
       alert('Work demand submitted successfully!');
       closeDemandJobModal();
     } catch (err: any) {
@@ -221,9 +223,12 @@ export default function Dashboard() {
       
       {/* Header */}
       <header className={`py-5 px-6 flex items-center justify-between ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg shadow-lg' : 'bg-white/90 backdrop-blur-lg shadow-lg'} transition-colors duration-300`}>
-        <div className="text-2xl font-extrabold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-none">
+        <button 
+          onClick={() => window.location.href = '/dashboard'}
+          className="text-2xl font-extrabold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-none hover:opacity-80 transition-opacity"
+        >
           {t('smartRozgarPortal')}
-        </div>
+        </button>
         <div className="flex items-center space-x-5">
           <button 
             onClick={toggleTheme}
@@ -275,8 +280,8 @@ export default function Dashboard() {
         <ul className="flex flex-wrap justify-center gap-3 md:gap-6 font-medium tracking-wide">
           {navItems.map((item, index) => (
             <li key={index} className="my-2">
-              <a 
-                href={item === 'login' ? '/auth' : '#'} 
+              <button 
+                onClick={() => handleNavClick(item)}
                 className={`px-5 py-2 rounded-lg transition-transform duration-300 ease-in-out hover:scale-110 ${
                   item === 'login' 
                     ? `font-bold ${isDarkTheme 
@@ -288,7 +293,7 @@ export default function Dashboard() {
                 }`}
               >
                 {t(item as any)}
-              </a>
+              </button>
             </li>
           ))}
         </ul>

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { WorkDemandRequestController } from '../controllers/WorkDemandRequestController';
-import { authenticateToken, requireAdmin, requireSupervisor } from '../middlewares/authMiddleware';
+import { authenticateToken, requireAdmin } from '../middlewares/authMiddleware';
 import { validateRequest, validateQuery, validateParams } from '../middlewares/validationMiddleware';
 import {
   createWorkDemandRequestSchema,
@@ -22,8 +22,8 @@ router.get('/', requireAdmin, validateQuery(paginationSchema), workDemandRequest
 // Get request by ID (Admin only)
 router.get('/:id', requireAdmin, validateParams(idParamSchema), workDemandRequestController.getRequestById);
 
-// Create request (Supervisor only)
-router.post('/', requireSupervisor, validateRequest(createWorkDemandRequestSchema), workDemandRequestController.createRequest);
+// Create request (Admin only)
+router.post('/', requireAdmin, validateRequest(createWorkDemandRequestSchema), workDemandRequestController.createRequest);
 
 // Update request (Admin only)
 router.put('/:id', requireAdmin, validateParams(idParamSchema), validateRequest(updateWorkDemandRequestSchema), workDemandRequestController.updateRequest);
@@ -31,8 +31,8 @@ router.put('/:id', requireAdmin, validateParams(idParamSchema), validateRequest(
 // Delete request (Admin only)
 router.delete('/:id', requireAdmin, validateParams(idParamSchema), workDemandRequestController.deleteRequest);
 
-// Get my requests (Supervisor)
-router.get('/my/requests', requireSupervisor, validateQuery(paginationSchema), workDemandRequestController.getMyRequests);
+// Get my requests (Authenticated user)
+router.get('/my/requests', validateQuery(paginationSchema), workDemandRequestController.getMyRequests);
 
 // Get requests by project (Admin)
 router.get('/project/:projectId', requireAdmin, validateParams(projectIdParamSchema), validateQuery(paginationSchema), workDemandRequestController.getRequestsByProject);

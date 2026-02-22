@@ -207,4 +207,25 @@ export class ProjectModel {
     const result = await this.db.query('SELECT COUNT(*) as count FROM projects WHERE created_by = $1', [userId]);
     return parseInt(result.rows[0].count);
   }
+  
+  async findActiveProjects(currentDate: Date): Promise<Project[]> {
+    // Find projects that are either active or pending and haven't ended yet
+    // Projects with end_date >= currentDate are still active
+    const query = `SELECT * FROM projects 
+                   WHERE status IN ('active', 'pending') 
+                   AND end_date >= $1 
+                   ORDER BY created_at DESC`;
+    
+    const result = await this.db.query(query, [currentDate]);
+    
+    return result.rows.map((project: any) => ({
+      ...project,
+      worker_need: project.worker_need,
+      start_date: project.start_date,
+      end_date: project.end_date,
+      created_by: project.created_by,
+      created_at: project.created_at,
+      updated_at: project.updated_at,
+    }));
+  }
 }

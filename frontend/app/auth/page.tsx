@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import { authApi } from '../lib/api';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
-  const [userType, setUserType] = useState<'user' | 'admin'>('user');
+  const [userType, setUserType] = useState<'admin' | 'worker'>('admin');
   const [jobCardNumber, setJobCardNumber] = useState('');
   const [employmentId, setEmploymentId] = useState('');
   const [password, setPassword] = useState('');
@@ -15,6 +14,7 @@ export default function AuthPage() {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [aadhaarNumber, setAadhaarNumber] = useState('');
+  const [workerAadhaar, setWorkerAadhaar] = useState(''); // For worker login
   const [panchayatId, setPanchayatId] = useState('');
   const [state, setState] = useState('');
   const [district, setDistrict] = useState('');
@@ -59,6 +59,7 @@ export default function AuthPage() {
     setName('');
     setPhoneNumber('');
     setAadhaarNumber('');
+    setWorkerAadhaar('');
     setPanchayatId('');
     setState('');
     setDistrict('');
@@ -80,7 +81,7 @@ export default function AuthPage() {
   };
 
   // Toggle user type
-  const toggleUserType = (type: 'user' | 'admin') => {
+  const toggleUserType = (type: 'admin' | 'worker') => {
     setUserType(type);
     resetForm();
   };
@@ -103,24 +104,47 @@ export default function AuthPage() {
 
       // Step 1: Send OTP
       if (!otpSent) {
-        try {
-          const response = await authApi.sendRegistrationOtp(email);
+        const response = await fetch('http://localhost:3001/api/v1/users/register/send-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
           setOtpSent(true);
           setSuccess('OTP sent to your email');
-        } catch (error: any) {
-          setError(error.message || 'Failed to send OTP');
+        } else {
+          setError(data.error?.message || 'Failed to send OTP');
         }
         return;
       }
 
       // Step 2: Verify OTP
       if (otpSent && !otpVerified) {
-        try {
-          const response = await authApi.verifyRegistrationOtp(email, otp);
+        const response = await fetch('http://localhost:3001/api/v1/users/register/verify-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            otp,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
           setOtpVerified(true);
           setSuccess('OTP verified successfully');
-        } catch (error: any) {
-          setError(error.message || 'Failed to verify OTP');
+        } else {
+          setError(data.error?.message || 'Failed to verify OTP');
         }
         return;
       }
@@ -181,19 +205,28 @@ export default function AuthPage() {
           district,
           village_name: village,
           pincode,
-          role: userType, // 'admin' or 'supervisor'
+          role: userType, // 'admin' only (supervisor role removed)
           captchaToken: recaptchaToken // Add reCAPTCHA token
         };
 
-        try {
-          const response = await authApi.completeRegistration(registrationData);
+        const response = await fetch('http://localhost:3001/api/v1/users/register/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(registrationData),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
           setSuccess('Registration completed successfully! You can now login.');
           setTimeout(() => {
             setIsLogin(true);
             resetForm();
           }, 2000);
-        } catch (error: any) {
-          setError(error.message || 'Registration failed');
+        } else {
+          setError(data.error?.message || 'Registration failed');
         }
       }
     } catch (err) {
@@ -220,13 +253,72 @@ export default function AuthPage() {
         return;
       }
 
+      // Worker login logic
+      if (userType === 'worker') {
+        // Validate inputs
+        if (!jobCardNumber) {
+          setError('Please enter your Job Card Number');
+          setLoading(false);
+          return;
+        }
+
+        if (!workerAadhaar) {
+          setError('Please enter your Aadhaar Number');
+          setLoading(false);
+          return;
+        }
+
+        if (!workerAadhaar) {
+          setError('Please enter your Aadhaar Number');
+          setLoading(false);
+          return;
+        }
+
+        // Validate Aadhaar format
+        if (workerAadhaar.length !== 12 || !/^\d{12}$/.test(workerAadhaar)) {
+          setError('Aadhaar number must be exactly 12 digits');
+          setLoading(false);
+          return;
+        }
+
+        // Call worker login API
+        const response = await fetch('http://localhost:3001/api/v1/users/worker-login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jobCardNumber,
+            aadhaarNumber: workerAadhaar,
+            captchaToken: recaptchaToken
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Store worker data in localStorage
+          localStorage.setItem('workerData', JSON.stringify(data.data));
+          localStorage.setItem('isWorker', 'true');
+          
+          setSuccess('Login successful! Redirecting to Worker Dashboard...');
+          
+          // Redirect to worker dashboard
+          setTimeout(() => {
+            window.location.href = '/worker/dashboard';
+          }, 1500);
+        } else {
+          setError(data.error?.message || 'Login failed. Please check your credentials.');
+        }
+        return;
+      }
+
+      // For admin login (using employment ID and password)
       // Step 1: Send OTP for login
       if (!otpSent) {
-        const identifier = userType === 'user' ? jobCardNumber : employmentId;
-        
         // Validate identifier
-        if (!identifier) {
-          setError('Please enter your identifier');
+        if (!employmentId) {
+          setError('Please enter your Employment ID');
           setLoading(false);
           return;
         }
@@ -237,42 +329,61 @@ export default function AuthPage() {
           return;
         }
 
-        try {
-          const response = await authApi.sendLoginOtp(identifier, password);
+        const response = await fetch('http://localhost:3001/api/v1/users/login/send-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: employmentId, // Using employment ID as email for admin/supervisor
+            password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
           setOtpSent(true);
           setSuccess('OTP sent to your email');
-        } catch (error: any) {
-          setError(error.message || 'Failed to send OTP');
+        } else {
+          setError(data.error?.message || 'Failed to send OTP');
         }
         return;
       }
 
       // Step 2: Verify OTP for login
       if (otpSent) {
-        const identifier = userType === 'user' ? jobCardNumber : employmentId;
-        
-        try {
-          const response = await authApi.verifyLoginOtp(identifier, otp);
-          
+        const response = await fetch('http://localhost:3001/api/v1/users/login/verify-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: employmentId,
+            otp,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
           // Store token in localStorage and redirect
-          localStorage.setItem('token', response.data.token);
-          localStorage.setItem('refreshToken', response.data.refreshToken);
-          localStorage.setItem('user', JSON.stringify(response.data.user));
+          localStorage.setItem('token', data.data.token);
+          localStorage.setItem('refreshToken', data.data.refreshToken);
+          localStorage.setItem('user', JSON.stringify(data.data.user));
           
           setSuccess('Login successful! Redirecting...');
           
           // Redirect based on user role
           setTimeout(() => {
-            if (response.data.user.role === 'admin') {
+            if (data.data.user.role === 'admin') {
               window.location.href = '/admin/dashboard';
-            } else if (response.data.user.role === 'supervisor') {
-              window.location.href = '/supervisor';
             } else {
-              window.location.href = '/dashboard';
+              window.location.href = '/admin/dashboard';
             }
           }, 1000);
-        } catch (error: any) {
-          setError(error.message || 'Failed to verify OTP');
+        } else {
+          setError(data.error?.message || 'Failed to verify OTP');
         }
       }
     } catch (err) {
@@ -300,14 +411,14 @@ export default function AuthPage() {
           <div className="mt-8 flex justify-center">
             <div className="inline-flex rounded-lg p-1 bg-gray-100">
               <button
-                onClick={() => toggleUserType('user')}
+                onClick={() => toggleUserType('worker')}
                 className={`px-5 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
-                  userType === 'user'
+                  userType === 'worker'
                     ? 'bg-white text-indigo-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                User
+                Worker
               </button>
               <button
                 onClick={() => toggleUserType('admin')}
@@ -419,39 +530,22 @@ export default function AuthPage() {
                     />
                   </div>
                   
-                  {userType === 'user' ? (
-                    <div>
-                      <label htmlFor="job-card-number" className="block text-sm font-medium text-gray-700 mb-1">
-                        JOB CARD Number
-                      </label>
-                      <input
-                        id="job-card-number"
-                        name="job-card-number"
-                        type="text"
-                        required
-                        value={jobCardNumber}
-                        onChange={(e) => setJobCardNumber(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-colors duration-200 bg-white/50"
-                        placeholder="Enter JOB CARD Number"
-                      />
-                    </div>
-                  ) : (
-                    <div>
-                      <label htmlFor="employment-id" className="block text-sm font-medium text-gray-700 mb-1">
-                        EMPLOYMENT ID
-                      </label>
-                      <input
-                        id="employment-id"
-                        name="employment-id"
-                        type="text"
-                        required
-                        value={employmentId}
-                        onChange={(e) => setEmploymentId(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-colors duration-200 bg-white/50"
-                        placeholder="Enter EMPLOYMENT ID"
-                      />
-                    </div>
-                  )}
+                  {/* Only show Employment ID for admin/supervisor registration */}
+                  <div>
+                    <label htmlFor="employment-id" className="block text-sm font-medium text-gray-700 mb-1">
+                      EMPLOYMENT ID
+                    </label>
+                    <input
+                      id="employment-id"
+                      name="employment-id"
+                      type="text"
+                      required
+                      value={employmentId}
+                      onChange={(e) => setEmploymentId(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-colors duration-200 bg-white/50"
+                      placeholder="Enter EMPLOYMENT ID"
+                    />
+                  </div>
                   
                   <div>
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
@@ -554,22 +648,46 @@ export default function AuthPage() {
               {/* Login Form */}
               {isLogin && (
                 <>
-                  {userType === 'user' ? (
-                    <div>
-                      <label htmlFor="job-card-number-login" className="block text-sm font-medium text-gray-700 mb-1">
-                        JOB CARD Number
-                      </label>
-                      <input
-                        id="job-card-number-login"
-                        name="job-card-number"
-                        type="text"
-                        required
-                        value={jobCardNumber}
-                        onChange={(e) => setJobCardNumber(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-colors duration-200 bg-white/50"
-                        placeholder="Enter JOB CARD Number"
-                      />
-                    </div>
+                  {userType === 'worker' ? (
+                    <>
+                      <div>
+                        <label htmlFor="job-card-number-worker" className="block text-sm font-medium text-gray-700 mb-1">
+                          JOB CARD Number
+                        </label>
+                        <input
+                          id="job-card-number-worker"
+                          name="job-card-number"
+                          type="text"
+                          required
+                          value={jobCardNumber}
+                          onChange={(e) => setJobCardNumber(e.target.value.toUpperCase())}
+                          className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-colors duration-200 bg-white/50"
+                          placeholder="Enter JOB CARD Number (e.g., UNDX73491080)"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="worker-aadhaar" className="block text-sm font-medium text-gray-700 mb-1">
+                          Aadhaar Number
+                        </label>
+                        <input
+                          id="worker-aadhaar"
+                          name="worker-aadhaar"
+                          type="text"
+                          required
+                          value={workerAadhaar}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+                            if (value.length <= 12) {
+                              setWorkerAadhaar(value);
+                            }
+                          }}
+                          className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-colors duration-200 bg-white/50"
+                          placeholder="Enter 12-digit Aadhaar Number"
+                          maxLength={12}
+                        />
+                      </div>
+                    </>
                   ) : (
                     <div>
                       <label htmlFor="employment-id-login" className="block text-sm font-medium text-gray-700 mb-1">
@@ -588,22 +706,24 @@ export default function AuthPage() {
                     </div>
                   )}
                   
-                  <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                      Password
-                    </label>
-                    <input
-                      id="password"
-                      name="password"
-                      type="password"
-                      autoComplete="current-password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-colors duration-200 bg-white/50"
-                      placeholder="Enter your password"
-                    />
-                  </div>
+                  {userType !== 'worker' && (
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                        Password
+                      </label>
+                      <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        autoComplete="current-password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-colors duration-200 bg-white/50"
+                        placeholder="Enter your password"
+                      />
+                    </div>
+                  )}
                 </>
               )}
               
@@ -646,7 +766,9 @@ export default function AuthPage() {
                 ) : (
                   <>
                     {isLogin 
-                      ? (otpSent ? 'Verify OTP & Login' : 'Send OTP') 
+                      ? (userType === 'worker' 
+                          ? 'Login as Worker' 
+                          : (otpSent ? 'Verify OTP & Login' : 'Send OTP'))
                       : (otpSent 
                           ? (otpVerified ? 'Complete Registration' : 'Verify OTP') 
                           : 'Send OTP')}

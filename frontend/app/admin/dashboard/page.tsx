@@ -10,10 +10,10 @@ export default function AdminDashboard() {
   
   // State for panchayat information
   const [panchayatInfo, setPanchayatInfo] = useState({
-    name: '',
-    district: '',
-    state: '',
-    id: ''
+    name: 'ग्राम पंचायत नई दिल्ली',
+    district: 'Central Delhi',
+    state: 'Delhi',
+    id: 'GP-DE-2025-001'
   });
   
   // State for statistics
@@ -54,6 +54,9 @@ export default function AdminDashboard() {
       try {
         setLoading(true);
         
+        // Clear cache before fetching fresh data
+        adminApi.clearAllCache();
+        
         // Fetch all data in parallel
         const [panchayatData, statsData, activitiesData, applicationsData] = await Promise.all([
           adminApi.getPanchayatInfo(),
@@ -62,42 +65,30 @@ export default function AdminDashboard() {
           adminApi.getPendingJobCardApplications()
         ]);
         
-        // Set panchayat info with fallback values if empty
-        setPanchayatInfo({
-          name: panchayatData.name || 'ग्राम पंचायत',
-          district: panchayatData.district || 'Unknown District',
-          state: panchayatData.state || 'Unknown State',
-          id: panchayatData.id || 'N/A'
-        });
-        
+        setPanchayatInfo(panchayatData);
         setStats(statsData);
         setRecentActivities(activitiesData);
         setPendingApplications(applicationsData);
       } catch (err) {
         setError('Failed to load dashboard data');
         console.error('Error fetching dashboard data:', err);
-        
-        // Set default values on error
-        setPanchayatInfo({
-          name: 'ग्राम पंचायत',
-          district: 'Unknown District',
-          state: 'Unknown State',
-          id: 'N/A'
-        });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    // Add small delay to prevent immediate rapid requests
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
 
-  // Show a notification if we're using fallback data
+  // Show a notification that data is currently mock data
   useEffect(() => {
-    if (!loading && !error && (!panchayatInfo.name || panchayatInfo.name === 'ग्राम पंचायत')) {
-      console.log('Using fallback panchayat data');
-    }
-  }, [loading, error, panchayatInfo]);
+    // In a real implementation, this would be removed
+  }, [loading, error]);
 
   // Navigation items for admin
   const navItems = [
@@ -106,9 +97,9 @@ export default function AdminDashboard() {
     { id: 'job-cards', label: 'jobCards', icon: '📝', href: '/admin/job-card-applications' },
     { id: 'workers', label: 'workers', icon: '👷', href: '/admin/workers' },
     { id: 'work-demand', label: 'workDemand', icon: '📋', href: '/admin/work-demand' },
-    { id: 'payments', label: 'payments', icon: '💰', href: '#' },
-    { id: 'attendance', label: 'attendance', icon: '📋', href: '#' },
-    { id: 'reports', label: 'reports', icon: '📈', href: '#' },
+    { id: 'payments', label: 'paymentManagement', icon: '💰', href: '/admin/payment-management' },
+    { id: 'attendance', label: 'attendanceManagement', icon: '📋', href: '/admin/attendance' },
+    { id: 'reports', label: 'reports', icon: '📈', href: '/admin/reports' },
     { id: 'employees', label: 'manageEmployees', icon: '👥', href: '#' },
     { id: 'settings', label: 'settings', icon: '⚙️', href: '#' }
   ];
@@ -365,13 +356,14 @@ export default function AdminDashboard() {
                     <li key={application.id || index} className="p-6 hover:bg-blue-50 transition-colors duration-200">
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-gray-800 font-medium">{application.name}</p>
+                          <p className="text-gray-800 font-medium">{application.headOfHouseholdName || application.name}</p>
                           <p className="text-gray-500 text-sm">
+                            ID: {application.panchayat || application.panchayatId || 'N/A'} | 
                             {language === 'en' ? ' District: ' : ' जिला: '}
                             {application.district || 'N/A'}
                           </p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${application.status === 'approved' ? 'bg-green-100 text-green-800' : application.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                           {application.status || 'New'}
                         </span>
                       </div>
@@ -395,13 +387,13 @@ export default function AdminDashboard() {
                     <li key={application.id || index} className="p-6 hover:bg-blue-50 transition-colors duration-200">
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-gray-800 font-medium">{application.name}</p>
+                          <p className="text-gray-800 font-medium">{application.headOfHouseholdName || application.name}</p>
                           <p className="text-gray-500 text-sm">
+                            ID: {application.panchayat || application.panchayatId || 'N/A'} | 
                             {language === 'en' ? ' District: ' : ' जिला: '}
                             {application.district || 'N/A'}
-                          </p>
-                        </div>
-                        <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+                          </p>                        </div>
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                           {t('pending')}
                         </span>
                       </div>
@@ -428,7 +420,7 @@ export default function AdminDashboard() {
               </a>
               
               <a 
-                href="#" 
+                href="/admin/payment-management" 
                 className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center"
               >
                 <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
@@ -463,6 +455,85 @@ export default function AdminDashboard() {
           </section>
         </main>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-8 mt-12">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Company Info */}
+            <div>
+              <h3 className="text-xl font-bold mb-4">स्मार्ट रोज़गार पोर्टल</h3>
+              <p className="text-gray-300 mb-4">
+                Empowering rural communities through digital employment opportunities and transparent job management.
+              </p>
+              <div className="flex space-x-4">
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">
+                  <span className="sr-only">GitHub</span>
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                  </svg>
+                </a>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                  <span className="sr-only">Twitter</span>
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8.29 20.251c7.29 0 11.278-6.035 11.278-11.278 0-.176 0-.35-.012-.524A8.141 8.141 0 0020 7.29a8.106 8.106 0 01-2.357.646 4.108 4.108 0 001.797-2.254 8.184 8.184 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.108 4.108 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                  </svg>
+                </a>
+                <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                  <span className="sr-only">LinkedIn</span>
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-xl font-bold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li><a href="/admin/dashboard" className="text-gray-300 hover:text-white transition-colors">Dashboard</a></li>
+                <li><a href="/admin/projects" className="text-gray-300 hover:text-white transition-colors">Projects</a></li>
+                <li><a href="/admin/job-card-applications" className="text-gray-300 hover:text-white transition-colors">Job Cards</a></li>
+                <li><a href="/admin/workers" className="text-gray-300 hover:text-white transition-colors">Workers</a></li>
+                <li><a href="/admin/payment-management" className="text-gray-300 hover:text-white transition-colors">Payments</a></li>
+              </ul>
+            </div>
+
+            {/* Contact Info */}
+            <div>
+              <h3 className="text-xl font-bold mb-4">Contact Us</h3>
+              <ul className="space-y-2 text-gray-300">
+                <li className="flex items-start">
+                  <svg className="h-5 w-5 mr-2 mt-0.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  <span>Smart Employment Portal, Uttar Pradesh, India</span>
+                </li>
+                <li className="flex items-center">
+                  <svg className="h-5 w-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                  </svg>
+                  <span>0562 279 579</span>
+                </li>
+                <li className="flex items-center">
+                  <svg className="h-5 w-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                  </svg>
+                  <span>contact@smartrozgarportal.in</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; {new Date().getFullYear()} स्मार्ट रोज़गार पोर्टल. All rights reserved.</p>
+            <p className="mt-2 text-sm">Designed for transparent and efficient employment management</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

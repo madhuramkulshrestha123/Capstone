@@ -9,7 +9,7 @@ export interface AuthenticatedRequest extends Request {
     user_id: string;
     name: string;
     email: string;
-    role: 'supervisor' | 'admin';
+    role: 'admin';
   };
 }
 
@@ -37,7 +37,7 @@ export const authenticateToken = (
       user_id: decoded.user_id, // Changed from decoded.id to decoded.user_id
       name: decoded.name,
       email: decoded.email,
-      role: decoded.role || 'supervisor', // Default to supervisor if not in token
+      role: decoded.role || 'admin', // Default to admin if not in token
     };
     next();
   } catch (error) {
@@ -89,7 +89,7 @@ export const optionalAuth = (
       user_id: decoded.user_id, // Changed from decoded.id to decoded.user_id
       name: decoded.name,
       email: decoded.email,
-      role: decoded.role || 'supervisor', // Default to supervisor if not in token
+      role: decoded.role || 'admin', // Default to admin if not in token
     };
     next();
   } catch (error) {
@@ -99,7 +99,7 @@ export const optionalAuth = (
 };
 
 // Role-based authorization middleware
-export const requireRole = (roles: ('supervisor' | 'admin')[]) => {
+export const requireRole = (roles: ('admin')[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
       res.status(401).json({
@@ -126,6 +126,4 @@ export const requireRole = (roles: ('supervisor' | 'admin')[]) => {
 };
 
 // Specific role middleware for convenience
-export const requireSupervisor = requireRole(['supervisor']);
 export const requireAdmin = requireRole(['admin']);
-export const requireSupervisorOrAdmin = requireRole(['supervisor', 'admin']);

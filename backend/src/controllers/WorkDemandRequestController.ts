@@ -63,11 +63,11 @@ export class WorkDemandRequestController {
 
   public createRequest = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Only supervisors can create work demand requests
-      if (req.user?.role !== 'supervisor') {
+      // Only admins can create work demand requests
+      if (req.user?.role !== 'admin') {
         res.status(403).json({
           success: false,
-          error: 'Only supervisors can create work demand requests'
+          error: 'Only admins can create work demand requests'
         });
         return;
       }

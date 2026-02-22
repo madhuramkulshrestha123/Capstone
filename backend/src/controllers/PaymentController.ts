@@ -284,4 +284,46 @@ export class PaymentController {
       next(error);
     }
   };
+
+  public generatePaymentsFromAttendance = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { projectId } = req.params;
+      if (!projectId) {
+        res.status(400).json({
+          success: false,
+          error: 'Project ID is required'
+        });
+        return;
+      }
+      
+      const { startDate, endDate } = req.query;
+      
+      // Get admin ID from authenticated user
+      const adminId = req.user?.user_id;
+      
+      if (!adminId) {
+        res.status(401).json({
+          success: false,
+          error: 'Authentication required'
+        });
+        return;
+      }
+
+      const payments = await this.paymentService.generatePaymentsFromAttendance(
+        projectId, 
+        startDate as string, 
+        endDate as string
+      );
+
+      const response: ApiResponse = {
+        success: true,
+        data: payments,
+        message: `Successfully generated ${payments.length} payment records`
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

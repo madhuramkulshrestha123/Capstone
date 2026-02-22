@@ -1,6 +1,5 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
-import config from './index';
 
 dotenv.config();
 
@@ -9,53 +8,20 @@ class Database {
   private static instance: Database;
 
   private constructor() {
-    // Use DATABASE_URL if available (for Render deployment), otherwise use individual env vars
-    if (config.database.url) {
-      console.log('Using DATABASE_URL for connection');
-      this.pool = new Pool({
-        connectionString: config.database.url,
-        ssl: {
-          rejectUnauthorized: false
-        },
-        // Connection pool settings for Neon PostgreSQL
-        max: 10, // Maximum number of clients in the pool
-        min: 2, // Minimum number of clients in the pool
-        idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-        connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
-        // Handle connection termination for serverless databases
-        keepAlive: true,
-        keepAliveInitialDelayMillis: 10000
-      });
-    } else {
-      console.log('Using individual environment variables for connection');
-      this.pool = new Pool({
-        host: process.env.DB_HOST || 'localhost',
-        port: parseInt(process.env.DB_PORT || '5432'),
-        user: process.env.DB_USERNAME || 'postgres',
-        password: process.env.DB_PASSWORD || '12345678',
-        database: process.env.DB_NAME || 'capstone_db',
-        max: 20,
-        min: 2,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 2000,
-      });
-    }
-
-    // Handle connection errors
-    this.pool.on('error', (err) => {
-      console.error('Unexpected error on idle client', err);
-      // Don't exit the process, just log the error
+    this.pool = new Pool({
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432'),
+      user: process.env.DB_USERNAME || 'postgres',
+      password: process.env.DB_PASSWORD || '12345678',
+      database: process.env.DB_NAME || 'capstone_db',
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
     });
 
     // Handle process exit events for proper cleanup
     process.on('beforeExit', async () => {
       console.log('Process beforeExit event triggered');
-      try {
-        await this.pool.end();
-        console.log('Database pool closed successfully');
-      } catch (error) {
-        console.error('Error closing database pool:', error);
-      }
     });
 
     process.on('exit', () => {
@@ -65,23 +31,13 @@ class Database {
     // Handle signals for graceful shutdown
     process.on('SIGTERM', async () => {
       console.log('SIGTERM signal received');
-      try {
-        await this.pool.end();
-        console.log('Database pool closed successfully');
-      } catch (error) {
-        console.error('Error closing database pool:', error);
-      }
+      await this.pool.end();
       process.exit(0);
     });
 
     process.on('SIGINT', async () => {
       console.log('SIGINT signal received');
-      try {
-        await this.pool.end();
-        console.log('Database pool closed successfully');
-      } catch (error) {
-        console.error('Error closing database pool:', error);
-      }
+      await this.pool.end();
       process.exit(0);
     });
   }
@@ -99,35 +55,20 @@ class Database {
 
   public async testConnection(): Promise<boolean> {
     try {
-      console.log('Testing database connection...');
       const client = await this.pool.connect();
-      console.log('Database connection established');
       await client.query('SELECT 1');
       client.release();
       console.log('Database connection test successful');
       return true;
     } catch (error) {
       console.error('Database connection test failed:', error);
-      // Log additional information about the connection
-      if (config.database.url) {
-        console.error('Using DATABASE_URL for connection');
-      } else {
-        console.error('Using individual environment variables for connection');
-        console.error('Host:', process.env.DB_HOST || 'localhost');
-        console.error('Port:', process.env.DB_PORT || '5432');
-        console.error('Database:', process.env.DB_NAME || 'capstone_db');
-      }
       return false;
     }
   }
 
   public async close(): Promise<void> {
-    try {
-      await this.pool.end();
-      console.log('Database connection closed');
-    } catch (error) {
-      console.error('Error closing database connection:', error);
-    }
+    await this.pool.end();
+    console.log('Database connection closed');
   }
   
   public async query(text: string, params?: any[]): Promise<any> {

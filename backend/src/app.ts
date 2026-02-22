@@ -1,5 +1,5 @@
 // TypeScript imports
-import express, { Application, Request, Response } from 'express';
+import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -21,7 +21,6 @@ import attendanceRoutes from './routes/attendanceRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import jobCardApplicationRoutes from './routes/jobCardApplicationRoutes';
 import adminJobCardApplicationRoutes from './routes/admin/jobCardApplicationRoutes';
-import adminDashboardRoutes from './routes/admin/dashboardRoutes';
 import chatbotRoutes from './routes/chatbotRoutes';
 
 dotenv.config();
@@ -72,41 +71,19 @@ class App {
 
   private initializeRoutes(): void {
     // Health check route
-    this.app.get('/health', (req: express.Request, res: express.Response) => {
+    this.app.get('/health', (req, res) => {
       res.status(200).json({
         status: 'OK',
         timestamp: new Date().toISOString(),
         environment: config.server.nodeEnv,
       });
     });
-    
-    // Database health check route
-    this.app.get('/health/db', async (req: express.Request, res: express.Response) => {
-      try {
-        const isConnected = await this.database.testConnection();
-        if (isConnected) {
-          res.status(200).json({
-            status: 'OK',
-            database: 'Connected',
-            timestamp: new Date().toISOString(),
-          });
-        } else {
-          res.status(503).json({
-            status: 'ERROR',
-            database: 'Disconnected',
-            timestamp: new Date().toISOString(),
-          });
-        }
-      } catch (error) {
-        res.status(503).json({
-          status: 'ERROR',
-          database: 'Connection failed',
-          error: (error as Error).message,
-          timestamp: new Date().toISOString(),
-        });
-      }
-    });
 
+    // Redirect supervisor routes to admin
+    this.app.use('/api/v1/supervisors', (req, res) => {
+      res.redirect('/api/v1/admin');
+    });
+    
     // API routes
     this.app.use('/api/v1/users', userRoutes);
     this.app.use('/api/v1/job-cards', jobCardRoutes);
@@ -116,11 +93,10 @@ class App {
     this.app.use('/api/v1/payments', paymentRoutes);
     this.app.use('/api/v1/job-card-applications', jobCardApplicationRoutes);
     this.app.use('/api/v1/admin', adminJobCardApplicationRoutes);
-    this.app.use('/api/v1/admin', adminDashboardRoutes);
     this.app.use('/api/v1/chatbot', chatbotRoutes);
 
     // Welcome route
-    this.app.get('/', (req: express.Request, res: express.Response) => {
+    this.app.get('/', (req, res) => {
       res.json({
         message: 'Welcome to Capstone Backend API',
         version: '1.0.0',
@@ -138,34 +114,9 @@ class App {
   }
 
   public async connectToDatabase(): Promise<void> {
-    try {
-      console.log('Attempting to connect to database...');
-      
-      // Retry logic for database connection
-      let isConnected = false;
-      let attempts = 0;
-      const maxAttempts = 3;
-      const retryDelay = 2000; // 2 seconds
-      
-      while (!isConnected && attempts < maxAttempts) {
-        if (attempts > 0) {
-          console.log(`Retrying database connection (attempt ${attempts + 1}/${maxAttempts})...`);
-          // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, retryDelay));
-        }
-        
-        isConnected = await this.database.testConnection();
-        attempts++;
-      }
-      
-      if (!isConnected) {
-        throw new Error('Failed to connect to database after multiple attempts');
-      }
-      
-      console.log('Database connection successful');
-    } catch (error) {
-      console.error('Database connection error:', error);
-      throw new Error('Database configuration error');
+    const isConnected = await this.database.testConnection();
+    if (!isConnected) {
+      throw new Error('Failed to connect to database');
     }
   }
 

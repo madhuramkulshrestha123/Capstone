@@ -7,6 +7,7 @@ import upload from '../middlewares/uploadMiddleware';
 import { CloudinaryService } from '../services/CloudinaryService';
 import { WorkDemandRequestService } from '../services/WorkDemandRequestService';
 import axios from 'axios';
+import config from '../config';
 
 export class UserController {
   private userService: UserService;
@@ -261,15 +262,14 @@ export class UserController {
     }
   };
 
-  // New OTP-based registration methods
   public sendRegistrationOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email } = req.body;
+      const { email, phone_number } = req.body;
       
       // Check if user already exists
-      const existingUser = await this.userService.getUserByEmail(email);
+      const existingUser = await this.userService.getUserModel().findByEmail(email);
       if (existingUser) {
-        res.status(400).json({
+        res.status(409).json({
           success: false,
           error: {
             message: 'User with this email already exists',
@@ -277,21 +277,27 @@ export class UserController {
         });
         return;
       }
-      
-      // Send OTP
-      const result = await this.otpService.sendOtp(email);
-      
+
+      // Send OTP via email and SMS if phone number is provided
+      const result = await this.otpService.sendOtp(email, phone_number);
+
       if (result.success) {
-        const response: ApiResponse = {
-          success: true,
-          data: {
-            message: result.message,
-            otp: result.otp // Only included in development
-          },
+        const responseData: any = {
+          message: 'OTP sent successfully',
+          is_verified: false,
         };
-        res.status(200).json(response);
+        
+        // In development, include the OTP for testing
+        if (process.env.NODE_ENV === 'development' && result.otp) {
+          responseData.otp = result.otp;
+        }
+        
+        res.status(200).json({
+          success: true,
+          data: responseData,
+        });
       } else {
-        res.status(500).json({
+        res.status(400).json({
           success: false,
           error: {
             message: result.message,
@@ -306,20 +312,17 @@ export class UserController {
   public verifyRegistrationOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { email, otp } = req.body;
-      
-      // Verify OTP
+
       const result = await this.otpService.verifyOtp(email, otp);
-      
+
       if (result.success) {
-        const response: ApiResponse = {
+        res.status(200).json({
           success: true,
           data: {
-            message: result.message,
+            message: 'OTP verified successfully',
             email: email,
-            otpVerified: true
           },
-        };
-        res.status(200).json(response);
+        });
       } else {
         res.status(400).json({
           success: false,
@@ -335,27 +338,71 @@ export class UserController {
 
   public completeRegistration = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Extract all fields from the request body (using the actual field names sent by frontend)
-      const { 
-        email, 
-        name, 
-        aadhaar_number, 
-        jobCardId,
-        phone_number,
-        panchayat_id,
-        government_id,
-        state,
-        district,
-        village_name,
-        pincode,
-        password
-      } = req.body;
-      
+      // Check if OTP is verified
+      const isVerified = await this.otpService.isOtpVerified(req.body.email);
+      if (!isVerified) {
+        res.status(400).json({
+          success: false,
+          error: {
+            message: 'OTP not verified. Please verify OTP first.',
+          },
+        });
+        return;
+      }
+
+      // Check if user already exists by email, phone, aadhaar, or government ID
+      const [existingUserByEmail, existingUserByPhone, existingUserByAadhaar, existingUserByGovId] = await Promise.all([
+        this.userService.getUserModel().findByEmail(req.body.email),
+        this.userService.getUserModel().findByPhoneNumber(req.body.phone_number),
+        this.userService.getUserModel().findByAadhaar(req.body.aadhaar_number),
+        this.userService.getUserModel().findByGovernmentId(req.body.government_id),
+      ]);
+
+      if (existingUserByEmail) {
+        res.status(409).json({
+          success: false,
+          error: {
+            message: 'User with this email already exists',
+          },
+        });
+        return;
+      }
+
+      if (existingUserByPhone) {
+        res.status(409).json({
+          success: false,
+          error: {
+            message: 'User with this phone number already exists',
+          },
+        });
+        return;
+      }
+
+      if (existingUserByAadhaar) {
+        res.status(409).json({
+          success: false,
+          error: {
+            message: 'User with this Aadhaar number already exists',
+          },
+        });
+        return;
+      }
+
+      if (existingUserByGovId) {
+        res.status(409).json({
+          success: false,
+          error: {
+            message: 'User with this government ID already exists',
+          },
+        });
+        return;
+      }
+
       // Handle image upload if file is provided
       let imageUrl: string | undefined;
       if (req.file) {
         try {
-          const fileName = `user_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+          const fileName = `user_${req.body.email}_${Date.now()}`;
           imageUrl = await this.cloudinaryService.uploadImage(req.file.buffer, fileName);
         } catch (uploadError) {
           console.error('Error uploading image to Cloudinary:', uploadError);
@@ -368,77 +415,73 @@ export class UserController {
           return;
         }
       }
-      
-      // Create user with all required data for registration
-      const userData = {
-        email,
-        name,
-        aadhaar_number: aadhaar_number || '', // Use the actual field name
-        job_card_id: jobCardId,
-        password,
-        image_url: imageUrl,
-        role: 'supervisor', // Default role for new registrations
-        phone_number: phone_number || '',
-        panchayat_id: panchayat_id || '',
-        government_id: government_id || '',
-        state: state || '',
-        district: district || '',
-        village_name: village_name || '',
-        pincode: pincode || ''
-      };
-      
-      // Use createRegistration method from UserService
-      const userModel = this.userService.getUserModel();
-      const user = await userModel.createRegistration(userData);
-      
-      // Map user to response format
-      const { password_hash, ...userResponse } = user;
-      
-      const response: ApiResponse = {
+
+      // Add image URL to registration data
+      const registrationData = { ...req.body };
+      if (imageUrl) {
+        registrationData.image_url = imageUrl;
+      }
+
+      const user = await this.userService.createRegistration(registrationData);
+
+      res.status(201).json({
         success: true,
         data: {
+          user,
           message: 'Registration completed successfully',
-          user: userResponse
         },
-      };
-      
-      res.status(201).json(response);
+      });
     } catch (error) {
       next(error);
     }
   };
 
-  // New OTP-based login methods
   public sendLoginOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email } = req.body;
+      const { email, password } = req.body;
       
-      // Check if user exists
-      const existingUser = await this.userService.getUserByEmail(email);
-      if (!existingUser) {
-        res.status(404).json({
+      // Check if user exists and verify password
+      const user = await this.userService.getUserModel().verifyPassword(email, password);
+      if (!user) {
+        res.status(401).json({
           success: false,
           error: {
-            message: 'No user found with this email',
+            message: 'Invalid email or password',
           },
         });
         return;
       }
-      
-      // Send OTP
-      const result = await this.otpService.sendOtp(email);
-      
-      if (result.success) {
-        const response: ApiResponse = {
-          success: true,
-          data: {
-            message: result.message,
-            otp: result.otp // Only included in development
+
+      // Check if user is active
+      if (!user.is_active) {
+        res.status(403).json({
+          success: false,
+          error: {
+            message: 'Account is deactivated',
           },
+        });
+        return;
+      }
+
+      // Send OTP via email and SMS using the user's phone number
+      const result = await this.otpService.sendOtp(email, user.phone_number);
+
+      if (result.success) {
+        const responseData: any = {
+          message: 'OTP sent successfully for login',
         };
-        res.status(200).json(response);
+        
+        // In development, include the OTP for testing
+        if (process.env.NODE_ENV === 'development' && result.otp) {
+          responseData.otp = result.otp;
+        }
+        
+        res.status(200).json({
+          success: true,
+          data: responseData,
+        });
       } else {
-        res.status(500).json({
+        res.status(400).json({
           success: false,
           error: {
             message: result.message,
@@ -453,13 +496,12 @@ export class UserController {
   public verifyLoginOtp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { email, otp } = req.body;
-      
-      // Verify OTP
+
       const result = await this.otpService.verifyOtp(email, otp);
-      
+
       if (result.success) {
-        // Get user details
-        const user = await this.userService.getUserByEmail(email);
+        // Get user and generate tokens
+        const user = await this.userService.getUserModel().findByEmail(email);
         if (!user) {
           res.status(404).json({
             success: false,
@@ -469,20 +511,29 @@ export class UserController {
           });
           return;
         }
+
+        const tokens = this.userService.generateTokens(user);
         
-        // Generate JWT tokens using the existing method
-        const tokens = this.userService.generateTokens(user as any);
-        
-        const response: ApiResponse = {
+        res.status(200).json({
           success: true,
           data: {
-            message: 'Login successful',
-            user: user,
+            user: {
+              user_id: user.user_id,
+              name: user.name,
+              email: user.email,
+              phone_number: user.phone_number,
+              aadhaar_number: user.aadhaar_number,
+              role: user.role,
+              image_url: user.image_url,
+              is_active: user.is_active,
+              created_at: user.created_at,
+              updated_at: user.updated_at,
+            },
             token: tokens.token,
-            refreshToken: tokens.refreshToken
+            refreshToken: tokens.refreshToken,
+            message: 'Login successful',
           },
-        };
-        res.status(200).json(response);
+        });
       } else {
         res.status(400).json({
           success: false,
@@ -662,21 +713,159 @@ export class UserController {
     }
   };
   
-  // Method to demand work for a worker
-  public demandWork = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  // Worker login method
+  public workerLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { jobCardId, captchaToken } = req.body;
+      const { jobCardNumber, aadhaarNumber, captchaToken } = req.body;
       
       // Validate reCAPTCHA
-      if (!await this.isValidCaptcha(captchaToken)) {
+      
+      // Validate reCAPTCHA (skip in development mode for testing)
+      let isValidCaptcha = await this.isValidCaptcha(captchaToken);
+      
+      // In development mode, allow test-token to bypass reCAPTCHA
+      if (process.env.NODE_ENV === 'development' && captchaToken === 'test-token') {
+        isValidCaptcha = true;
+      }
+      
+      if (!isValidCaptcha) {
         res.status(400).json({
           success: false,
           error: {
-            message: 'Invalid reCAPTCHA verification',
+            message: 'Invalid reCAPTCHA. Please try again.',
           },
         });
         return;
       }
+      
+      // Validate inputs
+      if (!jobCardNumber || !aadhaarNumber) {
+        res.status(400).json({
+          success: false,
+          error: {
+            message: 'Job card number and Aadhaar number are required',
+          },
+        });
+        return;
+      }
+      
+      // Validate Aadhaar format
+      if (aadhaarNumber.length !== 12 || !/^\d{12}$/.test(aadhaarNumber)) {
+        res.status(400).json({
+          success: false,
+          error: {
+            message: 'Invalid Aadhaar number format',
+          },
+        });
+        return;
+      }
+      
+      // Get user model instance
+      const userModel = this.userService.getUserModel();
+      
+      // Find job card by job card ID
+      const jobCard = await userModel.getJobCardById(jobCardNumber);
+      if (!jobCard) {
+        res.status(404).json({
+          success: false,
+          error: {
+            message: 'Job card not found. Please check your Job Card Number.',
+          },
+        });
+        return;
+      }
+      
+      // Verify Aadhaar number matches
+      const jobCardAadhaar = String(jobCard.aadhaar_number).trim();
+      const providedAadhaar = String(aadhaarNumber).trim();
+      
+      if (jobCardAadhaar !== providedAadhaar) {
+        res.status(401).json({
+          success: false,
+          error: {
+            message: 'Aadhaar number does not match the job card records.',
+          },
+        });
+        return;
+      }
+      
+      // Find the user associated with this job card
+      const user = await userModel.findByAadhaar(jobCard.aadhaar_number);
+      if (!user) {
+        res.status(404).json({
+          success: false,
+          error: {
+            message: 'User not found for this job card.',
+          },
+        });
+        return;
+      }
+      
+      // Get work history for this user
+      const workHistory = await userModel.getWorkHistoryByUserId(user.user_id);
+      
+      // Calculate current status and payment information
+      let currentStatus = 'available';
+      let totalAmount = 0;
+      let paymentDeadline = null;
+      
+      if (workHistory.length > 0) {
+        // Get the most recent project assignment
+        const latestProject = workHistory[0]; // Already ordered by allocated_at DESC
+        if (latestProject) {
+          totalAmount = latestProject.wage_per_worker || 374;
+          currentStatus = 'assigned';
+          
+          // Calculate payment deadline (15 days from project assignment date)
+          if (latestProject.allocated_at) {
+            const assignedDate = new Date(latestProject.allocated_at);
+            assignedDate.setDate(assignedDate.getDate() + 15);
+            paymentDeadline = assignedDate.toISOString().split('T')[0];
+          }
+        }
+      }
+      
+      // Prepare worker data
+      const workerData = {
+        id: user.user_id,
+        name: user.name,
+        aadhaar_number: user.aadhaar_number,
+        phone_number: user.phone_number,
+        job_card_id: jobCard.job_card_id,
+        head_of_household_name: jobCard.head_of_household_name,
+        father_or_husband_name: jobCard.father_or_husband_name,
+        category: jobCard.category,
+        date_of_registration: jobCard.created_at,
+        full_address: jobCard.full_address,
+        village: jobCard.village,
+        panchayat: jobCard.panchayat,
+        block: jobCard.block,
+        district: jobCard.district,
+        belongs_to_bpl: jobCard.belongs_to_bpl,
+        image_url: jobCard.image_url,
+        current_status: currentStatus,
+        work_history: workHistory,
+        total_amount: totalAmount,
+        paymentDeadline: paymentDeadline,
+        login_time: new Date().toISOString()
+      };
+      
+      const response: ApiResponse = {
+        success: true,
+        data: workerData,
+        message: 'Worker login successful'
+      };
+      
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+  
+  // Method to demand work for a worker
+  public demandWork = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { jobCardId } = req.body;
       
       // Get user model instance
       const userModel = this.userService.getUserModel();
@@ -732,7 +921,7 @@ export class UserController {
         res.status(400).json({
           success: false,
           error: {
-            message: `Worker is already assigned to work and can again demand work after ${formattedEndDate}`,
+            message: `Worker is already assigned to work, Kindly wait for this work to End`,
             completion_date: formattedEndDate
           },
         });
@@ -765,10 +954,17 @@ export class UserController {
     }
   };
   
-  // Helper method to validate reCAPTCHA
+
+  
+  // Validate reCAPTCHA token
   private async isValidCaptcha(captchaToken: string): Promise<boolean> {
-    // Verify Google reCAPTCHA token with Google's API
     try {
+      // In development mode, bypass reCAPTCHA validation entirely
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Development mode: bypassing reCAPTCHA validation');
+        return true;
+      }
+      
       const secretKey = process.env.RECAPTCHA_SECRET_KEY;
       
       if (!secretKey) {
@@ -776,14 +972,31 @@ export class UserController {
         return false;
       }
       
-      const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+      const verificationUrl = `https://www.google.com/recaptcha/api/siteverify`;
       
-      const response = await axios.post(verificationUrl);
-      const data = response.data;
+      const response = await axios.post(verificationUrl, null, {
+        params: {
+          secret: secretKey,
+          response: captchaToken
+        },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
       
-      return data.success === true;
-    } catch (error) {
-      console.error('Error verifying reCAPTCHA:', error);
+      console.log('reCAPTCHA verification response:', response.data);
+      
+      // Check if response has the success property and it's true
+      if (response.data && typeof response.data.success === 'boolean') {
+        return response.data.success === true;
+      }
+      
+      return false;
+    } catch (error: any) {
+      console.error('Error verifying reCAPTCHA:', error.message);
+      if (error.response) {
+        console.error('reCAPTCHA API error response:', error.response.data);
+      }
       return false;
     }
   }

@@ -40,6 +40,7 @@ export class AdminJobCardApplicationController {
   public rejectApplication = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { trackingId } = req.params;
+      const { rejectionReason } = req.body;
       
       if (!trackingId) {
         res.status(400).json({
@@ -51,7 +52,7 @@ export class AdminJobCardApplicationController {
         return;
       }
 
-      const result = await this.adminJobCardApplicationService.rejectApplication(trackingId);
+      const result = await this.adminJobCardApplicationService.rejectApplication(trackingId, rejectionReason);
 
       const response: ApiResponse = {
         success: true,

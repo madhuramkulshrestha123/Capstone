@@ -53,8 +53,16 @@ export default function WorkersPage() {
       }
     };
     
-    fetchWorkers();
-  }, []);
+    // Only fetch if we don't have data yet
+    if (workers.length === 0) {
+      // Add small delay to prevent immediate rapid requests
+      const timer = setTimeout(() => {
+        fetchWorkers();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [workers.length]);
   
   // Function to open worker detail modal
   const openWorkerDetail = (worker: any) => {

@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 // Define the User type based on the updated schema
 interface User {
   user_id: string;
-  role: 'supervisor' | 'admin';
+  role: 'admin';
   name: string;
   phone_number: string;
   aadhaar_number: string;
@@ -107,7 +107,7 @@ export class UserModel {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW()) RETURNING *`,
       [
         userId,
-        userData.role || 'supervisor',
+        userData.role || 'admin',
         userData.name,
         userData.phone_number,
         userData.aadhaar_number,
@@ -283,7 +283,7 @@ export class UserModel {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW()) RETURNING *`,
       [
         userId,
-        userData.role || 'supervisor',
+        userData.role || 'admin',
         userData.name,
         userData.phone_number,
         userData.aadhaar_number,

@@ -212,7 +212,7 @@ export class ProjectService {
       // Get all users with role 'supervisor' (workers in this system)
       const users = await this.userModel.getUsersByRole('supervisor');
       
-      // Filter for workers with approved job cards
+      // Filter for workers with approved job cards who are available
       const availableWorkers = [];
       
       for (const user of users) {
@@ -220,14 +220,46 @@ export class ProjectService {
         const application = await this.jobCardApplicationModel.findByAadhaarNumber(user.aadhaar_number);
         
         if (application && application.status === 'approved') {
-          availableWorkers.push({
-            user_id: user.user_id,
-            name: user.name,
-            aadhaar_number: user.aadhaar_number,
-            district: user.district,
-            panchayat_id: user.panchayat_id,
-            job_card_id: application.job_card_id
-          });
+          // Get work history for this user to determine current status
+          const workHistory = await this.userModel.getWorkHistoryByUserId(user.user_id);
+          
+          let currentStatus = 'available';
+          
+          if (workHistory.length > 0) {
+            // Check if any of the worker's projects are still active (haven't ended yet)
+            // If any project is still active, the worker is assigned
+            currentStatus = 'available'; // default to available
+            let hasActiveProject = false;
+            
+            for (const project of workHistory) {
+              if (project.end_date) {
+                const projectEndDate = new Date(project.end_date);
+                const now = new Date();
+                
+                // If project end date is in the future, worker is assigned
+                if (now <= projectEndDate) {
+                  hasActiveProject = true;
+                  break; // Found at least one active project
+                }
+              }
+            }
+            
+            if (hasActiveProject) {
+              currentStatus = 'assigned';
+            }
+          }
+          
+          // Only add to available workers if current status is available
+          if (currentStatus === 'available') {
+            availableWorkers.push({
+              user_id: user.user_id,
+              name: user.name,
+              aadhaar_number: user.aadhaar_number,
+              district: user.district,
+              panchayat_id: user.panchayat_id,
+              job_card_id: application.job_card_id
+            });
+          }
         }
       }
       
@@ -236,6 +268,8 @@ export class ProjectService {
       throw new AppError('Failed to fetch available workers', 500);
     }
   }
+  
+
   
   async getAssignedWorkersByProjectId(projectId: string): Promise<any[]> {
     try {

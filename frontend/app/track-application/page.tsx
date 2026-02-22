@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useTranslation } from '../lib/useTranslation';
 import jsPDF from 'jspdf';
-import { apiFetch } from '../lib/api';
 
 export default function TrackApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
@@ -28,7 +27,7 @@ export default function TrackApplicationPage() {
     setApplicationData(null);
 
     try {
-      const response = await apiFetch(`/job-card-applications/track/${trackingId}`);
+      const response = await fetch(`http://localhost:3001/api/v1/job-card-applications/track/${trackingId}`);
       
       if (response.ok) {
         const result = await response.json();
@@ -52,6 +51,8 @@ export default function TrackApplicationPage() {
         return t('sentToAuthority');
       case 'approved':
         return t('identityVerified');
+      case 'rejected':
+        return t('rejected');
       default:
         return status;
     }
@@ -338,6 +339,22 @@ export default function TrackApplicationPage() {
                     <span className="font-medium text-gray-700">{t('trackingId')}:</span>
                     <span className="text-gray-900">{applicationData.trackingId}</span>
                   </div>
+                  
+                  {/* Status Display - Different styles based on status */}
+                  <div className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
+                    <span className="font-medium text-gray-700">{t('status')}:</span>
+                    <span className={`text-lg font-bold ${applicationData.status === 'rejected' ? 'text-red-600' : applicationData.status === 'approved' ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {getStatusDisplayText(applicationData.status)}
+                    </span>
+                  </div>
+                  
+                  {/* Show rejection reason if application is rejected */}
+                  {applicationData.status === 'rejected' && applicationData.rejectionReason && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="font-semibold text-red-700">Reason for Rejection:</p>
+                      <p className="text-red-600 mt-1">{applicationData.rejectionReason}</p>
+                    </div>
+                  )}
                   
                   <div className="flex justify-between">
                     <span className="font-medium text-gray-700">{t('aadhaarNumber')}:</span>

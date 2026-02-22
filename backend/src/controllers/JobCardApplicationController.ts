@@ -4,20 +4,6 @@ import { CloudinaryService } from '../services/CloudinaryService';
 import { AppError } from '../middlewares/errorMiddleware';
 import { ApiResponse } from '../types';
 
-// Helper function to calculate age from date of birth
-function calculateAge(dateOfBirth: Date): number {
-  const today = new Date();
-  const birthDate = new Date(dateOfBirth);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
-  return age;
-}
-
 export class JobCardApplicationController {
   private jobCardApplicationService: JobCardApplicationService;
   private cloudinaryService: CloudinaryService;
@@ -70,49 +56,23 @@ export class JobCardApplicationController {
       
       console.log('Parsed application data:', applicationData);
 
-      // Parse bank details if available
-      let bankName = '';
-      let accountNumber = '';
-      let ifscCode = '';
-      
-      if (applicationData.jobCardDetails.applicants && applicationData.jobCardDetails.applicants.length > 0) {
-        const firstApplicant = applicationData.jobCardDetails.applicants[0];
-        if (firstApplicant.bankDetails) {
-          const bankDetails = firstApplicant.bankDetails.split('|');
-          if (bankDetails.length === 3) {
-            bankName = bankDetails[0];
-            accountNumber = bankDetails[1];
-            ifscCode = bankDetails[2];
-          }
-        }
-      }
-
-      // Calculate age from date of birth
-      const dateOfBirth = new Date(applicationData.jobCardDetails.dateOfRegistration);
-      const age = calculateAge(dateOfBirth);
-
       // Extract application data from request body
       const applicationDataForDB = {
         aadhaar_number: applicationData.aadhaarNumber,
         phone_number: applicationData.phoneNumber,
-        date_of_birth: dateOfBirth,
-        age: age,
         family_id: applicationData.jobCardDetails.familyId,
         head_of_household_name: applicationData.jobCardDetails.headOfHouseholdName,
         father_or_husband_name: applicationData.jobCardDetails.fatherHusbandName,
         category: applicationData.jobCardDetails.category,
-        epic_number: applicationData.jobCardDetails.epicNo || null,
-        belongs_to_bpl: applicationData.jobCardDetails.isBPL,
-        state: applicationData.jobCardDetails.state,
-        district: applicationData.jobCardDetails.district,
+        date_of_registration: new Date(applicationData.jobCardDetails.dateOfRegistration),
+        full_address: applicationData.jobCardDetails.address,
         village: applicationData.jobCardDetails.village || null,
         panchayat: applicationData.jobCardDetails.panchayat,
         block: applicationData.jobCardDetails.block,
+        district: applicationData.jobCardDetails.district,
         pincode: applicationData.jobCardDetails.pincode || null,
-        full_address: applicationData.jobCardDetails.address,
-        bank_name: bankName,
-        account_number: accountNumber,
-        ifsc_code: ifscCode,
+        is_bpl: applicationData.jobCardDetails.isBPL,
+        epic_number: applicationData.jobCardDetails.epicNo || null,
         applicants: applicationData.jobCardDetails.applicants,
         image_url: imageUrl,
         status: 'pending' as const,
