@@ -1,7 +1,8 @@
 // Store token in memory (in a real app, you'd use localStorage or a more secure method)
 let authToken: string | null = null;
 
-const API_BASE_URL = 'http://localhost:3001/api/v1';
+// Use environment variable for API base URL, fallback to localhost for development
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api/v1';
 
 // Simple in-memory cache
 const apiCache = new Map<string, { data: any; timestamp: number; ttl: number }>();

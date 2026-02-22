@@ -217,6 +217,51 @@ graph TD
 
 ## Deployment
 
+### Production Deployment
+The application is ready for deployment to cloud platforms:
+
+**Backend**: [Render](https://render.com) with Neon PostgreSQL
+**Frontend**: [Vercel](https://vercel.com)
+
+### Deployment Guides
+- 📁 [`backend/DEPLOYMENT.md`](backend/DEPLOYMENT.md) - Backend deployment instructions
+- 📁 [`frontend/DEPLOYMENT.md`](frontend/DEPLOYMENT.md) - Frontend deployment instructions
+- 📋 [`DEPLOYMENT_CHECKLIST.md`](DEPLOYMENT_CHECKLIST.md) - Complete deployment checklist
+
+### Quick Deployment Steps
+1. **Deploy Backend First**:
+   - Push code to GitHub
+   - Create Render web service
+   - Configure environment variables
+   - Note the Render URL
+
+2. **Deploy Frontend**:
+   - Create Vercel project
+   - Set environment variables (use Render URL)
+   - Deploy to production
+
+3. **Final Configuration**:
+   - Update Render's CORS origin with Vercel URL
+   - Test the complete application
+
+### Environment Variables
+
+**Backend (Render)**:
+```env
+DATABASE_URL=postgresql://neondb_owner:npg_YH7qNGltf3Pg@ep-floral-paper-aiswipb1-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+JWT_SECRET=your_secure_jwt_secret
+JWT_REFRESH_SECRET=your_secure_refresh_secret
+CORS_ORIGIN=https://your-frontend.vercel.app
+```
+
+**Frontend (Vercel)**:
+```env
+NEXT_PUBLIC_API_BASE_URL=https://your-backend.onrender.com/api/v1
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=6LdhMA4sAAAAAM3BpZ3KAdXY7v1aMFeoZIuUP53R
+```
+
+### Local Development
+
 ### Prerequisites
 - Node.js >= 16.x
 - PostgreSQL >= 12.x

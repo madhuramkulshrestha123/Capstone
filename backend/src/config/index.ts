@@ -54,7 +54,7 @@ const config: Config = {
     nodeEnv: process.env.NODE_ENV || 'development',
   },
   database: {
-    url: `postgresql://${process.env.DB_USERNAME || 'postgres'}:${process.env.DB_PASSWORD || '12345678'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'capstone_db'}?schema=public`,
+    url: process.env.DATABASE_URL || `postgresql://${process.env.DB_USERNAME || 'postgres'}:${process.env.DB_PASSWORD || '12345678'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'capstone_db'}?schema=public`,
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'your_jwt_secret_here',

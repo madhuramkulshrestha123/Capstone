@@ -8,16 +8,23 @@ class Database {
   private static instance: Database;
 
   private constructor() {
-    this.pool = new Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      user: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || '12345678',
-      database: process.env.DB_NAME || 'capstone_db',
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-    });
+    // Use DATABASE_URL for production (Render/Neon DB)
+    const databaseUrl = process.env.DATABASE_URL;
+    
+    const poolConfig = databaseUrl 
+      ? { connectionString: databaseUrl, ssl: { rejectUnauthorized: false } }
+      : {
+          host: process.env.DB_HOST || 'localhost',
+          port: parseInt(process.env.DB_PORT || '5432'),
+          user: process.env.DB_USERNAME || 'postgres',
+          password: process.env.DB_PASSWORD || '12345678',
+          database: process.env.DB_NAME || 'capstone_db',
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 2000,
+        };
+    
+    this.pool = new Pool(poolConfig);
 
     // Handle process exit events for proper cleanup
     process.on('beforeExit', async () => {
