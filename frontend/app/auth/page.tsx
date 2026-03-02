@@ -102,11 +102,9 @@ export default function AuthPage() {
         return;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-
       // Step 1: Send OTP
       if (!otpSent) {
-        const response = await fetch(`${baseUrl}/users/register/send-otp`, {
+        const response = await fetch('http://localhost:3001/api/v1/users/register/send-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -129,7 +127,7 @@ export default function AuthPage() {
 
       // Step 2: Verify OTP
       if (otpSent && !otpVerified) {
-        const response = await fetch(`${baseUrl}/users/register/verify-otp`, {
+        const response = await fetch('http://localhost:3001/api/v1/users/register/verify-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -211,7 +209,7 @@ export default function AuthPage() {
           captchaToken: recaptchaToken // Add reCAPTCHA token
         };
 
-        const response = await fetch(`${baseUrl}/users/register/complete`, {
+        const response = await fetch('http://localhost:3001/api/v1/users/register/complete', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -255,8 +253,6 @@ export default function AuthPage() {
         return;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-
       // Worker login logic
       if (userType === 'worker') {
         // Validate inputs
@@ -286,7 +282,7 @@ export default function AuthPage() {
         }
 
         // Call worker login API
-        const response = await fetch(`${baseUrl}/users/worker-login`, {
+        const response = await fetch('http://localhost:3001/api/v1/users/worker-login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -333,7 +329,7 @@ export default function AuthPage() {
           return;
         }
 
-        const response = await fetch(`${baseUrl}/users/login/send-otp`, {
+        const response = await fetch('http://localhost:3001/api/v1/users/login/send-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -357,7 +353,7 @@ export default function AuthPage() {
 
       // Step 2: Verify OTP for login
       if (otpSent) {
-        const response = await fetch(`${baseUrl}/users/login/verify-otp`, {
+        const response = await fetch('http://localhost:3001/api/v1/users/login/verify-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
