@@ -4,6 +4,7 @@
   "description": "TypeScript REST API backend with Express and PostgreSQL",
   "main": "dist/server.js",
   "scripts": {
+    "prebuild": "npm install",
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
