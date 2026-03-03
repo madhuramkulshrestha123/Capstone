@@ -2,7 +2,7 @@
 let authToken: string | null = null;
 
 // Use environment variable for API base URL, fallback to localhost for development
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 // Simple in-memory cache
 const apiCache = new Map<string, { data: any; timestamp: number; ttl: number }>();
