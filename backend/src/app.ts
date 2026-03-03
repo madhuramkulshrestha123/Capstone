@@ -22,6 +22,7 @@ import paymentRoutes from './routes/paymentRoutes';
 import jobCardApplicationRoutes from './routes/jobCardApplicationRoutes';
 import adminJobCardApplicationRoutes from './routes/admin/jobCardApplicationRoutes';
 import chatbotRoutes from './routes/chatbotRoutes';
+import googleAuthRoutes from './routes/googleAuthRoutes';
 
 dotenv.config();
 
@@ -41,9 +42,20 @@ class App {
     // Security middleware
     this.app.use(helmet());
     
-    // CORS middleware
+    // CORS middleware - support multiple origins
+    const corsOrigins = config.cors.origins || [config.cors.origin];
     this.app.use(cors({
-      origin: config.cors.origin,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or Postman)
+        if (!origin) return callback(null, true);
+        
+        // Check if origin is in the allowed list
+        if (corsOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       credentials: true,
     }));
 
@@ -94,6 +106,7 @@ class App {
     this.app.use('/api/v1/job-card-applications', jobCardApplicationRoutes);
     this.app.use('/api/v1/admin', adminJobCardApplicationRoutes);
     this.app.use('/api/v1/chatbot', chatbotRoutes);
+    this.app.use('/api/v1/auth', googleAuthRoutes);
 
     // Welcome route
     this.app.get('/', (req, res) => {

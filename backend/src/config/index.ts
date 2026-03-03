@@ -18,6 +18,7 @@ export interface Config {
   };
   cors: {
     origin: string;
+    origins?: string[]; // Array of allowed origins for production
   };
   rateLimit: {
     windowMs: number;
@@ -64,6 +65,7 @@ const config: Config = {
   },
   cors: {
     origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origins: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['http://localhost:3000', 'http://localhost:3001'],
   },
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
