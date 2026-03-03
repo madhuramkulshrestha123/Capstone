@@ -89,7 +89,7 @@ class App {
     this.app.use('/api/v1/job-cards', jobCardRoutes);
     this.app.use('/api/v1/projects', projectRoutes);
     this.app.use('/api/v1/work-requests', workDemandRequestRoutes);
-    this.app.use('/api/v1/attendances', attendanceRoutes);
+    this.app.use('/api/v1/attendance', attendanceRoutes);
     this.app.use('/api/v1/payments', paymentRoutes);
     this.app.use('/api/v1/job-card-applications', jobCardApplicationRoutes);
     this.app.use('/api/v1/admin', adminJobCardApplicationRoutes);

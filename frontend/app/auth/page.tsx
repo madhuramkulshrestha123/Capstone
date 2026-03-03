@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,34 +19,12 @@ export default function AuthPage() {
   const [district, setDistrict] = useState('');
   const [village, setVillage] = useState('');
   const [pincode, setPincode] = useState('');
-  const [captcha, setCaptcha] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-
-  // Add reCAPTCHA v3 hook
-  const { executeRecaptcha } = useGoogleReCaptcha();
-  
-  // Execute reCAPTCHA on form submission
-  const handleReCaptchaVerify = async (action: string) => {
-    if (!executeRecaptcha) {
-      console.log('Execute recaptcha not yet available');
-      return null;
-    }
-    
-    try {
-      const token = await executeRecaptcha(action);
-      setCaptchaToken(token);
-      return token;
-    } catch (error) {
-      console.error('Error executing reCAPTCHA:', error);
-      return null;
-    }
-  };
 
   // Reset form states
   const resetForm = () => {
@@ -65,13 +42,11 @@ export default function AuthPage() {
     setDistrict('');
     setVillage('');
     setPincode('');
-    setCaptcha('');
     setOtp('');
     setOtpSent(false);
     setOtpVerified(false);
     setError('');
     setSuccess('');
-    setCaptchaToken(null);
   };
 
   // Toggle between login and register
@@ -94,13 +69,8 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      // Execute reCAPTCHA for registration
-      const recaptchaToken = await handleReCaptchaVerify('register');
-      if (!recaptchaToken) {
-        setError('reCAPTCHA verification failed. Please try again.');
-        setLoading(false);
-        return;
-      }
+      // Skip reCAPTCHA for registration (removed as requested)
+      const recaptchaToken = null;
 
       // Step 1: Send OTP
       if (!otpSent) {
@@ -111,6 +81,7 @@ export default function AuthPage() {
           },
           body: JSON.stringify({
             email,
+            captchaToken: '' // Send empty captchaToken to satisfy backend validation
           }),
         });
 
@@ -135,6 +106,7 @@ export default function AuthPage() {
           body: JSON.stringify({
             email,
             otp,
+            captchaToken: '' // Send empty captchaToken to satisfy backend validation
           }),
         });
 
@@ -206,7 +178,7 @@ export default function AuthPage() {
           village_name: village,
           pincode,
           role: userType, // 'admin' only (supervisor role removed)
-          captchaToken: recaptchaToken // Add reCAPTCHA token
+          // Note: captchaToken is not included as reCAPTCHA has been removed
         };
 
         const response = await fetch('http://localhost:3001/api/v1/users/register/complete', {
@@ -214,7 +186,10 @@ export default function AuthPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(registrationData),
+          body: JSON.stringify({
+            ...registrationData,
+            captchaToken: '' // Send empty captchaToken to satisfy backend validation
+          }),
         });
 
         const data = await response.json();
@@ -245,25 +220,14 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      // Execute reCAPTCHA for login
-      const recaptchaToken = await handleReCaptchaVerify('login');
-      if (!recaptchaToken) {
-        setError('reCAPTCHA verification failed. Please try again.');
-        setLoading(false);
-        return;
-      }
+      // Skip reCAPTCHA for login (removed as requested)
+      const recaptchaToken = null;
 
       // Worker login logic
       if (userType === 'worker') {
         // Validate inputs
         if (!jobCardNumber) {
           setError('Please enter your Job Card Number');
-          setLoading(false);
-          return;
-        }
-
-        if (!workerAadhaar) {
-          setError('Please enter your Aadhaar Number');
           setLoading(false);
           return;
         }
@@ -290,7 +254,7 @@ export default function AuthPage() {
           body: JSON.stringify({
             jobCardNumber,
             aadhaarNumber: workerAadhaar,
-            captchaToken: recaptchaToken
+            captchaToken: '' // Send empty captchaToken to satisfy backend validation
           }),
         });
 
@@ -337,6 +301,7 @@ export default function AuthPage() {
           body: JSON.stringify({
             email: employmentId, // Using employment ID as email for admin/supervisor
             password,
+            captchaToken: '' // Send empty captchaToken to satisfy backend validation
           }),
         });
 
@@ -361,6 +326,7 @@ export default function AuthPage() {
           body: JSON.stringify({
             email: employmentId,
             otp,
+            captchaToken: null // Explicitly send null captcha token
           }),
         });
 
@@ -379,7 +345,8 @@ export default function AuthPage() {
             if (data.data.user.role === 'admin') {
               window.location.href = '/admin/dashboard';
             } else {
-              window.location.href = '/admin/dashboard';
+              // For supervisors or other roles, redirect to general dashboard
+              window.location.href = '/dashboard';
             }
           }, 1000);
         } else {

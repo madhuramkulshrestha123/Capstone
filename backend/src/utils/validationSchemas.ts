@@ -971,9 +971,4 @@ export const workerLoginSchema = Joi.object({
       'string.pattern.base': 'Aadhaar number must contain only digits',
       'any.required': 'Aadhaar number is required',
     }),
-  captchaToken: Joi.string()
-    .required()
-    .messages({
-      'any.required': 'Captcha token is required',
-    }),
 });

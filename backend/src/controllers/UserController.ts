@@ -716,27 +716,7 @@ export class UserController {
   // Worker login method
   public workerLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { jobCardNumber, aadhaarNumber, captchaToken } = req.body;
-      
-      // Validate reCAPTCHA
-      
-      // Validate reCAPTCHA (skip in development mode for testing)
-      let isValidCaptcha = await this.isValidCaptcha(captchaToken);
-      
-      // In development mode, allow test-token to bypass reCAPTCHA
-      if (process.env.NODE_ENV === 'development' && captchaToken === 'test-token') {
-        isValidCaptcha = true;
-      }
-      
-      if (!isValidCaptcha) {
-        res.status(400).json({
-          success: false,
-          error: {
-            message: 'Invalid reCAPTCHA. Please try again.',
-          },
-        });
-        return;
-      }
+      const { jobCardNumber, aadhaarNumber } = req.body;
       
       // Validate inputs
       if (!jobCardNumber || !aadhaarNumber) {
