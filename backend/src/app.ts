@@ -42,15 +42,16 @@ class App {
     // Security middleware
     this.app.use(helmet());
     
-    // CORS middleware - support multiple origins
-    const corsOrigins = config.cors.origins || [config.cors.origin];
+    // CORS middleware - support multiple origins from environment variables
+    const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [process.env.CORS_ORIGIN || 'http://localhost:3000'];
+    
     this.app.use(cors({
       origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or Postman)
         if (!origin) return callback(null, true);
         
         // Check if origin is in the allowed list
-        if (corsOrigins.includes(origin)) {
+        if (allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
           callback(new Error('Not allowed by CORS'));
