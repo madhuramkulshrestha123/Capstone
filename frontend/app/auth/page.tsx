@@ -74,7 +74,7 @@ export default function AuthPage() {
 
       // Step 1: Send OTP
       if (!otpSent) {
-        const response = await fetch('http://localhost:3001/api/v1/users/register/send-otp', {
+        const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/register/send-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ export default function AuthPage() {
 
       // Step 2: Verify OTP
       if (otpSent && !otpVerified) {
-        const response = await fetch('http://localhost:3001/api/v1/users/register/verify-otp', {
+        const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/register/verify-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -181,7 +181,7 @@ export default function AuthPage() {
           // Note: captchaToken is not included as reCAPTCHA has been removed
         };
 
-        const response = await fetch('http://localhost:3001/api/v1/users/register/complete', {
+        const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/register/complete', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -246,7 +246,7 @@ export default function AuthPage() {
         }
 
         // Call worker login API
-        const response = await fetch('http://localhost:3001/api/v1/users/worker-login', {
+        const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/worker-login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -293,7 +293,7 @@ export default function AuthPage() {
           return;
         }
 
-        const response = await fetch('http://localhost:3001/api/v1/users/login/send-otp', {
+        const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/login/send-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -318,7 +318,7 @@ export default function AuthPage() {
 
       // Step 2: Verify OTP for login
       if (otpSent) {
-        const response = await fetch('http://localhost:3001/api/v1/users/login/verify-otp', {
+        const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/login/verify-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
