@@ -338,6 +338,7 @@ export default function AuthPage() {
           localStorage.setItem('refreshToken', data.data.refreshToken);
           localStorage.setItem('user', JSON.stringify(data.data.user));
           
+          console.log('User role from backend:', data.data.user.role);
           setSuccess('Login successful! Redirecting...');
           
           // Redirect based on user role
