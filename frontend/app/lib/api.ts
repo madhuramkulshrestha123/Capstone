@@ -4,6 +4,12 @@ let authToken: string | null = null;
 // Use environment variable for API base URL, fallback to localhost for development
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
+// Debug log to verify environment variable is loaded
+if (typeof window !== 'undefined') {
+  console.log('API_BASE_URL:', API_BASE_URL);
+  console.log('NEXT_PUBLIC_API_URL from env:', process.env.NEXT_PUBLIC_API_URL);
+}
+
 // Simple in-memory cache
 const apiCache = new Map<string, { data: any; timestamp: number; ttl: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
