@@ -570,6 +570,7 @@ export default function JobCardApplication() {
       
       const result = await response.json();
       console.log('Response data:', result);
+      console.log('Full error details:', result.error);
 
       if (response.ok) {
         // Redirect to success page with tracking ID
