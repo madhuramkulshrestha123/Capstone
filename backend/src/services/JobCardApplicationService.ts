@@ -23,12 +23,15 @@ export class JobCardApplicationService {
       throw new AppError('Invalid phone number', 400);
     }
 
+    // Skip reCAPTCHA validation for now
     // Validate Google reCAPTCHA (skip in development mode)
+    /*
     if (process.env.NODE_ENV !== 'development') {
       if (!await this.isValidCaptcha(applicationData.captchaToken)) {
         throw new AppError('Invalid reCAPTCHA verification', 400);
       }
     }
+    */
 
     // Check if an application with this Aadhaar number already exists and is pending
     const existingApplication = await this.jobCardApplicationModel.findByAadhaarNumber(applicationData.aadhaar_number);
