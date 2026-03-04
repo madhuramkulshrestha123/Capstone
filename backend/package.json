@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "npm install",
     "build": "tsc",
-    "prestart": "node setup-job-card-tables.js || echo 'Tables already exist'",
+    "prestart": "node setup-all-tables.js || echo 'Tables already exist'",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
     "test": "jest",
@@ -20,9 +20,8 @@
     "db:check": "node check-database-connection.js",
     "db:setup:supabase": "node setup-supabase.js",
     "db:migrate:helper": "node run-migrations.js",
-    "db:setup": "node setup-database.js",
-    "db:setup:job-card-tables": "node setup-job-card-tables.js",
-    "db:migrate:add-tracking-id": "node run-migration-tracking-id.js"
+    "db:setup": "node setup-all-tables.js",
+    "db:setup:all": "node setup-all-tables.js"
   },
   "keywords": [
     "typescript",
