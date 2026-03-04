@@ -19,47 +19,70 @@ async function createTables() {
 
     // 1. Create users table
     console.log('Creating users table...');
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        role VARCHAR(50) NOT NULL DEFAULT 'worker',
-        name VARCHAR(255) NOT NULL,
-        phone_number VARCHAR(20) NOT NULL,
-        aadhaar_number VARCHAR(12) NOT NULL,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        panchayat_id VARCHAR(100),
-        government_id VARCHAR(100) UNIQUE,
-        password_hash VARCHAR(255) NOT NULL,
-        state VARCHAR(100) NOT NULL,
-        district VARCHAR(100) NOT NULL,
-        village_name VARCHAR(255) NOT NULL,
-        pincode VARCHAR(6) NOT NULL,
-        image_url TEXT,
-        is_active BOOLEAN NOT NULL DEFAULT true,
-        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    
+    // Check if users table exists
+    const checkTable = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'users'
       )
     `);
     
-    // Add missing columns for existing tables
-    console.log('Ensuring all columns exist in users table...');
-    await client.query(`
-      ALTER TABLE users 
-      ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true
-    `);
-    await client.query(`
-      ALTER TABLE users 
-      ADD COLUMN IF NOT EXISTS government_id VARCHAR(100)
-    `);
-    await client.query(`
-      ALTER TABLE users 
-      ADD COLUMN IF NOT EXISTS panchayat_id VARCHAR(100)
-    `);
-    await client.query(`
-      ALTER TABLE users 
-      ADD COLUMN IF NOT EXISTS image_url TEXT
-    `);
-    console.log('✅ users table created/updated');
+    const tableExists = checkTable.rows[0].exists;
+    
+    if (tableExists) {
+      console.log('Users table exists, checking for required columns...');
+      
+      // Drop and recreate to ensure all columns exist
+      console.log('Recreating users table with complete schema...');
+      await client.query('DROP TABLE IF EXISTS users CASCADE');
+      
+      await client.query(`
+        CREATE TABLE users (
+          user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          role VARCHAR(50) NOT NULL DEFAULT 'worker',
+          name VARCHAR(255) NOT NULL,
+          phone_number VARCHAR(20) NOT NULL,
+          aadhaar_number VARCHAR(12) NOT NULL,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          panchayat_id VARCHAR(100),
+          government_id VARCHAR(100) UNIQUE,
+          password_hash VARCHAR(255) NOT NULL,
+          state VARCHAR(100) NOT NULL,
+          district VARCHAR(100) NOT NULL,
+          village_name VARCHAR(255) NOT NULL,
+          pincode VARCHAR(6) NOT NULL,
+          image_url TEXT,
+          is_active BOOLEAN NOT NULL DEFAULT true,
+          created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+      `);
+      console.log('✅ users table recreated with complete schema');
+    } else {
+      await client.query(`
+        CREATE TABLE users (
+          user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          role VARCHAR(50) NOT NULL DEFAULT 'worker',
+          name VARCHAR(255) NOT NULL,
+          phone_number VARCHAR(20) NOT NULL,
+          aadhaar_number VARCHAR(12) NOT NULL,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          panchayat_id VARCHAR(100),
+          government_id VARCHAR(100) UNIQUE,
+          password_hash VARCHAR(255) NOT NULL,
+          state VARCHAR(100) NOT NULL,
+          district VARCHAR(100) NOT NULL,
+          village_name VARCHAR(255) NOT NULL,
+          pincode VARCHAR(6) NOT NULL,
+          image_url TEXT,
+          is_active BOOLEAN NOT NULL DEFAULT true,
+          created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+      `);
+      console.log('✅ users table created');
+    }
 
     // 2. Create job_cards table
     console.log('Creating job_cards table...');
