@@ -40,7 +40,14 @@ async function createTables() {
         updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       )
     `);
-    console.log('✅ users table created');
+    
+    // Add is_active column if it doesn't exist (for existing tables)
+    console.log('Ensuring is_active column exists in users table...');
+    await client.query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true
+    `);
+    console.log('✅ users table created/updated');
 
     // 2. Create job_cards table
     console.log('Creating job_cards table...');
