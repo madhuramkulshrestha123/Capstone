@@ -205,6 +205,7 @@ async function createTables() {
             status VARCHAR(50) NOT NULL DEFAULT 'active',
             wage_per_worker DECIMAL(10, 2) DEFAULT 0,
             total_workers INTEGER DEFAULT 0,
+            worker_need INTEGER DEFAULT 0,
             created_by UUID REFERENCES users(user_id),
             created_at TIMESTAMP NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -234,6 +235,7 @@ async function createTables() {
           status VARCHAR(50) NOT NULL DEFAULT 'active',
           wage_per_worker DECIMAL(10, 2) DEFAULT 0,
           total_workers INTEGER DEFAULT 0,
+          worker_need INTEGER DEFAULT 0,
           created_by UUID REFERENCES users(user_id),
           created_at TIMESTAMP NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMP NOT NULL DEFAULT NOW()
