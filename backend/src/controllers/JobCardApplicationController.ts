@@ -76,8 +76,8 @@ export class JobCardApplicationController {
         applicants: applicationData.jobCardDetails.applicants,
         image_url: imageUrl,
         status: 'pending' as const,
-        job_card_id: null,
-        captchaToken: applicationData.captchaToken // Add captchaToken to the data passed to the service
+        job_card_id: null
+        // Removed captchaToken - no longer needed
       };
       
       console.log('Application data for DB:', applicationDataForDB);
