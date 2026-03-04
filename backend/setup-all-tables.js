@@ -160,32 +160,87 @@ async function createTables() {
 
     // 5. Create projects table
     console.log('Creating projects table...');
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS projects (
-        project_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        project_name VARCHAR(255) NOT NULL,
-        project_type VARCHAR(100) NOT NULL,
-        description TEXT,
-        location VARCHAR(255) NOT NULL,
-        state VARCHAR(100) NOT NULL,
-        district VARCHAR(100) NOT NULL,
-        block VARCHAR(100),
-        panchayat VARCHAR(100) NOT NULL,
-        village VARCHAR(100),
-        estimated_cost DECIMAL(12, 2),
-        sanctioned_amount DECIMAL(12, 2),
-        start_date DATE,
-        end_date DATE,
-        actual_cost DECIMAL(12, 2),
-        status VARCHAR(50) NOT NULL DEFAULT 'planned' CHECK (status IN ('planned', 'ongoing', 'completed', 'cancelled')),
-        wage_per_worker DECIMAL(10, 2) DEFAULT 0,
-        total_workers INTEGER DEFAULT 0,
-        created_by UUID REFERENCES users(user_id),
-        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    
+    // Check if projects table exists
+    const projectsTableCheck = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'projects'
       )
     `);
-    console.log('✅ projects table created');
+    
+    const projectsTableExists = projectsTableCheck.rows[0].exists;
+    
+    if (projectsTableExists) {
+      console.log('Projects table exists, checking for required columns...');
+      
+      // Check if 'name' column exists (sent by frontend)
+      const nameColumnCheck = await client.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.columns 
+          WHERE table_name = 'projects' AND column_name = 'name'
+        )
+      `);
+      
+      if (!nameColumnCheck.rows[0].exists) {
+        console.log('Recreating projects table with complete schema...');
+        await client.query('DROP TABLE IF EXISTS projects CASCADE');
+        
+        await client.query(`
+          CREATE TABLE projects (
+            project_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            name VARCHAR(255) NOT NULL,
+            description TEXT,
+            location VARCHAR(255) NOT NULL,
+            state VARCHAR(100),
+            district VARCHAR(100),
+            block VARCHAR(100),
+            panchayat VARCHAR(100),
+            village VARCHAR(100),
+            estimated_cost DECIMAL(12, 2),
+            sanctioned_amount DECIMAL(12, 2),
+            start_date DATE,
+            end_date DATE,
+            actual_cost DECIMAL(12, 2),
+            status VARCHAR(50) NOT NULL DEFAULT 'active',
+            wage_per_worker DECIMAL(10, 2) DEFAULT 0,
+            total_workers INTEGER DEFAULT 0,
+            created_by UUID REFERENCES users(user_id),
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+          )
+        `);
+        console.log('✅ projects table recreated with complete schema');
+      } else {
+        console.log('✅ projects table has all required columns');
+      }
+    } else {
+      await client.query(`
+        CREATE TABLE projects (
+          project_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          name VARCHAR(255) NOT NULL,
+          description TEXT,
+          location VARCHAR(255) NOT NULL,
+          state VARCHAR(100),
+          district VARCHAR(100),
+          block VARCHAR(100),
+          panchayat VARCHAR(100),
+          village VARCHAR(100),
+          estimated_cost DECIMAL(12, 2),
+          sanctioned_amount DECIMAL(12, 2),
+          start_date DATE,
+          end_date DATE,
+          actual_cost DECIMAL(12, 2),
+          status VARCHAR(50) NOT NULL DEFAULT 'active',
+          wage_per_worker DECIMAL(10, 2) DEFAULT 0,
+          total_workers INTEGER DEFAULT 0,
+          created_by UUID REFERENCES users(user_id),
+          created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+      `);
+      console.log('✅ projects table created');
+    }
 
     // 6. Create work_demand_requests table
     console.log('Creating work_demand_requests table...');
