@@ -31,9 +31,7 @@ export interface JobCardApplication {
 
 // Define the type for creating a new application
 // Note: tracking_id is generated internally by the model, so it's omitted from the creation type
-export type CreateJobCardApplication = Omit<JobCardApplication, 'application_id' | 'tracking_id' | 'created_at' | 'updated_at'> & {
-  captchaToken?: string;
-};
+export type CreateJobCardApplication = Omit<JobCardApplication, 'application_id' | 'tracking_id' | 'created_at' | 'updated_at'>;
 
 export class JobCardApplicationModel {
   private db: any;
