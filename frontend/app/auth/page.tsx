@@ -338,12 +338,16 @@ export default function AuthPage() {
           localStorage.setItem('refreshToken', data.data.refreshToken);
           localStorage.setItem('user', JSON.stringify(data.data.user));
           
-          console.log('User role from backend:', data.data.user.role);
+          console.log('User logged in:', data.data.user);
+          console.log('User role:', data.data.user.role);
           setSuccess('Login successful! Redirecting...');
           
           // Redirect based on user role
           setTimeout(() => {
-            if (data.data.user.role === 'admin') {
+            const userRole = data.data.user.role;
+            console.log('Redirecting based on role:', userRole);
+            
+            if (userRole === 'admin') {
               window.location.href = '/admin/dashboard';
             } else {
               // For supervisors or other roles, redirect to general dashboard
