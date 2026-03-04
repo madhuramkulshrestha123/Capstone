@@ -41,11 +41,23 @@ async function createTables() {
       )
     `);
     
-    // Add is_active column if it doesn't exist (for existing tables)
-    console.log('Ensuring is_active column exists in users table...');
+    // Add missing columns for existing tables
+    console.log('Ensuring all columns exist in users table...');
     await client.query(`
       ALTER TABLE users 
       ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true
+    `);
+    await client.query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS government_id VARCHAR(100)
+    `);
+    await client.query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS panchayat_id VARCHAR(100)
+    `);
+    await client.query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS image_url TEXT
     `);
     console.log('✅ users table created/updated');
 
