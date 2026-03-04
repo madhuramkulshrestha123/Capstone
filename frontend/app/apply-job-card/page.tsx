@@ -560,7 +560,7 @@ export default function JobCardApplication() {
       }
 
       // Submit the application
-      const response = await fetch('http://localhost:3001/api/v1/job-card-applications/submit', {
+      const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/job-card-applications/submit', {
         method: 'POST',
         // Don't set Content-Type header, let browser set it with boundary
         body: formData,
