@@ -139,7 +139,7 @@ export interface JobCardRegistrationResponse {
 
 // Project Types
 export interface Project {
-  id: string;
+  project_id: string;
   name: string;
   description?: string;
   location?: string;
@@ -148,7 +148,7 @@ export interface Project {
   start_date: Date;
   end_date: Date;
   status: 'pending' | 'active' | 'completed';
-  created_by: number;
+  created_by: string;
   created_at: Date;
   updated_at: Date;
   assigned_workers?: number; // Optional property for the number of assigned workers
