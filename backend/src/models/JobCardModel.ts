@@ -68,33 +68,6 @@ export class JobCardModel {
   }
 
   async createJobCard(jobCardData: Omit<JobCard, 'job_card_id' | 'created_at' | 'updated_at'>): Promise<JobCard> {
-    // Generate a custom job card ID with 4 letters and 8 digits
-    let jobCardId = generateJobCardId();
-    
-    // Ensure uniqueness by checking if ID already exists
-    let attempts = 0;
-    const maxAttempts = 10;
-    
-    while (attempts < maxAttempts) {
-      try {
-        const existingJobCard = await this.findById(jobCardId);
-        if (!existingJobCard) {
-          break;
-        }
-        
-        jobCardId = generateJobCardId();
-        attempts++;
-      } catch (error) {
-        // If findById fails, just generate a new ID
-        jobCardId = generateJobCardId();
-        attempts++;
-      }
-    }
-    
-    if (attempts >= maxAttempts) {
-      throw new Error('Unable to generate unique job card ID after maximum attempts');
-    }
-    
     // Set timestamps
     const now = new Date();
     
@@ -145,44 +118,93 @@ export class JobCardModel {
       );
       return result.rows[0];
     } else {
-      // Create new job card
-      const result = await this.db.query(
-        `INSERT INTO job_cards (
-          job_card_id, aadhaar_number, phone_number, password_hash, date_of_birth, age,
-          family_id, head_of_household_name, father_or_husband_name, category,
-          epic_number, belongs_to_bpl, state, district, village, panchayat,
-          block, pincode, full_address, bank_name, account_number, ifsc_code, image_url,
-          created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25) RETURNING *`,
-        [
-          jobCardId,
-          jobCardData.aadhaar_number,
-          jobCardData.phone_number,
-          jobCardData.password_hash,
-          jobCardData.date_of_birth,
-          jobCardData.age,
-          jobCardData.family_id,
-          jobCardData.head_of_household_name,
-          jobCardData.father_or_husband_name,
-          jobCardData.category,
-          jobCardData.epic_number,
-          jobCardData.belongs_to_bpl,
-          jobCardData.state,
-          jobCardData.district,
-          jobCardData.village,
-          jobCardData.panchayat,
-          jobCardData.block,
-          jobCardData.pincode,
-          jobCardData.full_address,
-          jobCardData.bank_name,
-          jobCardData.account_number,
-          jobCardData.ifsc_code,
-          jobCardData.image_url,
-          now,
-          now
-        ]
-      );
-      return result.rows[0];
+      // Create new job card with timestamp-based unique ID
+      const timestamp = Date.now();
+      const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      const jobCardId = `JC${timestamp}${randomPart}`;
+      
+      try {
+        const result = await this.db.query(
+          `INSERT INTO job_cards (
+            job_card_id, aadhaar_number, phone_number, password_hash, date_of_birth, age,
+            family_id, head_of_household_name, father_or_husband_name, category,
+            epic_number, belongs_to_bpl, state, district, village, panchayat,
+            block, pincode, full_address, bank_name, account_number, ifsc_code, image_url,
+            created_at, updated_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25) RETURNING *`,
+          [
+            jobCardId,
+            jobCardData.aadhaar_number,
+            jobCardData.phone_number,
+            jobCardData.password_hash,
+            jobCardData.date_of_birth,
+            jobCardData.age,
+            jobCardData.family_id,
+            jobCardData.head_of_household_name,
+            jobCardData.father_or_husband_name,
+            jobCardData.category,
+            jobCardData.epic_number,
+            jobCardData.belongs_to_bpl,
+            jobCardData.state,
+            jobCardData.district,
+            jobCardData.village,
+            jobCardData.panchayat,
+            jobCardData.block,
+            jobCardData.pincode,
+            jobCardData.full_address,
+            jobCardData.bank_name,
+            jobCardData.account_number,
+            jobCardData.ifsc_code,
+            jobCardData.image_url,
+            now,
+            now
+          ]
+        );
+        return result.rows[0];
+      } catch (error: any) {
+        // If duplicate key error, try once more with a new ID
+        if (error.code === '23505') {
+          const retryJobCardId = `JC${Date.now()}${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
+          const retryResult = await this.db.query(
+            `INSERT INTO job_cards (
+              job_card_id, aadhaar_number, phone_number, password_hash, date_of_birth, age,
+              family_id, head_of_household_name, father_or_husband_name, category,
+              epic_number, belongs_to_bpl, state, district, village, panchayat,
+              block, pincode, full_address, bank_name, account_number, ifsc_code, image_url,
+              created_at, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25) RETURNING *`,
+            [
+              retryJobCardId,
+              jobCardData.aadhaar_number,
+              jobCardData.phone_number,
+              jobCardData.password_hash,
+              jobCardData.date_of_birth,
+              jobCardData.age,
+              jobCardData.family_id,
+              jobCardData.head_of_household_name,
+              jobCardData.father_or_husband_name,
+              jobCardData.category,
+              jobCardData.epic_number,
+              jobCardData.belongs_to_bpl,
+              jobCardData.state,
+              jobCardData.district,
+              jobCardData.village,
+              jobCardData.panchayat,
+              jobCardData.block,
+              jobCardData.pincode,
+              jobCardData.full_address,
+              jobCardData.bank_name,
+              jobCardData.account_number,
+              jobCardData.ifsc_code,
+              jobCardData.image_url,
+              now,
+              now
+            ]
+          );
+          return retryResult.rows[0];
+        }
+        throw error;
+      }
     }
   }
 
