@@ -12,13 +12,14 @@ export class WorkDemandRequestModel {
   async findAll(limit: number = 10, offset: number = 0, status?: string): Promise<WorkDemandRequest[]> {
     let query = `
       SELECT 
+        wdr.request_id as id,
         wdr.*,
         u.name as worker_name,
         u.aadhaar_number as worker_aadhaar,
         p.name as project_name
       FROM work_demand_requests wdr
       LEFT JOIN users u ON wdr.worker_id = u.user_id
-      LEFT JOIN projects p ON wdr.project_id = p.id
+      LEFT JOIN projects p ON wdr.project_id = p.project_id
       ORDER BY wdr.request_time DESC 
       LIMIT $1 OFFSET $2
     `;
@@ -27,13 +28,14 @@ export class WorkDemandRequestModel {
     if (status) {
       query = `
         SELECT 
+          wdr.request_id as id,
           wdr.*,
           u.name as worker_name,
           u.aadhaar_number as worker_aadhaar,
           p.name as project_name
         FROM work_demand_requests wdr
         LEFT JOIN users u ON wdr.worker_id = u.user_id
-        LEFT JOIN projects p ON wdr.project_id = p.id
+        LEFT JOIN projects p ON wdr.project_id = p.project_id
         WHERE wdr.status = $3 
         ORDER BY wdr.request_time DESC 
         LIMIT $1 OFFSET $2
@@ -59,14 +61,15 @@ export class WorkDemandRequestModel {
     const result = await this.db.query(
       `
         SELECT 
+          wdr.request_id as id,
           wdr.*,
           u.name as worker_name,
           u.aadhaar_number as worker_aadhaar,
           p.name as project_name
         FROM work_demand_requests wdr
         LEFT JOIN users u ON wdr.worker_id = u.user_id
-        LEFT JOIN projects p ON wdr.project_id = p.id
-        WHERE wdr.id = $1
+        LEFT JOIN projects p ON wdr.project_id = p.project_id
+        WHERE wdr.request_id = $1
       `, 
       [id]
     );
@@ -159,7 +162,7 @@ export class WorkDemandRequestModel {
     values.push(id);
     
     const result = await this.db.query(
-      `UPDATE work_demand_requests SET ${updateFields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+      `UPDATE work_demand_requests SET ${updateFields.join(', ')} WHERE request_id = $${paramCount} RETURNING *`,
       values
     );
     
@@ -177,7 +180,7 @@ export class WorkDemandRequestModel {
 
   async delete(id: string): Promise<boolean> {
     try {
-      const result = await this.db.query('DELETE FROM work_demand_requests WHERE id = $1', [id]);
+      const result = await this.db.query('DELETE FROM work_demand_requests WHERE request_id = $1', [id]);
       return result.rowCount > 0;
     } catch (error) {
       return false;
@@ -201,13 +204,14 @@ export class WorkDemandRequestModel {
     const result = await this.db.query(
       `
         SELECT 
+          wdr.request_id as id,
           wdr.*,
           u.name as worker_name,
           u.aadhaar_number as worker_aadhaar,
           p.name as project_name
         FROM work_demand_requests wdr
         LEFT JOIN users u ON wdr.worker_id = u.user_id
-        LEFT JOIN projects p ON wdr.project_id = p.id
+        LEFT JOIN projects p ON wdr.project_id = p.project_id
         WHERE wdr.worker_id = $1 
         ORDER BY wdr.request_time DESC 
         LIMIT $2 OFFSET $3
@@ -231,13 +235,14 @@ export class WorkDemandRequestModel {
     const result = await this.db.query(
       `
         SELECT 
+          wdr.request_id as id,
           wdr.*,
           u.name as worker_name,
           u.aadhaar_number as worker_aadhaar,
           p.name as project_name
         FROM work_demand_requests wdr
         LEFT JOIN users u ON wdr.worker_id = u.user_id
-        LEFT JOIN projects p ON wdr.project_id = p.id
+        LEFT JOIN projects p ON wdr.project_id = p.project_id
         WHERE wdr.project_id = $1 
         ORDER BY wdr.request_time DESC 
         LIMIT $2 OFFSET $3
