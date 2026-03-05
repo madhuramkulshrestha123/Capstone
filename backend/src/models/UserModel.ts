@@ -276,31 +276,47 @@ export class UserModel {
     const passwordHash = await bcrypt.hash(userData.password, saltRounds);
     const userId = uuidv4();
 
-    const result = await this.db.query(
-      `INSERT INTO users (
-        user_id, role, name, phone_number, aadhaar_number, email, panchayat_id, government_id, 
-        password_hash, state, district, village_name, pincode, image_url, is_active, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW()) RETURNING *`,
-      [
-        userId,
-        userData.role || 'admin',
-        userData.name,
-        userData.phone_number,
-        userData.aadhaar_number,
-        userData.email,
-        userData.panchayat_id,
-        userData.government_id,
-        passwordHash,
-        userData.state,
-        userData.district,
-        userData.village_name,
-        userData.pincode,
-        userData.image_url || null,
-        true
-      ]
-    );
-    
-    return result.rows[0];
+    try {
+      const result = await this.db.query(
+        `INSERT INTO users (
+          user_id, role, name, phone_number, aadhaar_number, email, panchayat_id, government_id, 
+          password_hash, state, district, village_name, pincode, image_url, is_active, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW())
+        ON CONFLICT (aadhaar_number) DO UPDATE SET
+          name = EXCLUDED.name,
+          phone_number = EXCLUDED.phone_number,
+          email = EXCLUDED.email,
+          district = EXCLUDED.district,
+          village_name = EXCLUDED.village_name,
+          government_id = EXCLUDED.government_id,
+          password_hash = CASE WHEN EXCLUDED.password_hash IS NOT NULL THEN EXCLUDED.password_hash ELSE users.password_hash END,
+          updated_at = NOW(),
+          is_active = true
+        RETURNING *`,
+        [
+          userId,
+          userData.role || 'admin',
+          userData.name,
+          userData.phone_number,
+          userData.aadhaar_number,
+          userData.email,
+          userData.panchayat_id,
+          userData.government_id,
+          passwordHash,
+          userData.state,
+          userData.district,
+          userData.village_name,
+          userData.pincode,
+          userData.image_url || null,
+          true
+        ]
+      );
+      
+      return result.rows[0];
+    } catch (error: any) {
+      console.error('Error in createRegistration:', error.message);
+      throw new Error(`Failed to create/update user: ${error.message}`);
+    }
   }
 
   async delete(userId: string): Promise<boolean> {
