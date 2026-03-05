@@ -20,7 +20,7 @@ export class WorkDemandRequestModel {
       FROM work_demand_requests wdr
       LEFT JOIN users u ON wdr.worker_id = u.user_id
       LEFT JOIN projects p ON wdr.project_id = p.project_id
-      ORDER BY wdr.request_time DESC 
+      ORDER BY wdr.requested_at DESC 
       LIMIT $1 OFFSET $2
     `;
     let params: any[] = [limit, offset];
@@ -37,7 +37,7 @@ export class WorkDemandRequestModel {
         LEFT JOIN users u ON wdr.worker_id = u.user_id
         LEFT JOIN projects p ON wdr.project_id = p.project_id
         WHERE wdr.status = $3 
-        ORDER BY wdr.request_time DESC 
+        ORDER BY wdr.requested_at DESC 
         LIMIT $1 OFFSET $2
       `;
       params = [limit, offset, status];
@@ -47,9 +47,11 @@ export class WorkDemandRequestModel {
     
     return result.rows.map((request: any) => ({
       ...request,
+      id: request.request_id || request.id,
       worker_id: request.worker_id,
       project_id: request.project_id,
-      request_time: request.request_time,
+      request_time: request.requested_at,
+      requested_at: request.requested_at,
       allocated_at: request.allocated_at,
       worker_name: request.worker_name,
       worker_aadhaar: request.worker_aadhaar,
@@ -79,9 +81,11 @@ export class WorkDemandRequestModel {
     const request = result.rows[0];
     return {
       ...request,
+      id: request.request_id || request.id,
       worker_id: request.worker_id,
       project_id: request.project_id,
-      request_time: request.request_time,
+      request_time: request.requested_at,
+      requested_at: request.requested_at,
       allocated_at: request.allocated_at,
       worker_name: request.worker_name,
       worker_aadhaar: request.worker_aadhaar,
@@ -92,7 +96,7 @@ export class WorkDemandRequestModel {
   async create(requestData: CreateWorkDemandRequest): Promise<WorkDemandRequest> {
     // Only include project_id in the query if it's provided
     let query = `INSERT INTO work_demand_requests (
-      worker_id, request_time, status
+      worker_id, requested_at, status
     ) VALUES ($1, NOW(), $2) RETURNING *`;
     let params: any[] = [
       requestData.worker_id,
@@ -102,7 +106,7 @@ export class WorkDemandRequestModel {
     // If project_id is provided, include it in the query
     if (requestData.project_id !== undefined) {
       query = `INSERT INTO work_demand_requests (
-        worker_id, project_id, request_time, status
+        worker_id, project_id, requested_at, status
       ) VALUES ($1, $2, NOW(), $3) RETURNING *`;
       params = [
         requestData.worker_id,
@@ -116,9 +120,11 @@ export class WorkDemandRequestModel {
     const request = result.rows[0];
     return {
       ...request,
+      id: request.request_id,
       worker_id: request.worker_id,
       project_id: request.project_id,
-      request_time: request.request_time,
+      request_time: request.requested_at,
+      requested_at: request.requested_at,
       allocated_at: request.allocated_at,
     };
   }
@@ -171,9 +177,11 @@ export class WorkDemandRequestModel {
     const request = result.rows[0];
     return {
       ...request,
+      id: request.request_id,
       worker_id: request.worker_id,
       project_id: request.project_id,
-      request_time: request.request_time,
+      request_time: request.requested_at,
+      requested_at: request.requested_at,
       allocated_at: request.allocated_at,
     };
   }
@@ -213,7 +221,7 @@ export class WorkDemandRequestModel {
         LEFT JOIN users u ON wdr.worker_id = u.user_id
         LEFT JOIN projects p ON wdr.project_id = p.project_id
         WHERE wdr.worker_id = $1 
-        ORDER BY wdr.request_time DESC 
+        ORDER BY wdr.requested_at DESC 
         LIMIT $2 OFFSET $3
       `,
       [workerId, limit, offset]
@@ -221,9 +229,11 @@ export class WorkDemandRequestModel {
     
     return result.rows.map((request: any) => ({
       ...request,
+      id: request.request_id || request.id,
       worker_id: request.worker_id,
       project_id: request.project_id,
-      request_time: request.request_time,
+      request_time: request.requested_at,
+      requested_at: request.requested_at,
       allocated_at: request.allocated_at,
       worker_name: request.worker_name,
       worker_aadhaar: request.worker_aadhaar,
@@ -244,7 +254,7 @@ export class WorkDemandRequestModel {
         LEFT JOIN users u ON wdr.worker_id = u.user_id
         LEFT JOIN projects p ON wdr.project_id = p.project_id
         WHERE wdr.project_id = $1 
-        ORDER BY wdr.request_time DESC 
+        ORDER BY wdr.requested_at DESC 
         LIMIT $2 OFFSET $3
       `,
       [projectId, limit, offset]
@@ -252,9 +262,11 @@ export class WorkDemandRequestModel {
     
     return result.rows.map((request: any) => ({
       ...request,
+      id: request.request_id || request.id,
       worker_id: request.worker_id,
       project_id: request.project_id,
-      request_time: request.request_time,
+      request_time: request.requested_at,
+      requested_at: request.requested_at,
       allocated_at: request.allocated_at,
       worker_name: request.worker_name,
       worker_aadhaar: request.worker_aadhaar,

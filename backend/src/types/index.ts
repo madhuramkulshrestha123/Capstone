@@ -181,23 +181,34 @@ export interface WorkDemandRequest {
   id: string;
   worker_id: string; // Changed from number to string to match UUID
   project_id: string | null;  // Allow null values
-  request_time: Date;
-  status: 'pending' | 'approved' | 'rejected';
+  request_time: Date; // Kept for backward compatibility with frontend
+  requested_at: Date; // Actual database column name
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
   allocated_at?: Date;
+  completed_at?: Date;
+  requested_days?: number;
+  allocated_days?: number;
+  remarks?: string;
 }
 
 export interface CreateWorkDemandRequest {
   worker_id: string; // Changed from number to string to match UUID
   project_id?: string | null;  // Make project_id optional and allow null
-  status?: 'pending' | 'approved' | 'rejected';
+  status?: 'pending' | 'approved' | 'rejected' | 'completed';
   allocated_at?: string; // ISO date string
+  requested_days?: number;
+  allocated_days?: number;
+  remarks?: string;
 }
 
 export interface UpdateWorkDemandRequest {
   worker_id?: string; // Changed from number to string to match UUID
   project_id?: string | null;  // Make project_id optional and allow null
-  status?: 'pending' | 'approved' | 'rejected';
+  status?: 'pending' | 'approved' | 'rejected' | 'completed';
   allocated_at?: string; // ISO date string
+  requested_days?: number;
+  allocated_days?: number;
+  remarks?: string;
 }
 
 // Attendance Types
