@@ -72,6 +72,18 @@ export class UserModel {
 
     return result.rows[0];
   }
+  
+  // Find any user by aadhaar including inactive ones
+  async findAnyByAadhaar(aadhaarNumber: string): Promise<User | null> {
+    const result = await this.db.query(
+      'SELECT * FROM users WHERE aadhaar_number = $1',
+      [aadhaarNumber]
+    );
+
+    if (result.rows.length === 0) return null;
+
+    return result.rows[0];
+  }
 
   async findByGovernmentId(governmentId: string): Promise<User | null> {
     const result = await this.db.query(
@@ -276,23 +288,42 @@ export class UserModel {
     const passwordHash = await bcrypt.hash(userData.password, saltRounds);
     const userId = uuidv4();
 
-    try {
+    // First check if user exists with this aadhaar
+    const existingUser = await this.findAnyByAadhaar(userData.aadhaar_number);
+    
+    if (existingUser) {
+      // Update existing user
+      const updateResult = await this.db.query(
+        `UPDATE users SET
+          name = $2,
+          phone_number = $3,
+          email = $4,
+          district = $5,
+          village_name = $6,
+          government_id = $7,
+          password_hash = COALESCE($8, password_hash),
+          updated_at = NOW(),
+          is_active = true
+        WHERE aadhaar_number = $1 RETURNING *`,
+        [
+          userData.aadhaar_number,
+          userData.name,
+          userData.phone_number,
+          userData.email,
+          userData.district,
+          userData.village_name,
+          userData.government_id,
+          passwordHash
+        ]
+      );
+      return updateResult.rows[0];
+    } else {
+      // Create new user
       const result = await this.db.query(
         `INSERT INTO users (
           user_id, role, name, phone_number, aadhaar_number, email, panchayat_id, government_id, 
           password_hash, state, district, village_name, pincode, image_url, is_active, created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW())
-        ON CONFLICT (aadhaar_number) DO UPDATE SET
-          name = EXCLUDED.name,
-          phone_number = EXCLUDED.phone_number,
-          email = EXCLUDED.email,
-          district = EXCLUDED.district,
-          village_name = EXCLUDED.village_name,
-          government_id = EXCLUDED.government_id,
-          password_hash = CASE WHEN EXCLUDED.password_hash IS NOT NULL THEN EXCLUDED.password_hash ELSE users.password_hash END,
-          updated_at = NOW(),
-          is_active = true
-        RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW(), NOW()) RETURNING *`,
         [
           userId,
           userData.role || 'admin',
@@ -311,11 +342,7 @@ export class UserModel {
           true
         ]
       );
-      
       return result.rows[0];
-    } catch (error: any) {
-      console.error('Error in createRegistration:', error.message);
-      throw new Error(`Failed to create/update user: ${error.message}`);
     }
   }
 
