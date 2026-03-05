@@ -6,6 +6,7 @@
   "scripts": {
     "prebuild": "npm install",
     "build": "tsc",
+    "postbuild": "chmod +x post-deploy.sh && ./post-deploy.sh || true",
     "start": "node dist/server.js",
     "postinstall": "chmod +x post-deploy.sh || true",
     "dev": "nodemon src/server.ts",

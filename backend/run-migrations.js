@@ -6,7 +6,8 @@ require('dotenv').config();
 
 async function runMigration(migrationFile) {
   const client = new Client({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL || 
+      `postgres://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
   });
 
@@ -15,8 +16,12 @@ async function runMigration(migrationFile) {
     await client.connect();
     console.log('Connected successfully!');
 
-    // Read the migration SQL file
-    const migrationPath = path.join(__dirname, 'migrations', migrationFile);
+    // Read the migration SQL file (check both migrations folder and root)
+    let migrationPath = path.join(__dirname, 'migrations', migrationFile);
+    if (!fs.existsSync(migrationPath)) {
+      migrationPath = path.join(__dirname, migrationFile);
+    }
+    
     const sql = fs.readFileSync(migrationPath, 'utf8');
 
     console.log(`Running migration: ${migrationFile}`);
@@ -34,8 +39,10 @@ async function runMigration(migrationFile) {
   }
 }
 
-// Run the specific migration
-runMigration('add_tracking_id_to_job_card_applications.sql')
+// Run the specific migration or all migrations in the directory
+const migrationFile = process.argv[2] || 'add_tracking_id_to_job_card_applications.sql';
+
+runMigration(migrationFile)
   .then(() => {
     console.log('All migrations completed.');
     process.exit(0);
