@@ -101,7 +101,15 @@ export const userApi = {
     try {
       const response = await apiFetch('/users/profile');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
+      // If user is not found, clear the token and suggest relogin
+      if (error.message?.includes('User account not found') || error.message?.includes('requiresRelogin')) {
+        console.warn('User account not found, clearing authentication');
+        setAuthToken(null);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('authToken');
+        }
+      }
       console.error('Error fetching user profile:', error);
       throw error;
     }
@@ -183,8 +191,9 @@ export const adminApi = {
         id: response.data.panchayat_id || 'Unknown ID'
       };
     } catch (error) {
-      console.error('Error fetching panchayat info:', error);
-      // Return default values if fetch fails
+      // Silently handle errors and return default values
+      // This prevents the error from breaking the dashboard
+      console.log('Using default panchayat info (user may not be authenticated)');
       return {
         name: 'ग्राम पंचायत',
         district: 'Unknown District',

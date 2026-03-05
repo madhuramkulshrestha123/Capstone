@@ -203,7 +203,19 @@ export class UserController {
       };
 
       res.status(200).json(response);
-    } catch (error) {
+    } catch (error: any) {
+      // If user is not found, it means the token is valid but the user doesn't exist
+      // This could happen if the user was deleted or the database was reset
+      if (error.message === 'User not found') {
+        res.status(404).json({
+          success: false,
+          error: {
+            message: 'User account not found. Please login again.',
+            requiresRelogin: true,
+          },
+        });
+        return;
+      }
       next(error);
     }
   };
