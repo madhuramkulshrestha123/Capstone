@@ -32,7 +32,7 @@ export class ProjectModel {
   }
 
   async findById(id: string): Promise<Project | null> {
-    const result = await this.db.query('SELECT * FROM projects WHERE id = $1', [id]);
+    const result = await this.db.query('SELECT * FROM projects WHERE project_id = $1', [id]);
     
     if (result.rows.length === 0) return null;
     
@@ -145,7 +145,7 @@ export class ProjectModel {
     values.push(id);
     
     const result = await this.db.query(
-      `UPDATE projects SET ${updateFields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+      `UPDATE projects SET ${updateFields.join(', ')} WHERE project_id = $${paramCount} RETURNING *`,
       values
     );
     
@@ -166,7 +166,7 @@ export class ProjectModel {
 
   async delete(id: string): Promise<boolean> {
     try {
-      const result = await this.db.query('DELETE FROM projects WHERE id = $1', [id]);
+      const result = await this.db.query('DELETE FROM projects WHERE project_id = $1', [id]);
       return result.rowCount > 0;
     } catch (error) {
       return false;

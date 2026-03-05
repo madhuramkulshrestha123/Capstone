@@ -39,7 +39,7 @@ export class ProjectService {
     // Add assigned workers count to each project
     const projectsWithAssignedWorkers = await Promise.all(
       projects.map(async (project) => {
-        const assignedWorkersCount = await this.workDemandRequestModel.countByProjectId(project.id);
+        const assignedWorkersCount = await this.workDemandRequestModel.countByProjectId(project.project_id);
         return {
           ...project,
           assigned_workers: assignedWorkersCount
@@ -61,7 +61,7 @@ export class ProjectService {
     }
     
     // Add assigned workers count
-    const assignedWorkersCount = await this.workDemandRequestModel.countByProjectId(project.id);
+    const assignedWorkersCount = await this.workDemandRequestModel.countByProjectId(project.project_id);
     return {
       ...project,
       assigned_workers: assignedWorkersCount
@@ -150,7 +150,7 @@ export class ProjectService {
     // Add assigned workers count to each project
     const projectsWithAssignedWorkers = await Promise.all(
       projects.map(async (project) => {
-        const assignedWorkersCount = await this.workDemandRequestModel.countByProjectId(project.id);
+        const assignedWorkersCount = await this.workDemandRequestModel.countByProjectId(project.project_id);
         return {
           ...project,
           assigned_workers: assignedWorkersCount
