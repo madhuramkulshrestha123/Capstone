@@ -128,7 +128,7 @@ export class JobCardModel {
             epic_number, belongs_to_bpl, state, district, village, panchayat,
             block, pincode, full_address, bank_name, account_number, ifsc_code, image_url,
             job_card_number, created_at, updated_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26) RETURNING *`,
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
           [
             jobCardData.aadhaar_number,
             jobCardData.phone_number,
@@ -168,7 +168,7 @@ export class JobCardModel {
               epic_number, belongs_to_bpl, state, district, village, panchayat,
               block, pincode, full_address, bank_name, account_number, ifsc_code, image_url,
               job_card_number, created_at, updated_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26) RETURNING *`,
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
             [
               jobCardData.aadhaar_number,
               jobCardData.phone_number,
