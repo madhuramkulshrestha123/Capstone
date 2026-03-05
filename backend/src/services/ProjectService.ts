@@ -42,6 +42,7 @@ export class ProjectService {
         const assignedWorkersCount = await this.workDemandRequestModel.countByProjectId(project.project_id);
         return {
           ...project,
+          id: project.project_id, // Add alias for frontend compatibility
           assigned_workers: assignedWorkersCount
         } as Project;
       })
@@ -64,6 +65,7 @@ export class ProjectService {
     const assignedWorkersCount = await this.workDemandRequestModel.countByProjectId(project.project_id);
     return {
       ...project,
+      id: project.project_id, // Add alias for frontend compatibility
       assigned_workers: assignedWorkersCount
     } as Project;
   }
@@ -153,6 +155,7 @@ export class ProjectService {
         const assignedWorkersCount = await this.workDemandRequestModel.countByProjectId(project.project_id);
         return {
           ...project,
+          id: project.project_id, // Add alias for frontend compatibility
           assigned_workers: assignedWorkersCount
         } as Project;
       })
