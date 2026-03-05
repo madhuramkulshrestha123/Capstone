@@ -190,7 +190,7 @@ export default function ProjectsPage() {
                       <div className="flex space-x-3">
                         {project.assigned_workers < project.worker_need && new Date(project.end_date) >= new Date() && (
                           <button
-                            onClick={() => handleAssignWorkers(project.id)}
+                            onClick={() => handleAssignWorkers(project.project_id || project.id)}
                             className="flex-1 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors duration-200"
                           >
                             {t('assignWorkers')}
@@ -267,7 +267,7 @@ export default function ProjectsPage() {
                       <div className="flex space-x-3">
                         {project.assigned_workers < project.worker_need && new Date(project.end_date) >= new Date() && (
                           <button
-                            onClick={() => handleAssignWorkers(project.id)}
+                            onClick={() => handleAssignWorkers(project.project_id || project.id)}
                             className="flex-1 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors duration-200"
                           >
                             {t('assignWorkers')}
@@ -347,7 +347,7 @@ export default function ProjectsPage() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                               {project.assigned_workers < project.worker_need && new Date(project.end_date) >= new Date() && (
                                 <button
-                                  onClick={() => handleAssignWorkers(project.id)}
+                                  onClick={() => handleAssignWorkers(project.project_id || project.id)}
                                   className="text-blue-600 hover:text-blue-900 mr-3"
                                 >
                                   {t('assign')}

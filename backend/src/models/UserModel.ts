@@ -362,7 +362,7 @@ export class UserModel {
     const result = await this.db.query(
       `SELECT p.*, wdr.allocated_at, p.wage_per_worker
        FROM work_demand_requests wdr
-       JOIN projects p ON wdr.project_id = p.id
+       JOIN projects p ON wdr.project_id = p.project_id
        WHERE wdr.worker_id = $1
        ORDER BY wdr.allocated_at DESC`,
       [userId]
