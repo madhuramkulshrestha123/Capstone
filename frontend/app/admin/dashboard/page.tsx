@@ -57,20 +57,35 @@ export default function AdminDashboard() {
         // Clear cache before fetching fresh data
         adminApi.clearAllCache();
         
-        // Fetch all data in parallel
-        const [panchayatData, statsData, activitiesData, applicationsData] = await Promise.all([
-          adminApi.getPanchayatInfo(),
-          adminApi.getDashboardStats(),
-          adminApi.getRecentActivities(),
-          adminApi.getPendingJobCardApplications()
-        ]);
+        // Fetch all data in parallel, but handle errors gracefully
+        const promises = [
+          adminApi.getPanchayatInfo().catch(err => {
+            console.warn('Failed to fetch panchayat info, using defaults:', err);
+            return null;
+          }),
+          adminApi.getDashboardStats().catch(err => {
+            console.warn('Failed to fetch stats, using defaults:', err);
+            return null;
+          }),
+          adminApi.getRecentActivities().catch(err => {
+            console.warn('Failed to fetch recent activities:', err);
+            return [];
+          }),
+          adminApi.getPendingJobCardApplications().catch(err => {
+            console.warn('Failed to fetch pending applications:', err);
+            return [];
+          })
+        ];
         
-        setPanchayatInfo(panchayatData);
-        setStats(statsData);
-        setRecentActivities(activitiesData);
-        setPendingApplications(applicationsData);
+        const [panchayatData, statsData, activitiesData, applicationsData] = await Promise.all(promises);
+        
+        // Only update state if data was successfully fetched
+        if (panchayatData) setPanchayatInfo(panchayatData);
+        if (statsData) setStats(statsData);
+        if (activitiesData) setRecentActivities(activitiesData);
+        if (applicationsData) setPendingApplications(applicationsData);
       } catch (err) {
-        setError('Failed to load dashboard data');
+        setError('Failed to load some dashboard data');
         console.error('Error fetching dashboard data:', err);
       } finally {
         setLoading(false);

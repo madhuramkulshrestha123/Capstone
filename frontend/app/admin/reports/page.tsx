@@ -119,7 +119,7 @@ export default function ReportsPage() {
           adminApi.get('/users'),
           adminApi.get('/payments'),
           adminApi.get('/projects'),
-          adminApi.get('/attendances')
+          adminApi.get('/attendance')
         ]);
 
         // Process worker data
