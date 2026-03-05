@@ -76,13 +76,19 @@ export class JobCardModel {
     const maxAttempts = 10;
     
     while (attempts < maxAttempts) {
-      const existingJobCard = await this.findById(jobCardId);
-      if (!existingJobCard) {
-        break;
+      try {
+        const existingJobCard = await this.findById(jobCardId);
+        if (!existingJobCard) {
+          break;
+        }
+        
+        jobCardId = generateJobCardId();
+        attempts++;
+      } catch (error) {
+        // If findById fails (e.g., invalid format), just generate a new ID
+        jobCardId = generateJobCardId();
+        attempts++;
       }
-      
-      jobCardId = generateJobCardId();
-      attempts++;
     }
     
     if (attempts >= maxAttempts) {
@@ -92,44 +98,68 @@ export class JobCardModel {
     // Set timestamps
     const now = new Date();
     
-    const jobCard = await this.db.query(
-      `INSERT INTO job_cards (
-        job_card_id, aadhaar_number, phone_number, password_hash, date_of_birth, age,
-        family_id, head_of_household_name, father_or_husband_name, category,
-        epic_number, belongs_to_bpl, state, district, village, panchayat,
-        block, pincode, full_address, bank_name, account_number, ifsc_code, image_url,
-        created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25) RETURNING *`,
-      [
-        jobCardId,
-        jobCardData.aadhaar_number,
-        jobCardData.phone_number,
-        jobCardData.password_hash,
-        jobCardData.date_of_birth,
-        jobCardData.age,
-        jobCardData.family_id,
-        jobCardData.head_of_household_name,
-        jobCardData.father_or_husband_name,
-        jobCardData.category,
-        jobCardData.epic_number,
-        jobCardData.belongs_to_bpl,
-        jobCardData.state,
-        jobCardData.district,
-        jobCardData.village,
-        jobCardData.panchayat,
-        jobCardData.block,
-        jobCardData.pincode,
-        jobCardData.full_address,
-        jobCardData.bank_name,
-        jobCardData.account_number,
-        jobCardData.ifsc_code,
-        jobCardData.image_url, // Add image_url parameter
-        now, // created_at
-        now  // updated_at
-      ]
-    );
+    try {
+      const result = await this.db.query(
+        `INSERT INTO job_cards (
+          job_card_id, aadhaar_number, phone_number, password_hash, date_of_birth, age,
+          family_id, head_of_household_name, father_or_husband_name, category,
+          epic_number, belongs_to_bpl, state, district, village, panchayat,
+          block, pincode, full_address, bank_name, account_number, ifsc_code, image_url,
+          created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
+        ON CONFLICT (aadhaar_number) DO UPDATE SET
+          phone_number = EXCLUDED.phone_number,
+          family_id = EXCLUDED.family_id,
+          head_of_household_name = EXCLUDED.head_of_household_name,
+          father_or_husband_name = EXCLUDED.father_or_husband_name,
+          category = EXCLUDED.category,
+          epic_number = EXCLUDED.epic_number,
+          belongs_to_bpl = EXCLUDED.belongs_to_bpl,
+          district = EXCLUDED.district,
+          village = EXCLUDED.village,
+          panchayat = EXCLUDED.panchayat,
+          block = EXCLUDED.block,
+          full_address = EXCLUDED.full_address,
+          bank_name = EXCLUDED.bank_name,
+          account_number = EXCLUDED.account_number,
+          ifsc_code = EXCLUDED.ifsc_code,
+          image_url = EXCLUDED.image_url,
+          updated_at = NOW()
+        RETURNING *`,
+        [
+          jobCardId,
+          jobCardData.aadhaar_number,
+          jobCardData.phone_number,
+          jobCardData.password_hash,
+          jobCardData.date_of_birth,
+          jobCardData.age,
+          jobCardData.family_id,
+          jobCardData.head_of_household_name,
+          jobCardData.father_or_husband_name,
+          jobCardData.category,
+          jobCardData.epic_number,
+          jobCardData.belongs_to_bpl,
+          jobCardData.state,
+          jobCardData.district,
+          jobCardData.village,
+          jobCardData.panchayat,
+          jobCardData.block,
+          jobCardData.pincode,
+          jobCardData.full_address,
+          jobCardData.bank_name,
+          jobCardData.account_number,
+          jobCardData.ifsc_code,
+          jobCardData.image_url,
+          now,
+          now
+        ]
+      );
 
-    return jobCard.rows[0];
+      return result.rows[0];
+    } catch (error: any) {
+      console.error('Error creating job card:', error.message);
+      throw error;
+    }
   }
 
   async findByAadhaarNumber(aadhaarNumber: string): Promise<JobCard | null> {

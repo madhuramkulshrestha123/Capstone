@@ -49,6 +49,8 @@ export class AdminJobCardApplicationService {
 
     const user = await this.userModel.createRegistration(createUserData);
 
+    console.log(`Created/Updated user with ID: ${user.user_id} for Aadhaar: ${application.aadhaar_number}`);
+
     // Create a job card from the application data
     // Extract bank details from the first applicant (assuming the first applicant is the main applicant)
     let bankName = '';
