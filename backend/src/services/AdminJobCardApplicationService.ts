@@ -24,34 +24,62 @@ export class AdminJobCardApplicationService {
     }
 
     if (application.status !== 'pending') {
-      throw new AppError('Application is not in pending status', 400);
+      throw new AppError(`Application is not in pending status. Current status: ${application.status}`, 400);
     }
 
-    // Create a user account from the application data
-    // Note: We don't check for duplicate Aadhaar as users may have been created manually
-    // or through other means. The system will handle duplicates gracefully.
+    // Check if job card already exists for this application
+    if (application.job_card_id) {
+      // Job card already exists, just update the application status to approved
+      await this.jobCardApplicationModel.updateStatus(trackingId, 'approved', application.job_card_id);
+      return {
+        message: 'Application was already approved',
+        jobCardId: application.job_card_id
+      };
+    }
 
-    // Create a user account from the application data
-    const createUserData = {
-      role: 'supervisor',
-      name: application.head_of_household_name,
-      phone_number: application.phone_number,
-      aadhaar_number: application.aadhaar_number,
-      email: this.generateEmail(application.aadhaar_number),
-      panchayat_id: uuidv4(), // Generate a random panchayat ID for now
-      government_id: `GOV${application.aadhaar_number}`,
-      password: 'TempPass123!', // Temporary password, should be changed by user
-      state: '', // Placeholder
-      district: application.district,
-      village_name: application.village || '',
-      pincode: '' // Placeholder
-    };
+    let user;
+    try {
+      // Create a user account from the application data
+      // Note: createRegistration handles duplicates by updating existing records
+      const createUserData = {
+        role: 'supervisor',
+        name: application.head_of_household_name,
+        phone_number: application.phone_number,
+        aadhaar_number: application.aadhaar_number,
+        email: this.generateEmail(application.aadhaar_number),
+        panchayat_id: uuidv4(), // Generate a random panchayat ID for now
+        government_id: `GOV${application.aadhaar_number}`,
+        password: 'TempPass123!', // Temporary password, should be changed by user
+        state: '', // Placeholder
+        district: application.district,
+        village_name: application.village || '',
+        pincode: '' // Placeholder
+      };
 
-    const user = await this.userModel.createRegistration(createUserData);
+      user = await this.userModel.createRegistration(createUserData);
+      console.log(`Created/Updated user with ID: ${user.user_id} for Aadhaar: ${application.aadhaar_number}`);
+    } catch (error: any) {
+      console.error('Error creating user:', {
+        message: error.message,
+        code: error.code,
+        detail: error.detail,
+        constraint: error.constraint
+      });
+      
+      // If it's a unique violation, find the existing user and continue
+      if (error.code === '23505') { // PostgreSQL unique violation code
+        const existingUser = await this.userModel.findAnyByAadhaar(application.aadhaar_number);
+        if (existingUser) {
+          user = existingUser;
+          console.log(`Using existing user with ID: ${user.user_id}`);
+        } else {
+          throw new AppError('Failed to create or find user account', 500);
+        }
+      } else {
+        throw error;
+      }
+    }
 
-    console.log(`Created/Updated user with ID: ${user.user_id} for Aadhaar: ${application.aadhaar_number}`);
-
-    // Create a job card from the application data
     // Extract bank details from the first applicant (assuming the first applicant is the main applicant)
     let bankName = '';
     let accountNumber = '';
@@ -95,15 +123,37 @@ export class AdminJobCardApplicationService {
       image_url: application.image_url
     };
 
-    const jobCard = await this.jobCardModel.createJobCard(jobCardData);
-    
-    // Update the application status to approved and link to the job card
-    await this.jobCardApplicationModel.updateStatus(trackingId, 'approved', jobCard.job_card_id);
+    try {
+      const jobCard = await this.jobCardModel.createJobCard(jobCardData);
+      
+      // Update the application status to approved and link to the job card
+      await this.jobCardApplicationModel.updateStatus(trackingId, 'approved', jobCard.job_card_id);
 
-    return {
-      message: 'Application approved successfully',
-      jobCardId: jobCard.job_card_id
-    };
+      return {
+        message: 'Application approved successfully',
+        jobCardId: jobCard.job_card_id
+      };
+    } catch (error: any) {
+      console.error('Error creating job card:', {
+        message: error.message,
+        code: error.code,
+        detail: error.detail,
+        constraint: error.constraint
+      });
+      
+      // If it's a duplicate key error but job card was created, fetch it
+      if (error.code === '23505' || error.message?.includes('duplicate key')) {
+        const existingJobCard = await this.jobCardModel.findByAadhaarNumber(application.aadhaar_number);
+        if (existingJobCard) {
+          await this.jobCardApplicationModel.updateStatus(trackingId, 'approved', existingJobCard.job_card_id);
+          return {
+            message: 'Application approved successfully (job card already existed)',
+            jobCardId: existingJobCard.job_card_id
+          };
+        }
+      }
+      throw new AppError(`Failed to create job card: ${error.message}`, 500);
+    }
   }
 
   async rejectApplication(trackingId: string, rejectionReason?: string): Promise<{ message: string }> {

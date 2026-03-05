@@ -36,6 +36,17 @@ export const errorHandler = (
   if (error.message?.includes('duplicate key')) {
     statusCode = 409;
     message = 'Resource already exists';
+    
+    // Log detailed information about the duplicate key error
+    console.error('🔴 Duplicate Key Error Details:', {
+      message: error.message,
+      code: (error as any).code,
+      detail: (error as any).detail,
+      constraint: (error as any).constraint,
+      table: (error as any).table,
+      url: req.url,
+      method: req.method,
+    });
   }
 
   if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
