@@ -123,6 +123,35 @@ export interface JobCardDetails {
   applicants: JobCardApplicant[];
 }
 
+// Database JobCard type (matches the database schema)
+export interface JobCard {
+  job_card_id: string; // UUID
+  job_card_number: string; // Human-readable identifier
+  aadhaar_number: string;
+  phone_number: string;
+  date_of_birth: Date;
+  age: number;
+  family_id: string;
+  head_of_household_name: string;
+  father_or_husband_name: string;
+  category: string;
+  epic_number: string;
+  belongs_to_bpl: boolean;
+  state: string;
+  district: string;
+  village: string;
+  panchayat: string;
+  block: string;
+  pincode: string;
+  full_address: string;
+  bank_name: string;
+  account_number: string;
+  ifsc_code: string;
+  image_url: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface JobCardRegistrationRequest {
   aadhaarNumber: string;
   phoneNumber: string;

@@ -8,7 +8,7 @@
     "build": "tsc",
     "postbuild": "chmod +x post-deploy.sh && ./post-deploy.sh || true",
     "start": "node dist/server.js",
-    "postinstall": "chmod +x post-deploy.sh || true",
+    "postinstall": "chmod +x post-deploy.sh && node run-migrations.js add_tracking_id_to_job_card_applications.sql && node run-migrations.js fix_job_cards_structure.sql || true",
     "dev": "nodemon src/server.ts",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -21,6 +21,7 @@
     "db:check": "node check-database-connection.js",
     "db:setup:supabase": "node setup-supabase.js",
     "db:migrate:helper": "node run-migrations.js",
+    "db:migrate:jobcards": "node run-jobcard-migration.js",
     "db:setup": "node setup-database.js",
     "db:migrate": "node run-migrations.js"
   },

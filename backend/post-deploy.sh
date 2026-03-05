@@ -19,7 +19,12 @@ echo "✅ Database URL found"
 
 # Run migrations using Node.js script
 echo "Running database migrations..."
-node run-migrations.js quick-migration.sql
+
+# Run the job card applications migration first
+node run-migrations.js add_tracking_id_to_job_card_applications.sql
+
+# Run the job cards structure migration (fixes UUID issue)
+node run-migrations.js fix_job_cards_structure.sql
 
 echo "========================================"
 echo "✅ All migrations completed successfully!"
