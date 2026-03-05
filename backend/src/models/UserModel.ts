@@ -72,6 +72,18 @@ export class UserModel {
 
     return result.rows[0];
   }
+  
+  // Find any user by aadhaar including inactive ones
+  async findAnyByAadhaar(aadhaarNumber: string): Promise<User | null> {
+    const result = await this.db.query(
+      'SELECT * FROM users WHERE aadhaar_number = $1',
+      [aadhaarNumber]
+    );
+
+    if (result.rows.length === 0) return null;
+
+    return result.rows[0];
+  }
 
   async findByGovernmentId(governmentId: string): Promise<User | null> {
     const result = await this.db.query(
