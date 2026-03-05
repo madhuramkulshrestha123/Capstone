@@ -2,19 +2,21 @@ import Database from '../config/database';
 import { JobCardDetails } from '../types';
 
 // Function to generate a human-readable job card number
-// Format: JC + YYYYMMDDHHMMSS + 3-digit sequence
+// Format: 4 uppercase letters + 6 digits (e.g., ABCD123456)
 function generateJobCardNumber(): string {
-  const now = new Date();
-  const timestamp = now.getFullYear().toString() +
-    (now.getMonth() + 1).toString().padStart(2, '0') +
-    now.getDate().toString().padStart(2, '0') +
-    now.getHours().toString().padStart(2, '0') +
-    now.getMinutes().toString().padStart(2, '0') +
-    now.getSeconds().toString().padStart(2, '0');
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let result = '';
   
-  const sequence = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  // Generate 4 random uppercase letters
+  for (let i = 0; i < 4; i++) {
+    result += letters.charAt(Math.floor(Math.random() * letters.length));
+  }
   
-  return `JC${timestamp}${sequence}`;
+  // Generate 6 random digits (ensure uniqueness with timestamp)
+  const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+  result += timestamp;
+  
+  return result;
 }
 
 // Define the JobCard type based on the database schema
@@ -160,7 +162,13 @@ export class JobCardModel {
       } catch (error: any) {
         // If duplicate key error on job_card_number, retry once
         if (error.code === '23505') {
-          const retryJobCardNumber = `JC${Date.now()}${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
+          const retryLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          let retryJobCardNumber = '';
+          for (let i = 0; i < 4; i++) {
+            retryJobCardNumber += retryLetters.charAt(Math.floor(Math.random() * retryLetters.length));
+          }
+          retryJobCardNumber += (Date.now() + Math.floor(Math.random() * 100000)).toString().slice(-6);
+          
           const retryResult = await this.db.query(
             `INSERT INTO job_cards (
               aadhaar_number, phone_number, date_of_birth, age,

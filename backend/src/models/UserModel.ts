@@ -403,9 +403,10 @@ export class UserModel {
   // Method to get work history by user ID
   async getWorkHistoryByUserId(userId: string): Promise<any[]> {
     const result = await this.db.query(
-      `SELECT p.*, wdr.allocated_at, p.wage_per_worker
+      `SELECT p.project_id, p.name, p.location, p.wage_per_worker, p.start_date, p.end_date, p.status,
+              wdr.allocated_at, wdr.requested_days, wdr.allocated_days
        FROM work_demand_requests wdr
-       JOIN projects p ON wdr.project_id = p.id
+       JOIN projects p ON wdr.project_id = p.project_id
        WHERE wdr.worker_id = $1
        ORDER BY wdr.allocated_at DESC`,
       [userId]
