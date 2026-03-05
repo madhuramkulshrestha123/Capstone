@@ -7,6 +7,7 @@ import { adminApi, setAuthToken } from '../../lib/api';
 export default function WorkDemandPage() {
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const { t } = useTranslation(language);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
   
   // Work demand requests state
   const [requests, setRequests] = useState<any[]>([]);
@@ -142,13 +143,19 @@ export default function WorkDemandPage() {
     : requests.filter(request => request.status === statusFilter);
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <div className={`min-h-screen ${isDarkTheme ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-blue-50 to-white'}`}>
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+      <header className={`${isDarkTheme ? 'bg-gradient-to-r from-gray-800 to-gray-900' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white shadow-lg`}>
         <div className="container mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">{t('workDemandRequests')}</h1>
             <div className="flex items-center space-x-4">
+              <button 
+                onClick={() => setIsDarkTheme(!isDarkTheme)}
+                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200"
+              >
+                {isDarkTheme ? t('lightMode') : t('darkMode')}
+              </button>
               <button 
                 onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
                 className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200"
@@ -167,7 +174,7 @@ export default function WorkDemandPage() {
       </header>
       
       <div className="container mx-auto px-6 py-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8">{t('workDemandRequests')}</h2>
+        <h2 className={`text-3xl font-bold mb-8 ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}>{t('workDemandRequests')}</h2>
         
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -310,16 +317,16 @@ export default function WorkDemandPage() {
       {/* Project Selection Modal */}
       {showProjectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className={`${isDarkTheme ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">{t('selectProject')}</h3>
+                <h3 className="text-2xl font-bold">{t('selectProject')}</h3>
                 <button 
                   onClick={() => {
                     setShowProjectModal(false);
                     setSelectedProjectId('');
                   }}
-                  className="text-gray-500 hover:text-gray-700"
+                  className={`${isDarkTheme ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -327,7 +334,7 @@ export default function WorkDemandPage() {
                 </button>
               </div>
               
-              <p className="text-gray-600 mb-6">
+              <p className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
                 {t('selectProjectForWorker')} {requests.find(r => r.id === selectedRequestId)?.worker_name}
               </p>
               
@@ -337,11 +344,11 @@ export default function WorkDemandPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
+                  <div className={`border ${isDarkTheme ? 'border-gray-700' : 'border-gray-200'} rounded-lg max-h-60 overflow-y-auto`}>
                     {projects.length > 0 ? (
-                      <ul className="divide-y divide-gray-200">
+                      <ul className={`divide-y ${isDarkTheme ? 'divide-gray-700' : 'divide-gray-200'}`}>
                         {projects.map((project: any) => (
-                          <li key={project.id} className="p-4 hover:bg-blue-50 transition-colors duration-200">
+                          <li key={project.id} className={`p-4 ${isDarkTheme ? 'hover:bg-gray-800' : 'hover:bg-blue-50'} transition-colors duration-200`}>
                             <div className="flex items-center">
                               <input
                                 type="radio"
@@ -352,8 +359,8 @@ export default function WorkDemandPage() {
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                               />
                               <label htmlFor={`project-${project.id}`} className="ml-3 flex flex-col">
-                                <span className="text-gray-800 font-medium">{project.name}</span>
-                                <span className="text-gray-500 text-sm">
+                                <span className={`${isDarkTheme ? 'text-white' : 'text-gray-800'} font-medium`}>{project.name}</span>
+                                <span className={`${isDarkTheme ? 'text-gray-400' : 'text-gray-500'} text-sm`}>
                                   {t('workersNeeded')}: {project.worker_need} | {t('workersAssigned')}: {project.assigned_workers || 0}
                                 </span>
                               </label>
@@ -363,7 +370,7 @@ export default function WorkDemandPage() {
                       </ul>
                     ) : (
                       <div className="p-6 text-center">
-                        <p className="text-gray-500">{t('noProjectsAvailable')}</p>
+                        <p className={`${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('noProjectsAvailable')}</p>
                       </div>
                     )}
                   </div>
@@ -375,7 +382,7 @@ export default function WorkDemandPage() {
                         setShowProjectModal(false);
                         setSelectedProjectId('');
                       }}
-                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                      className={`px-6 py-2 border ${isDarkTheme ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} transition-colors duration-200`}
                     >
                       {t('cancel')}
                     </button>

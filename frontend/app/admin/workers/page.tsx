@@ -7,6 +7,7 @@ import { adminApi, setAuthToken } from '../../lib/api';
 export default function WorkersPage() {
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const { t } = useTranslation(language);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
   
   // Workers state
   const [workers, setWorkers] = useState<any[]>([]);
@@ -77,13 +78,19 @@ export default function WorkersPage() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <div className={`min-h-screen ${isDarkTheme ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-blue-50 to-white'}`}>
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+      <header className={`${isDarkTheme ? 'bg-gradient-to-r from-gray-800 to-gray-900' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white shadow-lg`}>
         <div className="container mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">{t('workersPage')}</h1>
             <div className="flex items-center space-x-4">
+              <button 
+                onClick={() => setIsDarkTheme(!isDarkTheme)}
+                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200"
+              >
+                {isDarkTheme ? t('lightMode') : t('darkMode')}
+              </button>
               <button 
                 onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
                 className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200"
@@ -102,7 +109,7 @@ export default function WorkersPage() {
       </header>
       
       <div className="container mx-auto px-6 py-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8">{t('workersPage')}</h2>
+        <h2 className={`text-3xl font-bold mb-8 ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}>{t('workersPage')}</h2>
         
         {/* Worker Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -222,13 +229,13 @@ export default function WorkersPage() {
       {/* Worker Detail Modal */}
       {isModalOpen && selectedWorker && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className={`${isDarkTheme ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto`}>
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">{t('workerDetails')}</h3>
+                <h3 className="text-2xl font-bold">{t('workerDetails')}</h3>
                 <button 
                   onClick={closeWorkerDetail}
-                  className="text-gray-500 hover:text-gray-700"
+                  className={`${isDarkTheme ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -238,19 +245,19 @@ export default function WorkersPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Worker Basic Information */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4">{t('personalInformation')}</h4>
+                <div className={`${isDarkTheme ? 'bg-gray-800' : 'bg-gray-50'} p-4 rounded-lg`}>
+                  <h4 className={`text-lg font-semibold mb-4 ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}>{t('personalInformation')}</h4>
                   <div className="space-y-3">
                     <div>
-                      <p className="text-sm text-gray-500">{t('name')}</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('name')}</p>
                       <p className="font-medium">{selectedWorker.name}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">{t('aadhaarNumber')}</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('aadhaarNumber')}</p>
                       <p className="font-medium">{selectedWorker.aadhaar_number}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">{t('currentStatus')}</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('currentStatus')}</p>
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         selectedWorker.current_status === 'assigned' ? 'bg-green-100 text-green-800' :
                         selectedWorker.current_status === 'available' ? 'bg-blue-100 text-blue-800' :
@@ -260,30 +267,30 @@ export default function WorkersPage() {
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">{t('district')}</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('district')}</p>
                       <p className="font-medium">{selectedWorker.district || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">{t('panchayatId')}</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('panchayatId')}</p>
                       <p className="font-medium">{selectedWorker.panchayat_id || 'N/A'}</p>
                     </div>
                   </div>
                 </div>
                 
                 {/* Job Card Information */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4">{t('jobCardDetails')}</h4>
+                <div className={`${isDarkTheme ? 'bg-gray-800' : 'bg-gray-50'} p-4 rounded-lg`}>
+                  <h4 className={`text-lg font-semibold mb-4 ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}>{t('jobCardDetails')}</h4>
                   <div className="space-y-3">
                     <div>
-                      <p className="text-sm text-gray-500">{t('jobCardIdLabel')}</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('jobCardIdLabel')}</p>
                       <p className="font-medium">{selectedWorker.job_card_id || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">{t('totalAmount')}</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('totalAmount')}</p>
                       <p className="font-medium">₹{selectedWorker.total_amount || 0}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">{t('paymentDeadline')}</p>
+                      <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('paymentDeadline')}</p>
                       <p className="font-medium">{selectedWorker.payment_deadline || 'N/A'}</p>
                     </div>
                   </div>
@@ -291,29 +298,29 @@ export default function WorkersPage() {
                 
                 {/* Work History */}
                 <div className="md:col-span-2">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4">{t('workHistory')}</h4>
+                  <h4 className={`text-lg font-semibold mb-4 ${isDarkTheme ? 'text-white' : 'text-gray-800'}`}>{t('workHistory')}</h4>
                   {selectedWorker.work_history && selectedWorker.work_history.length > 0 ? (
-                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <div className={`${isDarkTheme ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg overflow-hidden`}>
+                      <table className="min-w-full divide-y ${isDarkTheme ? 'divide-gray-700' : 'divide-gray-200'}">
+                        <thead className={`${isDarkTheme ? 'bg-gray-800' : 'bg-gray-50'}`}>
                           <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('projectName')}</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('startDate')}</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('endDate')}</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('wagePerWorker')}</th>
+                            <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('projectName')}</th>
+                            <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('startDate')}</th>
+                            <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('endDate')}</th>
+                            <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('wagePerWorker')}</th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className={`${isDarkTheme ? 'bg-gray-900' : 'bg-white'} divide-y ${isDarkTheme ? 'divide-gray-700' : 'divide-gray-200'}`}>
                           {selectedWorker.work_history.map((project: any, index: number) => (
                             <tr key={index}>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{project.name}</td>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{project.name}</td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}">
                                 {project.start_date ? new Date(project.start_date).toLocaleDateString() : 'N/A'}
                               </td>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-4 py-3 whitespace-nowrap text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}">
                                 {project.end_date ? new Date(project.end_date).toLocaleDateString() : 'N/A'}
                               </td>
-                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-4 py-3 whitespace-nowrap text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}">
                                 ₹{project.wage_per_worker || 0}
                               </td>
                             </tr>
@@ -322,7 +329,7 @@ export default function WorkersPage() {
                       </table>
                     </div>
                   ) : (
-                    <p className="text-gray-500 italic">{t('noWorkHistory')}</p>
+                    <p className={`${isDarkTheme ? 'text-gray-400' : 'text-gray-500'} italic`}>{t('noWorkHistory')}</p>
                   )}
                 </div>
               </div>

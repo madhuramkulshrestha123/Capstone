@@ -763,7 +763,11 @@ export default function Dashboard() {
               {!isVerified ? (
                 <form onSubmit={verifyWorker}>
                   {error && (
-                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <div className={`mb-4 p-3 rounded border ${
+                      isDarkTheme 
+                        ? 'bg-red-900/30 border-red-700 text-red-200' 
+                        : 'bg-red-100 border-red-400 text-red-700'
+                    }`}>
                       {error}
                     </div>
                   )}
