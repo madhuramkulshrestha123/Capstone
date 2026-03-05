@@ -925,6 +925,7 @@ export class UserController {
       // In a real implementation, you might want to let the worker select a project
       const requestData = {
         worker_id: user.user_id,
+        requested_days: 30, // Default to 30 days of work request
         status: 'pending' as const
       };
       

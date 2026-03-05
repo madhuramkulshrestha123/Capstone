@@ -94,23 +94,25 @@ export class WorkDemandRequestModel {
   }
 
   async create(requestData: CreateWorkDemandRequest): Promise<WorkDemandRequest> {
-    // Only include project_id in the query if it's provided
+    // Only include project_id and requested_days in the query if they're provided
     let query = `INSERT INTO work_demand_requests (
-      worker_id, requested_at, status
-    ) VALUES ($1, NOW(), $2) RETURNING *`;
+      worker_id, requested_days, requested_at, status
+    ) VALUES ($1, $2, NOW(), $3) RETURNING *`;
     let params: any[] = [
       requestData.worker_id,
+      requestData.requested_days || 30,
       requestData.status || 'pending'
     ];
     
     // If project_id is provided, include it in the query
     if (requestData.project_id !== undefined) {
       query = `INSERT INTO work_demand_requests (
-        worker_id, project_id, requested_at, status
-      ) VALUES ($1, $2, NOW(), $3) RETURNING *`;
+        worker_id, project_id, requested_days, requested_at, status
+      ) VALUES ($1, $2, $3, NOW(), $4) RETURNING *`;
       params = [
         requestData.worker_id,
         requestData.project_id,
+        requestData.requested_days || 30,
         requestData.status || 'pending'
       ];
     }
