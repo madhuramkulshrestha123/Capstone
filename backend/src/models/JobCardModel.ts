@@ -24,7 +24,6 @@ interface JobCard {
   job_card_id: string; // Now using custom format instead of UUID
   aadhaar_number: string;
   phone_number: string;
-  password_hash: string;
   date_of_birth: Date;
   age: number;
   family_id: string;
