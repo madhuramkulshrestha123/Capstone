@@ -36,6 +36,7 @@ export default function Dashboard() {
   const { t } = useTranslation(language);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   
 
@@ -222,14 +223,31 @@ export default function Dashboard() {
     <div className={`min-h-screen ${isDarkTheme ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 text-gray-900'}`}>
       
       {/* Header */}
-      <header className={`py-5 px-6 flex items-center justify-between ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg shadow-lg' : 'bg-white/90 backdrop-blur-lg shadow-lg'} transition-colors duration-300`}>
+      <header className={`py-5 px-4 md:px-6 flex items-center justify-between ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg shadow-lg' : 'bg-white/90 backdrop-blur-lg shadow-lg'} transition-colors duration-300`}>
         <button 
           onClick={() => window.location.href = '/dashboard'}
-          className="text-2xl font-extrabold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-none hover:opacity-80 transition-opacity"
+          className="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-none hover:opacity-80 transition-opacity"
         >
           {t('smartRozgarPortal')}
         </button>
-        <div className="flex items-center space-x-5">
+        
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className={`md:hidden p-2 rounded-lg ${isDarkTheme ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'}`}
+          aria-label="Toggle menu"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {isSidebarOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+        
+        {/* Desktop Controls */}
+        <div className="hidden md:flex items-center space-x-5">
           <button 
             onClick={toggleTheme}
             className={`px-5 py-2 rounded-lg font-semibold shadow-md transform transition-transform duration-300 ease-in-out ${
@@ -275,8 +293,79 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Navigation Bar */}
-      <nav className={`py-3 px-6 ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg shadow-inner' : 'bg-white/90 backdrop-blur-lg shadow-inner'} sticky top-0 z-20 transition-colors duration-300`}>
+      {/* Mobile Sidebar */}
+      {isSidebarOpen && (
+        <div className={`md:hidden fixed inset-0 z-50 ${isDarkTheme ? 'bg-gray-900' : 'bg-white'}`}>
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-6">
+              <button 
+                onClick={() => window.location.href = '/dashboard'}
+                className="text-xl font-extrabold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent"
+              >
+                {t('smartRozgarPortal')}
+              </button>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className={`p-2 rounded-lg ${isDarkTheme ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-900'}`}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Mobile Controls */}
+              <div className="flex flex-col space-y-3 pb-4 border-b ${isDarkTheme ? 'border-gray-700' : 'border-gray-200'}">
+                <button 
+                  onClick={() => { toggleTheme(); setIsSidebarOpen(false); }}
+                  className={`w-full px-5 py-3 rounded-lg font-semibold ${
+                    isDarkTheme 
+                      ? 'bg-indigo-700 text-white' 
+                      : 'bg-indigo-100 text-indigo-700'
+                  }`}
+                >
+                  {isDarkTheme ? t('lightMode') : t('darkMode')}
+                </button>
+                <button 
+                  onClick={() => { toggleLanguage(); setIsSidebarOpen(false); }}
+                  className={`w-full px-5 py-3 rounded-lg font-semibold ${
+                    isDarkTheme 
+                      ? 'bg-purple-700 text-white' 
+                      : 'bg-purple-100 text-purple-700'
+                  }`}
+                >
+                  {language === 'en' ? t('hindi') : t('english')}
+                </button>
+              </div>
+              
+              {/* Mobile Navigation */}
+              <nav className="space-y-2">
+                {navItems.map((item, index) => (
+                  <button 
+                    key={index}
+                    onClick={() => { handleNavClick(item); setIsSidebarOpen(false); }}
+                    className={`w-full text-left px-5 py-3 rounded-lg font-medium transition-colors ${
+                      item === 'login'
+                        ? isDarkTheme 
+                          ? 'bg-indigo-600 text-white' 
+                          : 'bg-indigo-600 text-white'
+                        : isDarkTheme 
+                          ? 'text-white hover:bg-gray-800' 
+                          : 'text-gray-900 hover:bg-gray-100'
+                    }`}
+                  >
+                    {t(item as any)}
+                  </button>
+                ))}
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Navigation Bar - Desktop Only */}
+      <nav className={`hidden md:block py-3 px-6 ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg shadow-inner' : 'bg-white/90 backdrop-blur-lg shadow-inner'} sticky top-0 z-20 transition-colors duration-300`}>
         <ul className="flex flex-wrap justify-center gap-3 md:gap-6 font-medium tracking-wide">
           {navItems.map((item, index) => (
             <li key={index} className="my-2">
@@ -299,32 +388,32 @@ export default function Dashboard() {
         </ul>
       </nav>
 
-      <main className="container max-w-7xl mx-auto px-6 py-10 space-y-14">
+      <main className="container max-w-7xl mx-auto px-4 md:px-6 py-10 space-y-14">
         
         {/* Carousel */}
         <section className="mb-16">
-          <div className="relative overflow-hidden rounded-3xl shadow-2xl ring-1 ring-indigo-300/30">
+          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl shadow-2xl ring-1 ring-indigo-300/30">
             <div 
               className="flex transition-transform duration-700 ease-in-out will-change-transform" 
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
               {/* Slide 1 */}
               <div className="w-full flex-shrink-0">
-                <div className="relative h-96 md:h-[28rem]">
+                <div className="relative h-64 sm:h-80 md:h-[28rem]">
                   <img 
                     src="/images/carousel1.jpg" 
                     alt="Daily Wage Job at your Convenience" 
-                    className="w-full h-full object-cover rounded-3xl"
+                    className="w-full h-full object-cover rounded-2xl md:rounded-3xl"
                     onError={(e) => {
                       e.currentTarget.src = 'https://placehold.co/1200x400/4F46E5/FFFFFF?text=Daily+Wage+Job+at+your+Convenience';
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent rounded-3xl"></div>
-                  <div className="absolute bottom-8 left-8 text-white max-w-xl select-text">
-                    <h3 className="text-3xl font-extrabold drop-shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent rounded-2xl md:rounded-3xl"></div>
+                  <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 text-white max-w-xl select-text">
+                    <h3 className="text-xl md:text-3xl font-extrabold drop-shadow-lg">
                       {t('slide1Title')}
                     </h3>
-                    <p className="mt-3 text-lg font-light drop-shadow-md max-w-lg">
+                    <p className="mt-2 md:mt-3 text-sm md:text-lg font-light drop-shadow-md max-w-lg">
                       {t('slide1Description')}
                     </p>
                   </div>
@@ -333,21 +422,21 @@ export default function Dashboard() {
               
               {/* Slide 2 */}
               <div className="w-full flex-shrink-0">
-                <div className="relative h-96 md:h-[28rem]">
+                <div className="relative h-64 sm:h-80 md:h-[28rem]">
                   <img 
                     src="/images/carousel2.jpg" 
                     alt="Transparent and Fast" 
-                    className="w-full h-full object-cover rounded-3xl"
+                    className="w-full h-full object-cover rounded-2xl md:rounded-3xl"
                     onError={(e) => {
                       e.currentTarget.src = 'https://placehold.co/1200x400/7C3AED/FFFFFF?text=Transparent+and+Fast';
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent rounded-3xl"></div>
-                  <div className="absolute bottom-8 left-8 text-white max-w-xl select-text">
-                    <h3 className="text-3xl font-extrabold drop-shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent rounded-2xl md:rounded-3xl"></div>
+                  <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 text-white max-w-xl select-text">
+                    <h3 className="text-xl md:text-3xl font-extrabold drop-shadow-lg">
                       {t('slide2Title')}
                     </h3>
-                    <p className="mt-3 text-lg font-light drop-shadow-md max-w-lg">
+                    <p className="mt-2 md:mt-3 text-sm md:text-lg font-light drop-shadow-md max-w-lg">
                       {t('slide2Description')}
                     </p>
                   </div>
@@ -356,21 +445,21 @@ export default function Dashboard() {
               
               {/* Slide 3 */}
               <div className="w-full flex-shrink-0">
-                <div className="relative h-96 md:h-[28rem]">
+                <div className="relative h-64 sm:h-80 md:h-[28rem]">
                   <img 
                     src="/images/carousel3.jpg" 
                     alt="Zero Paper Work and Secure" 
-                    className="w-full h-full object-cover rounded-3xl"
+                    className="w-full h-full object-cover rounded-2xl md:rounded-3xl"
                     onError={(e) => {
                       e.currentTarget.src = 'https://placehold.co/1200x400/2563EB/FFFFFF?text=Zero+Paper+Work+and+Secure';
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent rounded-3xl"></div>
-                  <div className="absolute bottom-8 left-8 text-white max-w-xl select-text">
-                    <h3 className="text-3xl font-extrabold drop-shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent rounded-2xl md:rounded-3xl"></div>
+                  <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 text-white max-w-xl select-text">
+                    <h3 className="text-xl md:text-3xl font-extrabold drop-shadow-lg">
                       {t('slide3Title')}
                     </h3>
-                    <p className="mt-3 text-lg font-light drop-shadow-md max-w-lg">
+                    <p className="mt-2 md:mt-3 text-sm md:text-lg font-light drop-shadow-md max-w-lg">
                       {t('slide3Description')}
                     </p>
                   </div>
@@ -380,20 +469,20 @@ export default function Dashboard() {
             
             <button 
               onClick={prevSlide}
-              className="absolute left-6 top-1/2 -translate-y-1/2 bg-indigo-600/80 hover:bg-indigo-700 rounded-full p-3 drop-shadow-lg transition-all duration-300 shadow-lg"
+              className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 bg-indigo-600/80 hover:bg-indigo-700 rounded-full p-2 md:p-3 drop-shadow-lg transition-all duration-300 shadow-lg"
               aria-label="Previous slide"
             >
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             
             <button 
               onClick={nextSlide}
-              className="absolute right-6 top-1/2 -translate-y-1/2 bg-indigo-600/80 hover:bg-indigo-700 rounded-full p-3 drop-shadow-lg transition-all duration-300 shadow-lg"
+              className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 bg-indigo-600/80 hover:bg-indigo-700 rounded-full p-2 md:p-3 drop-shadow-lg transition-all duration-300 shadow-lg"
               aria-label="Next slide"
             >
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -415,11 +504,11 @@ export default function Dashboard() {
 
         {/* Vision Section */}
         <section className="mb-16">
-          <div className={`p-8 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <h2 className="text-3xl font-extrabold mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
+          <div className={`p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <h2 className="text-2xl md:text-3xl font-extrabold mb-4 md:mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
               {t('vision')}
             </h2>
-            <p className="text-lg leading-relaxed select-text">
+            <p className="text-base md:text-lg leading-relaxed select-text">
               Our vision is to provide sustainable employment opportunities to all rural households and improve their quality of life through various employment schemes. We aim to empower communities through digital transformation and transparent governance.
             </p>
           </div>
@@ -427,25 +516,25 @@ export default function Dashboard() {
 
         {/* Apply Job Card Section */}
         <section className="mb-16">
-          <h2 className="text-3xl font-extrabold mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-6 md:mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
             {t('applyForJobCard')}
           </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className={`p-10 rounded-3xl shadow-xl transition-transform duration-300 hover:scale-[1.03] ${
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+            <div className={`p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-xl transition-transform duration-300 hover:scale-[1.03] ${
               isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'
             }`}>
-              <h3 className="text-2xl font-semibold mb-8 text-indigo-700 select-text">{t('howToApply')}</h3>
-              <ol className="space-y-6 list-decimal list-inside font-light text-lg">
+              <h3 className="text-xl md:text-2xl font-semibold mb-6 md:mb-8 text-indigo-700 select-text">{t('howToApply')}</h3>
+              <ol className="space-y-4 md:space-y-6 list-decimal list-inside font-light text-base md:text-lg">
                 {applySteps.map((step, index) => (
                   <li key={index} className="select-text">{t(step as any)}</li>
                 ))}
               </ol>
             </div>
 
-            <div className="flex flex-col space-y-6">
+            <div className="flex flex-col space-y-4 md:space-y-6">
               <a 
                 href="/apply-job-card"
-                className={`p-10 rounded-3xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] flex items-center justify-center text-2xl font-semibold ${
+                className={`p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] flex items-center justify-center text-lg md:text-2xl font-semibold ${
                   isDarkTheme 
                     ? 'bg-blue-700 hover:bg-blue-800 text-white' 
                     : 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -456,7 +545,7 @@ export default function Dashboard() {
               
               <a 
                 href="/track-application"
-                className={`p-10 rounded-3xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] flex items-center justify-center text-2xl font-semibold ${
+                className={`p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] flex items-center justify-center text-lg md:text-2xl font-semibold ${
                   isDarkTheme 
                     ? 'bg-green-700 hover:bg-green-800 text-white' 
                     : 'bg-green-600 hover:bg-green-700 text-white'
@@ -467,7 +556,7 @@ export default function Dashboard() {
               
               <button 
                 onClick={openDemandJobModal}
-                className={`p-10 rounded-3xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] flex items-center justify-center text-2xl font-semibold ${
+                className={`p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-xl transition-transform duration-300 transform hover:scale-[1.03] flex items-center justify-center text-lg md:text-2xl font-semibold ${
                   isDarkTheme 
                     ? 'bg-indigo-700 hover:bg-indigo-800 text-white' 
                     : 'bg-indigo-600 hover:bg-indigo-700 text-white'
@@ -481,21 +570,21 @@ export default function Dashboard() {
 
         {/* Notice Board */}
         <section className="mb-16">
-          <h2 className="text-3xl font-extrabold mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-6 md:mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
             {t('noticeBoard')}
           </h2>
-          <div className={`rounded-3xl shadow-xl overflow-hidden divide-y ${
+          <div className={`rounded-2xl md:rounded-3xl shadow-xl overflow-hidden divide-y ${
             isDarkTheme ? 'bg-gray-900/90 divide-gray-700' : 'bg-white/90 divide-gray-200'
           }`}>
             <ul>
               {notices.map((notice: any, index: number) => (
-                <li key={index} className="p-6 hover:bg-indigo-600/10 hover:transition-colors cursor-pointer transition-colors duration-300">
-                  <div className="flex justify-between items-start gap-6">
+                <li key={index} className="p-4 md:p-6 hover:bg-indigo-600/10 hover:transition-colors cursor-pointer transition-colors duration-300">
+                  <div className="flex justify-between items-start gap-4 md:gap-6">
                     <div>
-                      <h3 className="text-lg font-semibold select-text">{t(notice.title as any)}</h3>
-                      <p className="mt-1 text-gray-600 dark:text-gray-300 select-text">{t(notice.description as any)}</p>
+                      <h3 className="text-base md:text-lg font-semibold select-text">{t(notice.title as any)}</h3>
+                      <p className="mt-1 text-sm md:text-base text-gray-600 dark:text-gray-300 select-text">{t(notice.description as any)}</p>
                     </div>
-                    <span className={`text-sm px-3 py-1 rounded-full select-text ${
+                    <span className={`text-xs md:text-sm px-2 md:px-3 py-1 rounded-full select-text whitespace-nowrap ${
                       isDarkTheme ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700'
                     }`}>
                       {notice.date}
@@ -509,24 +598,24 @@ export default function Dashboard() {
 
         {/* Upcoming Online Features */}
         <section className="mb-16">
-          <h2 className="text-3xl font-extrabold mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-6 md:mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
             {t('upcomingFeaturesTitle')}
           </h2>
-          <div className={`p-8 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <p className="text-lg mb-6 select-text">Soon you will be able to access all services online instead of visiting your panchayat office. Our digital transformation will make the process more efficient and transparent.</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className={`p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <p className="text-base md:text-lg mb-4 md:mb-6 select-text">Soon you will be able to access all services online instead of visiting your panchayat office. Our digital transformation will make the process more efficient and transparent.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {upcomingFeatures.map((feature: any, index: number) => (
                 <div 
                   key={index} 
-                  className={`p-6 rounded-xl flex items-start transition-transform duration-300 hover:scale-[1.02] ${
+                  className={`p-4 md:p-6 rounded-xl flex items-start transition-transform duration-300 hover:scale-[1.02] ${
                     isDarkTheme ? 'bg-gray-800/70' : 'bg-indigo-50'
                   }`}
                 >
-                  <div className={`flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center mr-4 ${
+                  <div className={`flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center mr-3 md:mr-4 ${
                     isDarkTheme ? 'bg-indigo-700 text-white' : 'bg-indigo-100 text-indigo-700'
                   }`}>
                     <svg 
-                      className="w-7 h-7" 
+                      className="w-6 h-6 md:w-7 md:h-7" 
                       fill="none" 
                       stroke="currentColor" 
                       viewBox="0 0 24 24" 
@@ -541,8 +630,8 @@ export default function Dashboard() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-2 select-text">{t(feature.title)}</h3>
-                    <p className={`text-sm ${isDarkTheme ? 'text-gray-300' : 'text-gray-600'} select-text`}>
+                    <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2 select-text">{t(feature.title)}</h3>
+                    <p className={`text-sm md:text-sm ${isDarkTheme ? 'text-gray-300' : 'text-gray-600'} select-text`}>
                       {t(feature.description)}
                     </p>
                   </div>
@@ -554,13 +643,13 @@ export default function Dashboard() {
       </main>
 
       {/* Footer */}
-      <footer className={`py-16 px-8 mt-20 ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg shadow-xl' : 'bg-white/90 backdrop-blur-lg shadow-xl'} transition-colors duration-300`}>
-        <div className="container max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <footer className={`py-12 md:py-16 px-4 md:px-8 mt-20 ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg shadow-xl' : 'bg-white/90 backdrop-blur-lg shadow-xl'} transition-colors duration-300`}>
+        <div className="container max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
           <div>
-            <h3 className="text-xl font-extrabold mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
+            <h3 className="text-lg md:text-xl font-extrabold mb-6 md:mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
               {t('quickLinks')}
             </h3>
-            <ul className="space-y-4 font-medium text-lg">
+            <ul className="space-y-3 md:space-y-4 font-medium text-base md:text-lg">
               {quickLinks.map((link, index) => (
                 <li key={index}>
                   <a 
@@ -577,10 +666,10 @@ export default function Dashboard() {
           </div>
 
           <div>
-            <h3 className="text-xl font-extrabold mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
+            <h3 className="text-lg md:text-xl font-extrabold mb-6 md:mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
               {t('resources')}
             </h3>
-            <ul className="space-y-4 font-medium text-lg">
+            <ul className="space-y-3 md:space-y-4 font-medium text-base md:text-lg">
               {resources.map((resource: any, index: number) => (
                 <li key={index}>
                   <a 
@@ -597,10 +686,10 @@ export default function Dashboard() {
           </div>
 
           <div>
-            <h3 className="text-xl font-extrabold mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
+            <h3 className="text-lg md:text-xl font-extrabold mb-6 md:mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
               {t('contactUs')}
             </h3>
-            <address className="not-italic space-y-2 text-lg font-normal select-text">
+            <address className="not-italic space-y-2 text-sm md:text-lg font-normal select-text">
               <p>{t('ministry')}</p>
               <p>{t('government')}</p>
               <p>{t('address')}</p>
@@ -618,15 +707,15 @@ export default function Dashboard() {
           </div>
 
           <div>
-            <h3 className="text-xl font-extrabold mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
+            <h3 className="text-lg md:text-xl font-extrabold mb-6 md:mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
               {t('followUs')}
             </h3>
-            <div className="flex gap-6">
+            <div className="flex gap-4 md:gap-6 flex-wrap">
               {socialMedia.map((social: any, index: number) => (
                 <a 
                   key={index} 
                   href="#" 
-                  className={`w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-300 hover:scale-125 ${
+                  className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-transform duration-300 hover:scale-125 ${
                     isDarkTheme 
                       ? 'bg-indigo-900/70 text-indigo-300 hover:bg-indigo-700' 
                       : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-300'
@@ -658,7 +747,7 @@ export default function Dashboard() {
           }`}>
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
-                <h3 className="text-2xl font-bold">{t('demandJob')}</h3>
+                <h3 className="text-xl md:text-2xl font-bold">{t('demandJob')}</h3>
                 <button 
                   onClick={closeDemandJobModal}
                   className={`text-gray-500 hover:text-gray-700 ${
