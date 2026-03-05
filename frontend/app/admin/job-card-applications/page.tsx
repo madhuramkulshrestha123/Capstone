@@ -28,9 +28,9 @@ export default function AdminJobCardApplications() {
     setError('');
     
     try {
-      let url = 'https://capstone-backend-8k6x.onrender.com/api/v1/job-card-applications/applications';
+      let url = 'http://localhost:3001/api/v1/job-card-applications/applications';
       if (selectedStatus !== 'all') {
-        url = `https://capstone-backend-8k6x.onrender.com/api/v1/job-card-applications/applications/status/${selectedStatus}`;
+        url = `http://localhost:3001/api/v1/job-card-applications/applications/status/${selectedStatus}`;
       }
       
       const response = await fetch(url);
@@ -54,7 +54,7 @@ export default function AdminJobCardApplications() {
   const fetchApplicationDetails = async (trackingId: string) => {
     setModalLoading(true);
     try {
-      const response = await fetch(`https://capstone-backend-8k6x.onrender.com/api/v1/job-card-applications/track/${trackingId}`);
+      const response = await fetch(`http://localhost:3001/api/v1/job-card-applications/track/${trackingId}`);
       
       if (response.ok) {
         const result = await response.json();
@@ -82,8 +82,8 @@ export default function AdminJobCardApplications() {
   const updateApplicationStatus = async (trackingId: string, status: string) => {
     try {
       const endpoint = status === 'approved' 
-        ? `https://capstone-backend-8k6x.onrender.com/api/v1/admin/applications/${trackingId}/approve`
-        : `https://capstone-backend-8k6x.onrender.com/api/v1/admin/applications/${trackingId}/reject`;
+        ? `http://localhost:3001/api/v1/admin/applications/${trackingId}/approve`
+        : `http://localhost:3001/api/v1/admin/applications/${trackingId}/reject`;
       
       const response = await fetch(endpoint, {
         method: 'PATCH',

@@ -27,7 +27,7 @@ export default function TrackApplicationPage() {
     setApplicationData(null);
 
     try {
-      const response = await fetch(`https://capstone-backend-8k6x.onrender.com/api/v1/job-card-applications/track/${trackingId}`);
+      const response = await fetch(`http://localhost:3001/api/v1/job-card-applications/track/${trackingId}`);
       
       if (response.ok) {
         const result = await response.json();

@@ -72,18 +72,6 @@ export class UserModel {
 
     return result.rows[0];
   }
-  
-  // Find any user by aadhaar including inactive ones
-  async findAnyByAadhaar(aadhaarNumber: string): Promise<User | null> {
-    const result = await this.db.query(
-      'SELECT * FROM users WHERE aadhaar_number = $1',
-      [aadhaarNumber]
-    );
-
-    if (result.rows.length === 0) return null;
-
-    return result.rows[0];
-  }
 
   async findByGovernmentId(governmentId: string): Promise<User | null> {
     const result = await this.db.query(
@@ -374,7 +362,7 @@ export class UserModel {
     const result = await this.db.query(
       `SELECT p.*, wdr.allocated_at, p.wage_per_worker
        FROM work_demand_requests wdr
-       JOIN projects p ON wdr.project_id = p.project_id
+       JOIN projects p ON wdr.project_id = p.id
        WHERE wdr.worker_id = $1
        ORDER BY wdr.allocated_at DESC`,
       [userId]

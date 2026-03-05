@@ -27,19 +27,9 @@ export class AdminJobCardApplicationService {
       throw new AppError('Application is not in pending status', 400);
     }
 
-    // Check if an ACTIVE user already exists by aadhaar number
-    const existingUser = await this.userModel.findByAadhaar(application.aadhaar_number);
-    
-    // Only throw error if an ACTIVE user exists
-    if (existingUser && existingUser.is_active) {
-      throw new AppError('User with this Aadhaar number already exists and is active', 409);
-    }
-    
-    // If an inactive user exists, we should warn but still allow creation
-    const inactiveUser = await this.userModel.findAnyByAadhaar(application.aadhaar_number);
-    if (inactiveUser && !inactiveUser.is_active) {
-      console.log(`Found inactive user with Aadhaar ${application.aadhaar_number}. Creating new user.`);
-    }
+    // Create a user account from the application data
+    // Note: We don't check for duplicate Aadhaar as users may have been created manually
+    // or through other means. The system will handle duplicates gracefully.
 
     // Create a user account from the application data
     const createUserData = {

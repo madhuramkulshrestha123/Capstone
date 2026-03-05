@@ -6,7 +6,6 @@
   "scripts": {
     "prebuild": "npm install",
     "build": "tsc",
-    "prestart": "node add-worker-need-column.js && node setup-all-tables.js || echo 'Setup complete'",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
     "test": "jest",
@@ -20,9 +19,7 @@
     "db:check": "node check-database-connection.js",
     "db:setup:supabase": "node setup-supabase.js",
     "db:migrate:helper": "node run-migrations.js",
-    "db:setup": "node setup-all-tables.js",
-    "db:setup:all": "node setup-all-tables.js",
-    "db:migrate:add-worker-need": "node add-worker-need-column.js"
+    "db:setup": "node setup-database.js"
   },
   "keywords": [
     "typescript",
