@@ -8,6 +8,9 @@ export default function AdminDashboard() {
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const { t } = useTranslation(language);
   
+  // State for user profile
+  const [userProfile, setUserProfile] = useState<any>(null);
+  
   // State for panchayat information
   const [panchayatInfo, setPanchayatInfo] = useState({
     name: 'ग्राम पंचायत नई दिल्ली',
@@ -74,16 +77,21 @@ export default function AdminDashboard() {
           adminApi.getPendingJobCardApplications().catch(err => {
             console.warn('Failed to fetch pending applications:', err);
             return [];
+          }),
+          adminApi.get('/users/profile').catch(err => {
+            console.warn('Failed to fetch user profile, using defaults:', err);
+            return null;
           })
         ];
         
-        const [panchayatData, statsData, activitiesData, applicationsData] = await Promise.all(promises);
+        const [panchayatData, statsData, activitiesData, applicationsData, userData] = await Promise.all(promises);
         
         // Only update state if data was successfully fetched
         if (panchayatData) setPanchayatInfo(panchayatData);
         if (statsData) setStats(statsData);
         if (activitiesData) setRecentActivities(activitiesData);
         if (applicationsData) setPendingApplications(applicationsData);
+        if (userData?.data) setUserProfile(userData.data);
       } catch (err) {
         setError('Failed to load some dashboard data');
         console.error('Error fetching dashboard data:', err);
@@ -180,27 +188,27 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
-        <div className="container mx-auto px-6 py-4">
+        <div className="container mx-auto px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">{t('adminDashboard')}</h1>
-            <div className="flex items-center space-x-4">
+            <h1 className="text-xl sm:text-2xl font-bold">{t('adminDashboard')}</h1>
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <button 
                 onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200 text-sm sm:text-base"
               >
                 {language === 'en' ? t('hindi') : t('english')}
               </button>
               <div className="relative">
                 <button 
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                  className="flex items-center space-x-2 focus:outline-none"
+                  className="flex items-center space-x-1 sm:space-x-2 focus:outline-none"
                 >
-                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                    <span className="font-bold">A</span>
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                    <span className="font-bold text-sm sm:text-base">{userProfile?.name?.charAt(0).toUpperCase() || 'A'}</span>
                   </div>
-                  <span>Admin</span>
+                  <span className="hidden sm:inline">{userProfile?.name || 'Admin'}</span>
                   <svg 
-                    className={`w-5 h-5 transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''}`} 
+                    className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''}`} 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -232,9 +240,9 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8">
-        {/* Sidebar Navigation */}
-        <aside className="lg:w-64 flex-shrink-0">
+      <div className="container mx-auto px-4 py-6 sm:px-6 sm:py-8 flex flex-col lg:flex-row gap-6 lg:gap-8">
+        {/* Sidebar Navigation - Hidden on mobile, shown on lg screens */}
+        <aside className="lg:w-64 flex-shrink-0 hidden lg:block">
           <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6">
             <nav>
               <ul className="space-y-2">
@@ -254,22 +262,41 @@ export default function AdminDashboard() {
           </div>
         </aside>
 
+        {/* Mobile Navigation - Horizontal scroll */}
+        <div className="lg:hidden w-full overflow-x-auto pb-2">
+          <div className="flex space-x-2 min-w-max">
+            {navItems.slice(0, 6).map((item) => (
+              <a 
+                key={item.id}
+                href={item.href || '#'} 
+                className="flex flex-col items-center justify-center px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-blue-50 transition-colors duration-200 min-w-[80px]"
+              >
+                <span className="text-2xl mb-1">{item.icon}</span>
+                <span className="text-xs font-medium text-gray-700 whitespace-nowrap">{t(item.label as any) || item.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+
         {/* Main Content */}
         <main className="flex-1">
           {/* Panchayat Banner */}
-          <section className="mb-8">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl shadow-lg p-6 text-white">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold">{panchayatInfo.name}</h2>
-                  <p className="mt-2 opacity-90">
-                    {language === 'en' ? t('district') : 'जिला'}: {panchayatInfo.district}, 
-                    {language === 'en' ? t('state') : 'राज्य'}: {panchayatInfo.state}
+          <section className="mb-6 sm:mb-8">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 text-white">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex-1">
+                  <h2 className="text-xl sm:text-2xl font-bold mb-2">
+                    {userProfile?.name || panchayatInfo.name}
+                  </h2>
+                  <p className="text-sm sm:text-base opacity-90">
+                    <span className="font-medium">📍</span> {userProfile?.district || panchayatInfo.district}, {userProfile?.state || panchayatInfo.state}
                   </p>
                 </div>
-                <div className="mt-4 md:mt-0">
-                  <p className="text-sm opacity-75">
-                    {language === 'en' ? t('panchayatId') : 'पंचायत आईडी'}: {panchayatInfo.id}
+                <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-3 self-start sm:self-center">
+                  <p className="text-xs sm:text-sm opacity-90">
+                    <span className="font-semibold">{language === 'en' ? 'Panchayat ID:' : 'पंचायत आईडी:'}</span>
+                    <br />
+                    <span className="font-mono font-bold text-lg">{userProfile?.panchayat_id || panchayatInfo.id}</span>
                   </p>
                 </div>
               </div>
@@ -277,83 +304,83 @@ export default function AdminDashboard() {
           </section>
 
           {/* Statistics Cards */}
-          <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('statistics')}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <section className="mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">{t('statistics')}</h2>
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {/* Total Projects */}
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
                 <div className="flex items-center">
-                  <div className="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                    <span className="text-2xl">🏗️</span>
+                  <div className="p-2 sm:p-3 rounded-lg bg-blue-100 text-blue-600 mr-3 sm:mr-4 flex-shrink-0">
+                    <span className="text-xl sm:text-2xl">🏗️</span>
                   </div>
-                  <div>
-                    <p className="text-gray-500 text-sm">{t('totalProjects')}</p>
-                    <p className="text-3xl font-bold text-gray-800">{stats.totalProjects}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-gray-500 text-xs sm:text-sm truncate">{t('totalProjects')}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-800">{stats.totalProjects}</p>
                   </div>
                 </div>
               </div>
 
               {/* Total Job Card Applications */}
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
                 <div className="flex items-center">
-                  <div className="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                    <span className="text-2xl">📝</span>
+                  <div className="p-2 sm:p-3 rounded-lg bg-blue-100 text-blue-600 mr-3 sm:mr-4 flex-shrink-0">
+                    <span className="text-xl sm:text-2xl">📝</span>
                   </div>
-                  <div>
-                    <p className="text-gray-500 text-sm">{t('totalJobCardApplications')}</p>
-                    <p className="text-3xl font-bold text-gray-800">{stats.totalJobCardApplications}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-gray-500 text-xs sm:text-sm truncate">{t('totalJobCardApplications')}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-800">{stats.totalJobCardApplications}</p>
                   </div>
                 </div>
               </div>
 
               {/* Total Active Workers */}
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
                 <div className="flex items-center">
-                  <div className="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                    <span className="text-2xl">👷</span>
+                  <div className="p-2 sm:p-3 rounded-lg bg-blue-100 text-blue-600 mr-3 sm:mr-4 flex-shrink-0">
+                    <span className="text-xl sm:text-2xl">👷</span>
                   </div>
-                  <div>
-                    <p className="text-gray-500 text-sm">{t('totalActiveWorkers')}</p>
-                    <p className="text-3xl font-bold text-gray-800">{stats.totalActiveWorkers}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-gray-500 text-xs sm:text-sm truncate">{t('totalActiveWorkers')}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-800">{stats.totalActiveWorkers}</p>
                   </div>
                 </div>
               </div>
 
               {/* Pending Payments */}
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
                 <div className="flex items-center">
-                  <div className="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                    <span className="text-2xl">💳</span>
+                  <div className="p-2 sm:p-3 rounded-lg bg-blue-100 text-blue-600 mr-3 sm:mr-4 flex-shrink-0">
+                    <span className="text-xl sm:text-2xl">💳</span>
                   </div>
-                  <div>
-                    <p className="text-gray-500 text-sm">{t('pendingPayments')}</p>
-                    <p className="text-3xl font-bold text-gray-800">{stats.pendingPayments}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-gray-500 text-xs sm:text-sm truncate">{t('pendingPayments')}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-800">{stats.pendingPayments}</p>
                   </div>
                 </div>
               </div>
 
               {/* Upcoming Deadlines */}
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
                 <div className="flex items-center">
-                  <div className="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                    <span className="text-2xl">⏰</span>
+                  <div className="p-2 sm:p-3 rounded-lg bg-blue-100 text-blue-600 mr-3 sm:mr-4 flex-shrink-0">
+                    <span className="text-xl sm:text-2xl">⏰</span>
                   </div>
-                  <div>
-                    <p className="text-gray-500 text-sm">{t('upcomingDeadlines')}</p>
-                    <p className="text-3xl font-bold text-gray-800">{stats.upcomingDeadlines}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-gray-500 text-xs sm:text-sm truncate">{t('upcomingDeadlines')}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-800">{stats.upcomingDeadlines}</p>
                   </div>
                 </div>
               </div>
 
               {/* Managed Employees */}
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
                 <div className="flex items-center">
-                  <div className="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                    <span className="text-2xl">👥</span>
+                  <div className="p-2 sm:p-3 rounded-lg bg-blue-100 text-blue-600 mr-3 sm:mr-4 flex-shrink-0">
+                    <span className="text-xl sm:text-2xl">👥</span>
                   </div>
-                  <div>
-                    <p className="text-gray-500 text-sm">{t('managedEmployees')}</p>
-                    <p className="text-3xl font-bold text-gray-800">{stats.managedEmployees}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-gray-500 text-xs sm:text-sm truncate">{t('managedEmployees')}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-800">{stats.managedEmployees}</p>
                   </div>
                 </div>
               </div>
@@ -361,24 +388,22 @@ export default function AdminDashboard() {
           </section>
 
           {/* Recent Job Applications and Pending Job Card Applications */}
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
             {/* Recent Job Applications */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('recentActivities')}</h2>
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">{t('recentActivities')}</h2>
+              <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
                 <ul className="divide-y divide-gray-200">
                   {recentActivities.map((application, index) => (
-                    <li key={application.id || index} className="p-6 hover:bg-blue-50 transition-colors duration-200">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-gray-800 font-medium">{application.headOfHouseholdName || application.name}</p>
-                          <p className="text-gray-500 text-sm">
-                            ID: {application.panchayat || application.panchayatId || 'N/A'} | 
-                            {language === 'en' ? ' District: ' : ' जिला: '}
-                            {application.district || 'N/A'}
+                    <li key={application.id || index} className="p-3 sm:p-6 hover:bg-blue-50 transition-colors duration-200">
+                      <div className="flex justify-between items-center gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm sm:text-base text-gray-800 font-medium truncate">{application.headOfHouseholdName || application.name}</p>
+                          <p className="text-xs sm:text-sm text-gray-500 truncate">
+                            📍 {application.district || 'N/A'}, {application.panchayat || application.panchayatId || 'N/A'}
                           </p>
                         </div>
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        <span className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium whitespace-nowrap">
                           {application.status || 'New'}
                         </span>
                       </div>
@@ -390,25 +415,24 @@ export default function AdminDashboard() {
 
             {/* Pending Job Card Applications */}
             <div>
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">{t('pendingJobCardApplications')}</h2>
-                <a href="/admin/job-card-applications" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium text-sm">
+              <div className="flex justify-between items-center mb-4 sm:mb-6 gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{t('pendingJobCardApplications')}</h2>
+                <a href="/admin/job-card-applications" className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium text-xs sm:text-sm whitespace-nowrap">
                   {t('viewAll')}
                 </a>
               </div>
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+              <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
                 <ul className="divide-y divide-gray-200">
                   {pendingApplications.map((application, index) => (
-                    <li key={application.id || index} className="p-6 hover:bg-blue-50 transition-colors duration-200">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-gray-800 font-medium">{application.headOfHouseholdName || application.name}</p>
-                          <p className="text-gray-500 text-sm">
-                            ID: {application.panchayat || application.panchayatId || 'N/A'} | 
-                            {language === 'en' ? ' District: ' : ' जिला: '}
-                            {application.district || 'N/A'}
-                          </p>                        </div>
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                    <li key={application.id || index} className="p-3 sm:p-6 hover:bg-blue-50 transition-colors duration-200">
+                      <div className="flex justify-between items-center gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm sm:text-base text-gray-800 font-medium truncate">{application.headOfHouseholdName || application.name}</p>
+                          <p className="text-xs sm:text-sm text-gray-500 truncate">
+                            📍 {application.district || 'N/A'}, {application.panchayat || application.panchayatId || 'N/A'}
+                          </p>
+                        </div>
+                        <span className="px-2 sm:px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium whitespace-nowrap">
                           {t('pending')}
                         </span>
                       </div>
@@ -421,50 +445,50 @@ export default function AdminDashboard() {
 
           {/* Quick Actions */}
           <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">{t('quickActions')}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">{t('quickActions')}</h2>
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <a 
                 href="/admin/job-card-applications" 
-                className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center"
+                className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center"
               >
-                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
-                  <span className="text-2xl">📝</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3 sm:mb-4">
+                  <span className="text-xl sm:text-2xl">📝</span>
                 </div>
-                <h3 className="font-bold text-gray-800 mb-2">{t('manageJobCards')}</h3>
-                <p className="text-gray-500 text-sm">{t('approveRejectJobCards')}</p>
+                <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-1 sm:mb-2">{t('manageJobCards')}</h3>
+                <p className="text-gray-500 text-xs sm:text-sm">{t('approveRejectJobCards')}</p>
               </a>
               
               <a 
                 href="/admin/payment-management" 
-                className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center"
+                className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center"
               >
-                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
-                  <span className="text-2xl">💰</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3 sm:mb-4">
+                  <span className="text-xl sm:text-2xl">💰</span>
                 </div>
-                <h3 className="font-bold text-gray-800 mb-2">{t('processPayments')}</h3>
-                <p className="text-gray-500 text-sm">{t('approveRejectPayments')}</p>
+                <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-1 sm:mb-2">{t('processPayments')}</h3>
+                <p className="text-gray-500 text-xs sm:text-sm">{t('approveRejectPayments')}</p>
               </a>
               
               <a 
                 href="/admin/projects" 
-                className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center"
+                className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center"
               >
-                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
-                  <span className="text-2xl">🏗️</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3 sm:mb-4">
+                  <span className="text-xl sm:text-2xl">🏗️</span>
                 </div>
-                <h3 className="font-bold text-gray-800 mb-2">{t('manageProjects')}</h3>
-                <p className="text-gray-500 text-sm">{t('createUpdateProjects')}</p>
+                <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-1 sm:mb-2">{t('manageProjects')}</h3>
+                <p className="text-gray-500 text-xs sm:text-sm">{t('createUpdateProjects')}</p>
               </a>
               
               <a 
                 href="#" 
-                className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center"
+                className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center text-center"
               >
-                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
-                  <span className="text-2xl">👥</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-3 sm:mb-4">
+                  <span className="text-xl sm:text-2xl">👥</span>
                 </div>
-                <h3 className="font-bold text-gray-800 mb-2">{t('manageEmployees')}</h3>
-                <p className="text-gray-500 text-sm">{t('addUpdateEmployees')}</p>
+                <h3 className="font-bold text-gray-800 text-sm sm:text-base mb-1 sm:mb-2">{t('manageEmployees')}</h3>
+                <p className="text-gray-500 text-xs sm:text-sm">{t('addUpdateEmployees')}</p>
               </a>
             </div>
           </section>
