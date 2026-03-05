@@ -38,10 +38,12 @@ export class ProjectController {
   public getProjectById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
-      if (!id) {
+      if (!id || id === 'undefined' || id === 'null') {
         res.status(400).json({
           success: false,
-          error: 'Project ID is required'
+          error: {
+            message: 'Invalid or missing Project ID'
+          }
         });
         return;
       }
@@ -225,10 +227,12 @@ export class ProjectController {
       const { id } = req.params;
       const { workerIds } = req.body;
       
-      if (!id) {
+      if (!id || id === 'undefined' || id === 'null') {
         res.status(400).json({
           success: false,
-          error: 'Project ID is required'
+          error: {
+            message: 'Invalid or missing Project ID'
+          }
         });
         return;
       }
@@ -236,7 +240,9 @@ export class ProjectController {
       if (!workerIds || !Array.isArray(workerIds) || workerIds.length === 0) {
         res.status(400).json({
           success: false,
-          error: 'Worker IDs are required'
+          error: {
+            message: 'Worker IDs are required'
+          }
         });
         return;
       }
@@ -293,10 +299,12 @@ export class ProjectController {
     try {
       const { id } = req.params;
       
-      if (!id) {
+      if (!id || id === 'undefined' || id === 'null') {
         res.status(400).json({
           success: false,
-          error: 'Project ID is required'
+          error: {
+            message: 'Invalid or missing Project ID'
+          }
         });
         return;
       }
