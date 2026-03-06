@@ -26,6 +26,9 @@ node run-migrations.js add_tracking_id_to_job_card_applications.sql
 # Run the job cards structure migration (fixes UUID issue)
 node run-migrations.js fix_job_cards_structure.sql
 
+# Run the attendance marked_by column migration
+node run-migrations.js add_marked_by_to_attendance.sql
+
 echo "========================================"
 echo "✅ All migrations completed successfully!"
 echo "========================================"
