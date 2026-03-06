@@ -1,7 +1,6 @@
 import { JobCardApplicationModel, CreateJobCardApplication } from '../models/JobCardApplicationModel';
 import { JobCardModel } from '../models/JobCardModel';
 import { AppError } from '../middlewares/errorMiddleware';
-import axios from 'axios';
 
 export class JobCardApplicationService {
   private jobCardApplicationModel: JobCardApplicationModel;
@@ -21,13 +20,6 @@ export class JobCardApplicationService {
     // Validate phone number (simplified validation)
     if (!this.isValidPhone(applicationData.phone_number)) {
       throw new AppError('Invalid phone number', 400);
-    }
-
-    // Validate Google reCAPTCHA (skip in development mode)
-    if (process.env.NODE_ENV !== 'development') {
-      if (!await this.isValidCaptcha(applicationData.captchaToken)) {
-        throw new AppError('Invalid reCAPTCHA verification', 400);
-      }
     }
 
     // Check if an application with this Aadhaar number already exists and is pending
@@ -147,32 +139,5 @@ export class JobCardApplicationService {
     // Simplified phone validation - in a real app, you would use a more robust validation
     const phoneRegex = /^\d{10}$/;
     return phoneRegex.test(phone);
-  }
-
-  private async isValidCaptcha(captchaToken: string): Promise<boolean> {
-    // In development mode, accept the dummy token
-    if (process.env.NODE_ENV === 'development' && captchaToken === 'dummy-development-token') {
-      return true;
-    }
-    
-    // Verify Google reCAPTCHA token with Google's API
-    try {
-      const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-      
-      if (!secretKey) {
-        console.error('RECAPTCHA_SECRET_KEY is not set in environment variables');
-        return false;
-      }
-      
-      const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
-      
-      const response = await axios.post(verificationUrl);
-      const data = response.data;
-      
-      return data.success === true;
-    } catch (error) {
-      console.error('Error verifying reCAPTCHA:', error);
-      return false;
-    }
   }
 }
