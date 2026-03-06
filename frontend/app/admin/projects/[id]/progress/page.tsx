@@ -68,9 +68,9 @@ export default function ProjectProgressPage() {
             attendanceByDate[date] = { present: 0, absent: 0, records: [] };
           }
           
-          if (record.status === 'PRESENT') {
+          if (record.status === 'present') {
             attendanceByDate[date].present += 1;
-          } else {
+          } else if (record.status === 'absent') {
             attendanceByDate[date].absent += 1;
           }
           
@@ -404,8 +404,8 @@ export default function ProjectProgressPage() {
                           {day.records.slice(0, 3).map((record: any, i: number) => (
                             <div key={i} className="flex justify-between">
                               <span>{record.worker_name}</span>
-                              <span className={record.status === 'PRESENT' ? 'text-green-600' : 'text-red-600'}>
-                                {record.status}
+                              <span className={record.status === 'present' ? 'text-green-600' : record.status === 'absent' ? 'text-red-600' : 'text-yellow-600'}>
+                                {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
                               </span>
                             </div>
                           ))}
