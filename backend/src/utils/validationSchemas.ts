@@ -643,20 +643,20 @@ export const createAttendanceSchema = Joi.object({
       'any.required': 'Date is required',
     }),
   status: Joi.string()
-    .valid('PRESENT', 'ABSENT', 'LEAVE')
+    .valid('present', 'absent', 'half_day')
     .optional()
-    .default('PRESENT')
+    .default('present')
     .messages({
-      'any.only': 'Status must be one of: PRESENT, ABSENT, LEAVE',
+      'any.only': 'Status must be one of: present, absent, half_day',
     }),
 });
 
 export const updateAttendanceSchema = Joi.object({
   status: Joi.string()
-    .valid('PRESENT', 'ABSENT', 'LEAVE')
+    .valid('present', 'absent', 'half_day')
     .optional()
     .messages({
-      'any.only': 'Status must be one of: PRESENT, ABSENT, LEAVE',
+      'any.only': 'Status must be one of: present, absent, half_day',
     }),
 });
 
