@@ -204,7 +204,7 @@ export default function AttendanceManagementPage() {
         worker_id: workerId,
         project_id: selectedProject,
         date: date,
-        status: status,
+        status: status.toLowerCase(), // Convert to lowercase for database constraint
         marked_by: supervisorId
       });
       
