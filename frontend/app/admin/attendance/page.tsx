@@ -164,7 +164,7 @@ export default function AttendanceManagementPage() {
         setProjectWorkers(enhancedProjectWorkers);
         
         // Fetch attendance records
-        const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+        const attendanceResponse = await adminApi.get(`/attendance/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
         
         // Fetch user details to get supervisor names
         const usersResponse = await adminApi.get('/users');
@@ -209,7 +209,7 @@ export default function AttendanceManagementPage() {
       });
       
       // Refresh attendance records
-      const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+      const attendanceResponse = await adminApi.get(`/attendance/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
       setAttendanceRecords(attendanceResponse.data || []);
       setSuccess(`Attendance marked as ${status.toLowerCase()}`);
       setTimeout(() => setSuccess(''), 3000);
@@ -241,7 +241,7 @@ export default function AttendanceManagementPage() {
       });
       
       // Refresh attendance records
-      const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+      const attendanceResponse = await adminApi.get(`/attendance/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
       setAttendanceRecords(attendanceResponse.data || []);
       setSuccess(`Attendance updated to ${newStatus.toLowerCase()}`);
       setShowEditModal(false);
