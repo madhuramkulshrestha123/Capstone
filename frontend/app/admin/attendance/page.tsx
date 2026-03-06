@@ -27,7 +27,7 @@ interface AttendanceRecord {
   worker_id: string;
   project_id: string;
   date: string;
-  status: 'PRESENT' | 'ABSENT';
+  status: 'present' | 'absent' | 'half_day';
   marked_by: string;
   created_at: string;
   updated_at: string;
@@ -65,8 +65,8 @@ export default function AttendanceManagementPage() {
   
   // Summary statistics
   const summaryStats = useMemo(() => {
-    const presentCount = attendanceRecords.filter(a => a.status === 'PRESENT').length;
-    const absentCount = attendanceRecords.filter(a => a.status === 'ABSENT').length;
+    const presentCount = attendanceRecords.filter(a => a.status === 'present').length;
+    const absentCount = attendanceRecords.filter(a => a.status === 'absent').length;
     const totalCount = attendanceRecords.length;
     const attendancePercentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
     
@@ -195,7 +195,7 @@ export default function AttendanceManagementPage() {
   }, [selectedProject, date]);
   
   // Mark attendance
-  const markAttendance = async (workerId: string, status: 'PRESENT' | 'ABSENT') => {
+  const markAttendance = async (workerId: string, status: 'present' | 'absent') => {
     try {
       const response = await adminApi.get('/users/profile');
       const supervisorId = response.data.id;
@@ -204,7 +204,7 @@ export default function AttendanceManagementPage() {
         worker_id: workerId,
         project_id: selectedProject,
         date: date,
-        status: status.toLowerCase(), // Convert to lowercase for database constraint
+        status: status, // Status is already lowercase
         marked_by: supervisorId
       });
       
@@ -223,7 +223,7 @@ export default function AttendanceManagementPage() {
       });
       
       setAttendanceRecords(enhancedAttendanceRecords);
-      setSuccess(`Attendance marked as ${status.toLowerCase()}`);
+      setSuccess(`Attendance marked as ${status}`);
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       setError('Failed to mark attendance');
@@ -267,7 +267,7 @@ export default function AttendanceManagementPage() {
       });
       
       setAttendanceRecords(enhancedAttendanceRecords);
-      setSuccess(`Attendance updated to ${newStatus.toLowerCase()}`);
+      setSuccess(`Attendance updated to ${newStatus}`);
       setShowEditModal(false);
       setSelectedAttendance(null);
       setEditReason('');
@@ -887,13 +887,13 @@ Time
                               {!attendanceRecord ? (
                                 <div className="flex space-x-2">
                                   <button
-                                    onClick={() => markAttendance(worker.id, 'PRESENT')}
+                                    onClick={() => markAttendance(worker.id, 'present')}
                                     className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200"
                                   >
                                     {t('present')}
                                   </button>
                                   <button
-                                    onClick={() => markAttendance(worker.id, 'ABSENT')}
+                                    onClick={() => markAttendance(worker.id, 'absent')}
                                     className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200"
                                   >
                                     {t('absent')}
