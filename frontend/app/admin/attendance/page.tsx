@@ -208,9 +208,21 @@ export default function AttendanceManagementPage() {
         marked_by: supervisorId
       });
       
-      // Refresh attendance records
+      // Refresh attendance records with supervisor names
       const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
-      setAttendanceRecords(attendanceResponse.data || []);
+      const usersResponse = await adminApi.get('/users');
+      const users = usersResponse.data || [];
+      
+      // Enhance attendance records with supervisor names
+      const enhancedAttendanceRecords = (attendanceResponse.data || []).map((record: any) => {
+        const supervisor = users.find((user: any) => user.user_id === record.marked_by);
+        return {
+          ...record,
+          supervisor_name: supervisor ? supervisor.name : 'Unknown User'
+        };
+      });
+      
+      setAttendanceRecords(enhancedAttendanceRecords);
       setSuccess(`Attendance marked as ${status.toLowerCase()}`);
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
@@ -234,15 +246,27 @@ export default function AttendanceManagementPage() {
     }
     
     try {
-      const newStatus = selectedAttendance.status === 'PRESENT' ? 'ABSENT' : 'PRESENT';
+      const newStatus = selectedAttendance.status === 'present' ? 'absent' : 'present';
       await adminApi.patch(`/attendances/${selectedAttendance.id}`, {
         status: newStatus,
         edit_reason: editReason
       });
       
-      // Refresh attendance records
+      // Refresh attendance records with supervisor names
       const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
-      setAttendanceRecords(attendanceResponse.data || []);
+      const usersResponse = await adminApi.get('/users');
+      const users = usersResponse.data || [];
+      
+      // Enhance attendance records with supervisor names
+      const enhancedAttendanceRecords = (attendanceResponse.data || []).map((record: any) => {
+        const supervisor = users.find((user: any) => user.user_id === record.marked_by);
+        return {
+          ...record,
+          supervisor_name: supervisor ? supervisor.name : 'Unknown User'
+        };
+      });
+      
+      setAttendanceRecords(enhancedAttendanceRecords);
       setSuccess(`Attendance updated to ${newStatus.toLowerCase()}`);
       setShowEditModal(false);
       setSelectedAttendance(null);
@@ -537,16 +561,18 @@ export default function AttendanceManagementPage() {
   };
   
   // Get status badge class
-  const getStatusBadgeClass = (status: 'PRESENT' | 'ABSENT' | null) => {
-    if (status === 'PRESENT') return 'bg-green-100 text-green-800';
-    if (status === 'ABSENT') return 'bg-red-100 text-red-800';
+  const getStatusBadgeClass = (status: string | null) => {
+    if (status === 'present') return 'bg-green-100 text-green-800';
+    if (status === 'absent') return 'bg-red-100 text-red-800';
+    if (status === 'half_day') return 'bg-yellow-100 text-yellow-800';
     return 'bg-gray-100 text-gray-800';
   };
   
   // Get status text
-  const getStatusText = (status: 'PRESENT' | 'ABSENT' | null) => {
-    if (status === 'PRESENT') return t('present');
-    if (status === 'ABSENT') return t('absent');
+  const getStatusText = (status: string | null) => {
+    if (status === 'present') return t('present');
+    if (status === 'absent') return t('absent');
+    if (status === 'half_day') return 'Half Day';
     return t('notMarked');
   };
   
@@ -934,15 +960,15 @@ Edit
                 
                 <div>
                   <p className="text-sm text-gray-500">{t('currentStatus')}</p>
-                  <p className={`font-medium ${selectedAttendance.status === 'PRESENT' ? 'text-green-600' : 'text-red-600'}`}>
-                    {selectedAttendance.status}
+                  <p className={`font-medium ${selectedAttendance.status === 'present' ? 'text-green-600' : 'text-red-600'}`}>
+                    {getStatusText(selectedAttendance.status)}
                   </p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-gray-500">{t('newStatus')}</p>
-                  <p className={`font-medium ${selectedAttendance.status === 'PRESENT' ? 'text-red-600' : 'text-green-600'}`}>
-                    {selectedAttendance.status === 'PRESENT' ? 'ABSENT' : 'PRESENT'}
+                  <p className={`font-medium ${selectedAttendance.status === 'present' ? 'text-red-600' : 'text-green-600'}`}>
+                    {getStatusText(selectedAttendance.status === 'present' ? 'absent' : 'present')}
                   </p>
                 </div>
                 
