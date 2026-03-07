@@ -164,7 +164,7 @@ export default function PaymentManagementPage() {
     const totalPendingPayments = filteredPayments.filter(p => p.status === 'pending').length;
     const totalAmountDue = filteredPayments
       .filter(p => p.status === 'pending' || p.status === 'processed')
-      .reduce((sum, payment) => sum + payment.amount, 0);
+      .reduce((sum, payment) => sum + (typeof payment.amount === 'number' ? payment.amount : parseFloat(payment.amount) || 0), 0);
     
     const paymentsDueThisWeek = filteredPayments.filter(p => {
       const dueDate = new Date(p.project_end_date);
@@ -333,14 +333,16 @@ export default function PaymentManagementPage() {
 
   // Select all payments
   const selectAllPayments = () => {
-    if (selectedPayments.length === filteredPayments.length) {
+    // Only select payments that are not completed (paid)
+    const selectablePaymentIds = filteredPayments
+      .filter(p => p.status !== 'completed') // Exclude paid payments
+      .map(p => p.payment_id || p.id)
+      .filter(id => id !== undefined && id !== null) as string[];
+    
+    if (selectedPayments.length === selectablePaymentIds.length) {
       setSelectedPayments([]);
     } else {
-      // Ensure we're using the correct ID field (payment_id from backend, fallback to id)
-      const paymentIds = filteredPayments
-        .map(p => p.payment_id || p.id)
-        .filter(id => id !== undefined && id !== null) as string[];
-      setSelectedPayments(paymentIds);
+      setSelectedPayments(selectablePaymentIds);
     }
   };
 
@@ -1622,7 +1624,10 @@ export default function PaymentManagementPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <input
                         type="checkbox"
-                        checked={selectedPayments.length === filteredPayments.length && filteredPayments.length > 0}
+                        checked={(() => {
+                          const selectablePayments = filteredPayments.filter(p => p.status !== 'completed');
+                          return selectablePayments.length > 0 && selectedPayments.length === selectablePayments.length;
+                        })()}
                         onChange={selectAllPayments}
                         className="rounded text-blue-600 focus:ring-blue-500"
                       />
@@ -1664,12 +1669,14 @@ export default function PaymentManagementPage() {
                           <td className="px-6 py-4 whitespace-nowrap">
                           {(() => {
                             const paymentId = payment.payment_id || payment.id || '';
+                            const isPaid = payment.status === 'completed';
                             return (
                               <input
                                 type="checkbox"
-                                checked={selectedPayments.includes(paymentId)}
-                                onChange={() => togglePaymentSelection(paymentId)}
-                                className="rounded text-blue-600 focus:ring-blue-500"
+                                checked={isPaid ? false : selectedPayments.includes(paymentId)}
+                                onChange={() => !isPaid && togglePaymentSelection(paymentId)}
+                                disabled={isPaid}
+                                className={`rounded text-blue-600 focus:ring-blue-500 ${isPaid ? 'opacity-30 cursor-not-allowed' : ''}`}
                               />
                             );
                           })()}
