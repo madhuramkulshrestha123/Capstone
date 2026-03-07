@@ -190,7 +190,7 @@ export default function WorkersPage() {
                           <div className="text-sm text-gray-500">{worker.aadhaar_number}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {worker.job_card_id || 'N/A'}
+                          {worker.job_card_number || worker.job_card_id || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -283,7 +283,7 @@ export default function WorkersPage() {
                   <div className="space-y-3">
                     <div>
                       <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('jobCardIdLabel')}</p>
-                      <p className="font-medium">{selectedWorker.job_card_id || 'N/A'}</p>
+                      <p className="font-medium">{selectedWorker.job_card_number || selectedWorker.job_card_id || 'N/A'}</p>
                     </div>
                     <div>
                       <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{t('totalAmount')}</p>

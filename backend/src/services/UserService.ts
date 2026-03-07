@@ -298,11 +298,11 @@ export class UserService {
               if (latestProject) {
                 totalAmount = latestProject.wage_per_worker || 374;
                 
-                // Calculate payment deadline (15 days from project assignment date)
-                if (latestProject.allocated_at) {
-                  const assignedDate = new Date(latestProject.allocated_at);
-                  assignedDate.setDate(assignedDate.getDate() + 15);
-                  paymentDeadline = assignedDate.toISOString().split('T')[0];
+                // Calculate payment deadline (15 days from project END date, not allocation date)
+                if (latestProject.end_date) {
+                  const endDate = new Date(latestProject.end_date);
+                  endDate.setDate(endDate.getDate() + 15);
+                  paymentDeadline = endDate.toISOString().split('T')[0];
                 }
               }
             } else {
@@ -311,11 +311,11 @@ export class UserService {
               if (latestProject) {
                 totalAmount = latestProject.wage_per_worker || 374;
                 
-                // Calculate payment deadline (15 days from project assignment date)
-                if (latestProject.allocated_at) {
-                  const assignedDate = new Date(latestProject.allocated_at);
-                  assignedDate.setDate(assignedDate.getDate() + 15);
-                  paymentDeadline = assignedDate.toISOString().split('T')[0];
+                // Calculate payment deadline (15 days from project END date)
+                if (latestProject.end_date) {
+                  const endDate = new Date(latestProject.end_date);
+                  endDate.setDate(endDate.getDate() + 15);
+                  paymentDeadline = endDate.toISOString().split('T')[0];
                 }
               }
             }
