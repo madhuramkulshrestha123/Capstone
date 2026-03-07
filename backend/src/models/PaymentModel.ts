@@ -22,6 +22,7 @@ export class PaymentModel {
     
     return result.rows.map((payment: any) => ({
       ...payment,
+      payment_id: payment.payment_id,
       worker_id: payment.worker_id,
       project_id: payment.project_id,
       approved_by: payment.approved_by,
@@ -34,13 +35,14 @@ export class PaymentModel {
   }
 
   async findById(id: string): Promise<Payment | null> {
-    const result = await this.db.query('SELECT * FROM payments WHERE id = $1', [id]);
+    const result = await this.db.query('SELECT * FROM payments WHERE payment_id = $1', [id]);
     
     if (result.rows.length === 0) return null;
     
     const payment = result.rows[0];
     return {
       ...payment,
+      payment_id: payment.payment_id,
       worker_id: payment.worker_id,
       project_id: payment.project_id,
       approved_by: payment.approved_by,
@@ -68,6 +70,7 @@ export class PaymentModel {
     const payment = result.rows[0];
     return {
       ...payment,
+      payment_id: payment.payment_id,
       worker_id: payment.worker_id,
       project_id: payment.project_id,
       approved_by: payment.approved_by,
@@ -122,7 +125,7 @@ export class PaymentModel {
     values.push(id);
     
     const result = await this.db.query(
-      `UPDATE payments SET ${updateFields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+      `UPDATE payments SET ${updateFields.join(', ')} WHERE payment_id = $${paramCount} RETURNING *`,
       values
     );
     
@@ -131,6 +134,7 @@ export class PaymentModel {
     const payment = result.rows[0];
     return {
       ...payment,
+      payment_id: payment.payment_id,
       worker_id: payment.worker_id,
       project_id: payment.project_id,
       approved_by: payment.approved_by,
@@ -144,7 +148,7 @@ export class PaymentModel {
 
   async delete(id: string): Promise<boolean> {
     try {
-      const result = await this.db.query('DELETE FROM payments WHERE id = $1', [id]);
+      const result = await this.db.query('DELETE FROM payments WHERE payment_id = $1', [id]);
       return result.rowCount > 0;
     } catch (error) {
       return false;
@@ -172,6 +176,7 @@ export class PaymentModel {
     
     return result.rows.map((payment: any) => ({
       ...payment,
+      payment_id: payment.payment_id,
       worker_id: payment.worker_id,
       project_id: payment.project_id,
       approved_by: payment.approved_by,
@@ -191,6 +196,7 @@ export class PaymentModel {
     
     return result.rows.map((payment: any) => ({
       ...payment,
+      payment_id: payment.payment_id,
       worker_id: payment.worker_id,
       project_id: payment.project_id,
       approved_by: payment.approved_by,
