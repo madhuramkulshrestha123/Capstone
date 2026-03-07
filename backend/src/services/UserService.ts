@@ -326,6 +326,7 @@ export class UserService {
             name: user.name,
             aadhaar_number: user.aadhaar_number,
             job_card_id: jobCard?.job_card_id || null,
+            job_card_number: jobCard?.job_card_number || null,
             current_status: currentStatus,
             work_history: workHistory,
             total_amount: totalAmount,

@@ -231,13 +231,19 @@ export default function PaymentManagementPage() {
           const worker = workersData.find((w: Worker) => w.id === payment.worker_id);
           const project = projectsData.find((p: Project) => p.id === payment.project_id);
           
+          console.log('Processing payment:', payment.payment_id || payment.id);
+          console.log('Worker:', worker?.name, 'Project:', project?.name);
+          console.log('Attendance data count:', attendanceData.length);
+          
           // Calculate days worked for this worker on this project
           const workerAttendances = attendanceData.filter(
             (att: AttendanceRecord) => 
               att.worker_id === payment.worker_id && 
               att.project_id === payment.project_id &&
-              att.status === 'PRESENT' // Changed to uppercase
+              att.status?.toUpperCase() === 'PRESENT' // Normalize case comparison
           );
+          
+          console.log('Found attendances:', workerAttendances.length);
           
           const daysWorked = workerAttendances.length;
           const wagePerDay = project?.wage_per_worker ? Number(project.wage_per_worker) : 0;
@@ -388,7 +394,7 @@ export default function PaymentManagementPage() {
           (att: AttendanceRecord) => 
             att.worker_id === payment.worker_id && 
             att.project_id === payment.project_id &&
-            att.status === 'PRESENT'
+            att.status?.toUpperCase() === 'PRESENT' // Normalize case comparison
         );
         
         const daysWorked = workerAttendances.length;
