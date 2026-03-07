@@ -63,7 +63,7 @@ export class PaymentService {
     }
 
     // Validate that only admins can approve payments
-    if (paymentData.status === 'APPROVED' && !adminId) {
+    if (paymentData.status === 'processed' && !adminId) {
       throw new AppError('Only administrators can approve payments', 403);
     }
 
@@ -125,7 +125,7 @@ export class PaymentService {
 
   async approvePayment(id: string, adminId: string): Promise<Payment> {
     const paymentData: UpdatePaymentRequest = {
-      status: 'APPROVED',
+      status: 'processed',
     };
 
     return this.updatePayment(id, paymentData, adminId);
@@ -133,7 +133,7 @@ export class PaymentService {
 
   async rejectPayment(id: string, adminId: string): Promise<Payment> {
     const paymentData: UpdatePaymentRequest = {
-      status: 'REJECTED',
+      status: 'failed',
     };
 
     return this.updatePayment(id, paymentData, adminId);
