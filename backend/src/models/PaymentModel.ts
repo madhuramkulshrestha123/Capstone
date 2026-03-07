@@ -55,8 +55,8 @@ export class PaymentModel {
   async create(paymentData: CreatePaymentRequest): Promise<Payment> {
     const result = await this.db.query(
       `INSERT INTO payments (
-        worker_id, project_id, amount, status, payment_date, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, NOW(), NOW(), NOW()) RETURNING *`,
+        worker_id, project_id, amount, status, payment_date, payment_mode, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, NOW(), 'CASH', NOW(), NOW()) RETURNING *`,
       [
         paymentData.worker_id,
         paymentData.project_id,
