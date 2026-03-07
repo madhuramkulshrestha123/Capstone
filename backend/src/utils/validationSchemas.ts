@@ -771,6 +771,25 @@ export const idParamSchema = Joi.object({
     }),
 });
 
+// OTP validation schemas - support both email and phone
+export const sendOtpSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .optional()
+    .messages({
+      'string.email': 'Please provide a valid email address',
+    }),
+  phone: Joi.string()
+    .pattern(/^\d{10}$/)
+    .optional()
+    .messages({
+      'string.pattern.base': 'Phone number must be exactly 10 digits',
+    }),
+}).or('email', 'phone') // At least one of these fields must be present
+.messages({
+  'object.missing': 'Either email or phone number must be provided'
+});
+
 export const projectIdParamSchema = Joi.object({
   projectId: Joi.alternatives()
     .try(
@@ -784,15 +803,6 @@ export const projectIdParamSchema = Joi.object({
 });
 
 // OTP validation schemas
-export const sendOtpSchema = Joi.object({
-  email: Joi.string()
-    .email()
-    .required()
-    .messages({
-      'string.email': 'Please provide a valid email address',
-      'any.required': 'Email is required',
-    }),
-});
 
 export const verifyOtpSchema = Joi.object({
   email: Joi.string()
@@ -912,20 +922,28 @@ export const completeRegistrationSchema = Joi.object({
     }),
 });
 
-// Update the sendOtpSchema to include password for login
+// Update the sendOtpSchema to include phone for login
 export const sendLoginOtpSchema = Joi.object({
   email: Joi.string()
     .email()
-    .required()
+    .optional()
     .messages({
       'string.email': 'Please provide a valid email address',
-      'any.required': 'Email is required',
+    }),
+  phone: Joi.string()
+    .pattern(/^\d{10}$/)
+    .optional()
+    .messages({
+      'string.pattern.base': 'Phone number must be exactly 10 digits',
     }),
   password: Joi.string()
     .required()
     .messages({
       'any.required': 'Password is required',
     }),
+}).or('email', 'phone') // At least one of these fields must be present
+.messages({
+  'object.missing': 'Either email or phone number must be provided'
 });
 
 // Worker verification schema

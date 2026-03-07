@@ -19,50 +19,64 @@ export class OtpService {
     return crypto.randomInt(100000, 999999).toString();
   }
 
-  async sendOtp(email: string, phoneNumber?: string): Promise<{ success: boolean; message: string; otp?: string }> {
+  /**
+   * Send OTP to either email or phone number (not both)
+   * @param email - Email address to send OTP (optional if phoneNumber provided)
+   * @param phoneNumber - Phone number to send OTP (optional if email provided)
+   */
+  async sendOtp(email?: string, phoneNumber?: string): Promise<{ success: boolean; message: string; otp?: string }> {
     try {
-      // Generate a single OTP to be used for both email and SMS
+      // Validate that at least one identifier is provided
+      if (!email && !phoneNumber) {
+        return {
+          success: false,
+          message: 'Either email or phone number must be provided'
+        };
+      }
+      
+      // Generate a single OTP
       const generatedOtp = this.generateOtp();
       
       // Set expiration time (15 minutes from now)
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
       
-      let emailSent = true;
-      let smsSent = true;
+      let sent = true;
+      let method = '';
       
-      // Send OTP via email
+      // Send OTP via email ONLY if email is provided
       if (email) {
         // Save OTP to storage for email verification
         await this.otpModel.createOtp(email, generatedOtp, expiresAt);
         
         // Send OTP via email
-        emailSent = await this.emailService.sendOtpEmail(email, generatedOtp);
+        sent = await this.emailService.sendOtpEmail(email, generatedOtp);
+        method = 'email';
       }
       
-      // Send OTP via SMS using regular SMS (not Twilio Verify) to use the same OTP
-      if (phoneNumber) {
+      // Send OTP via SMS ONLY if phoneNumber is provided (and email is not provided)
+      if (phoneNumber && !email) {
         try {
-          smsSent = await this.smsService.sendOtpSmsWithCustomOtp(phoneNumber, generatedOtp);
+          sent = await this.smsService.sendOtpSmsWithCustomOtp(phoneNumber, generatedOtp);
+          method = 'SMS';
         } catch (smsError) {
           console.error('Error sending SMS:', smsError);
-          // Don't fail the entire operation if SMS fails, just log it
-          smsSent = false;
+          sent = false;
         }
       }
       
-      if (emailSent && (phoneNumber ? smsSent : true)) {
+      if (sent) {
         // In development, return the OTP in the response
         if (process.env.NODE_ENV === 'development') {
           return {
             success: true,
-            message: 'OTP sent successfully to both email and SMS',
+            message: `OTP sent successfully via ${method}`,
             otp: generatedOtp // Return OTP for development testing
           };
         }
         
         return {
           success: true,
-          message: 'OTP sent successfully'
+          message: `OTP sent successfully via ${method}`
         };
       } else {
         return {
