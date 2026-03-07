@@ -22,7 +22,8 @@ interface Worker {
   id: string;
   name: string;
   aadhaar_number: string;
-  job_card_id?: string;
+  job_card_id?: string;  // UUID
+  job_card_number?: string;  // Human-readable job card number like ABVB018451
   bank_name?: string;
   account_number?: string;
   ifsc_code?: string;
@@ -245,7 +246,7 @@ export default function PaymentManagementPage() {
             ...payment,
             worker_name: worker?.name || 'Unknown',
             worker_aadhaar: worker?.aadhaar_number || 'N/A',
-            worker_job_card: worker?.job_card_id || 'N/A',
+            worker_job_card: worker?.job_card_number || worker?.job_card_id || 'N/A',
             project_name: project?.name || 'Unknown',
             project_end_date: project?.end_date || '',
             daysWorked,
@@ -397,7 +398,7 @@ export default function PaymentManagementPage() {
           ...payment,
           worker_name: worker?.name || 'Unknown',
           worker_aadhaar: worker?.aadhaar_number || 'N/A',
-          worker_job_card: worker?.job_card_id || 'N/A',
+          worker_job_card: worker?.job_card_number || worker?.job_card_id || 'N/A',
           project_name: project?.name || 'Unknown',
           project_end_date: project?.end_date || '',
           daysWorked,
