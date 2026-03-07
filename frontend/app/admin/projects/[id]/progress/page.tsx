@@ -68,9 +68,11 @@ export default function ProjectProgressPage() {
             attendanceByDate[date] = { present: 0, absent: 0, records: [] };
           }
           
-          if (record.status === 'PRESENT') { // Changed to uppercase
+          // Check status case-insensitively
+          const statusUpper = record.status?.toUpperCase();
+          if (statusUpper === 'PRESENT') {
             attendanceByDate[date].present += 1;
-          } else if (record.status === 'ABSENT') { // Changed to uppercase
+          } else if (statusUpper === 'ABSENT') {
             attendanceByDate[date].absent += 1;
           }
           
@@ -402,14 +404,17 @@ export default function ProjectProgressPage() {
                         </div>
                         {/* Show worker details on hover */}
                         <div className="mt-2 text-xs text-gray-400">
-                          {day.records.slice(0, 3).map((record: any, i: number) => (
-                            <div key={i} className="flex justify-between">
-                              <span>{record.worker_name}</span>
-                              <span className={record.status === 'present' ? 'text-green-600' : record.status === 'absent' ? 'text-red-600' : 'text-yellow-600'}>
-                                {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
-                              </span>
-                            </div>
-                          ))}
+                          {day.records.slice(0, 3).map((record: any, i: number) => {
+                            const statusUpper = record.status?.toUpperCase();
+                            return (
+                              <div key={i} className="flex justify-between">
+                                <span>{record.worker_name}</span>
+                                <span className={statusUpper === 'PRESENT' ? 'text-green-600' : statusUpper === 'ABSENT' ? 'text-red-600' : 'text-yellow-600'}>
+                                  {(record.status || '').charAt(0).toUpperCase() + (record.status || '').slice(1)}
+                                </span>
+                              </div>
+                            );
+                          })}
                           {day.records.length > 3 && (
                             <div className="text-center text-gray-500 mt-1">
                               +{day.records.length - 3} more workers
