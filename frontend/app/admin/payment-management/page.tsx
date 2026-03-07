@@ -10,7 +10,7 @@ interface Payment {
   worker_id: string;
   project_id: string;
   amount: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID';
+  status: 'pending' | 'processed' | 'rejected' | 'completed';
   approved_by?: string;
   approved_at?: string;
   paid_at?: string;
@@ -111,7 +111,7 @@ export default function PaymentManagementPage() {
         const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
         
         // Only show payments that are pending and due within the next 5 days
-        if (payment.status !== 'PENDING' || daysUntilDue > 5 || daysUntilDue < 0) {
+        if (payment.status !== 'pending' || daysUntilDue > 5 || daysUntilDue < 0) {
           return false;
         }
       }
@@ -161,9 +161,9 @@ export default function PaymentManagementPage() {
   const summaryStats = useMemo(() => {
     const totalActiveWorkers = filteredPayments.length; // Count all workers with payment records
     
-    const totalPendingPayments = filteredPayments.filter(p => p.status === 'PENDING').length;
+    const totalPendingPayments = filteredPayments.filter(p => p.status === 'pending').length;
     const totalAmountDue = filteredPayments
-      .filter(p => p.status === 'PENDING' || p.status === 'APPROVED')
+      .filter(p => p.status === 'pending' || p.status === 'processed')
       .reduce((sum, payment) => sum + payment.amount, 0);
     
     const paymentsDueThisWeek = filteredPayments.filter(p => {
@@ -172,14 +172,14 @@ export default function PaymentManagementPage() {
       const today = new Date();
       const diffTime = dueDate.getTime() - today.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays >= 0 && diffDays <= 7 && (p.status === 'PENDING' || p.status === 'APPROVED');
+      return diffDays >= 0 && diffDays <= 7 && (p.status === 'pending' || p.status === 'processed');
     }).length;
     
     const overduePayments = filteredPayments.filter(p => {
       const dueDate = new Date(p.project_end_date);
       dueDate.setDate(dueDate.getDate() + 15); // Payment due 15 days after project end
       const today = new Date();
-      return dueDate < today && (p.status === 'PENDING' || p.status === 'APPROVED');
+      return dueDate < today && (p.status === 'pending' || p.status === 'processed');
     }).length;
 
     return {
@@ -279,8 +279,8 @@ export default function PaymentManagementPage() {
 
   // Get status color based on payment status and due date
   const getStatusColor = (status: string, projectEndDate: string) => {
-    if (status === 'PAID') return 'bg-green-100 text-green-800';
-    if (status === 'REJECTED') return 'bg-red-100 text-red-800';
+    if (status === 'completed') return 'bg-green-100 text-green-800';
+    if (status === 'rejected') return 'bg-red-100 text-red-800';
     
     const dueDate = new Date(getPaymentDueDate(projectEndDate));
     const today = new Date();
@@ -301,8 +301,8 @@ export default function PaymentManagementPage() {
 
   // Get status display text
   const getStatusDisplay = (status: string, projectEndDate: string) => {
-    if (status === 'PAID') return 'Paid';
-    if (status === 'REJECTED') return 'Rejected';
+    if (status === 'completed') return 'Paid';
+    if (status === 'rejected') return 'Rejected';
     
     const dueDate = new Date(getPaymentDueDate(projectEndDate));
     const today = new Date();
@@ -372,7 +372,7 @@ export default function PaymentManagementPage() {
       const projectsResponse = await adminApi.get('/projects');
       const projectsData = projectsResponse.data || [];
       
-      const attendanceResponse = await adminApi.get('/attendance');
+      const attendanceResponse = await adminApi.get('/attendances');
       const attendanceData = attendanceResponse.data || [];
       
       // Combine all data to create payment records with details
@@ -429,7 +429,7 @@ export default function PaymentManagementPage() {
         
         switch(type) {
           case 'pending':
-            exportData = filteredPayments.filter(p => p.status === 'PENDING').map(payment => ({
+            exportData = filteredPayments.filter(p => p.status === 'pending').map(payment => ({
               'Worker Name': payment.worker_name,
               'Job Card ID': payment.worker_job_card,
               'Project Name': payment.project_name,
@@ -446,7 +446,7 @@ export default function PaymentManagementPage() {
               const dueDate = new Date(p.project_end_date);
               dueDate.setDate(dueDate.getDate() + 15); // Payment due 15 days after project end
               const today = new Date();
-              return dueDate < today && (p.status === 'PENDING' || p.status === 'APPROVED');
+              return dueDate < today && (p.status === 'pending' || p.status === 'processed');
             }).map(payment => ({
               'Worker Name': payment.worker_name,
               'Job Card ID': payment.worker_job_card,
@@ -728,10 +728,10 @@ export default function PaymentManagementPage() {
         doc.rect(15, currentY, 180, 45);
         
         const totalAmount = filteredPayments.reduce((sum, payment) => sum + payment.amount, 0);
-        const paidCount = filteredPayments.filter(p => p.status === 'PAID').length;
-        const pendingCount = filteredPayments.filter(p => p.status === 'PENDING').length;
-        const approvedCount = filteredPayments.filter(p => p.status === 'APPROVED').length;
-        const rejectedCount = filteredPayments.filter(p => p.status === 'REJECTED').length;
+        const paidCount = filteredPayments.filter(p => p.status === 'completed').length;
+        const pendingCount = filteredPayments.filter(p => p.status === 'pending').length;
+        const approvedCount = filteredPayments.filter(p => p.status === 'processed').length;
+        const rejectedCount = filteredPayments.filter(p => p.status === 'rejected').length;
         
         doc.setFont('helvetica', 'bold');
         doc.text(`Total Payments: ${filteredPayments.length}`, 20, currentY + 10);
@@ -987,8 +987,8 @@ export default function PaymentManagementPage() {
         
         const totalPayments = userPayments.length;
         const totalAmount = userPayments.reduce((sum, payment) => sum + payment.amount, 0);
-        const paidPayments = userPayments.filter(p => p.status === 'PAID').length;
-        const pendingPayments = userPayments.filter(p => p.status === 'PENDING').length;
+        const paidPayments = userPayments.filter(p => p.status === 'completed').length;
+        const pendingPayments = userPayments.filter(p => p.status === 'pending').length;
         
         doc.setFont('helvetica', 'bold');
         doc.text(`Total Payments: ${totalPayments}`, 20, currentY + 10);
@@ -1286,10 +1286,10 @@ export default function PaymentManagementPage() {
         doc.rect(15, currentY, 180, 45);
         
         const totalAmount = filteredPayments.reduce((sum, payment) => sum + payment.amount, 0);
-        const paidCount = filteredPayments.filter(p => p.status === 'PAID').length;
-        const pendingCount = filteredPayments.filter(p => p.status === 'PENDING').length;
-        const approvedCount = filteredPayments.filter(p => p.status === 'APPROVED').length;
-        const rejectedCount = filteredPayments.filter(p => p.status === 'REJECTED').length;
+        const paidCount = filteredPayments.filter(p => p.status === 'completed').length;
+        const pendingCount = filteredPayments.filter(p => p.status === 'pending').length;
+        const approvedCount = filteredPayments.filter(p => p.status === 'processed').length;
+        const rejectedCount = filteredPayments.filter(p => p.status === 'rejected').length;
         
         doc.setFont('helvetica', 'bold');
         doc.text(`Total Payments: ${filteredPayments.length}`, 20, currentY + 10);
@@ -1531,7 +1531,7 @@ export default function PaymentManagementPage() {
               onChange={(e) => {
                 // For deadline approaching filter, we'll use the status filter as well
                 if (e.target.value === 'approaching') {
-                  setStatusFilter('PENDING');
+                  setStatusFilter('pending');
                   // We'll handle this in the filter logic
                 } else {
                   setStatusFilter('all');
@@ -1729,7 +1729,7 @@ export default function PaymentManagementPage() {
                           >
                             {isSelectedForExport ? 'Deselect Export' : 'Select for Export'}
                           </button>
-                          {payment.status === 'PENDING' && (
+                          {payment.status === 'pending' && (
                             <button
                               onClick={() => alert(`Marking payment ${payment.payment_id || payment.id} as paid`)}
                               className="text-green-600 hover:text-green-900"
