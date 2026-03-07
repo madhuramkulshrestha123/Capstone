@@ -30,7 +30,7 @@ node run-migrations.js fix_job_cards_structure.sql
 node run-migrations.js add_marked_by_to_attendance.sql
 
 # Run the payment timestamps migration (adds paid_at, approved_at, approved_by columns)
-node run-migrations.js add_payment_timestamps.sql
+node run-migrations.js database/migrations/add_payment_timestamps.sql
 
 echo "========================================"
 echo "✅ All migrations completed successfully!"
