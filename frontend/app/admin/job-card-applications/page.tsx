@@ -313,10 +313,10 @@ export default function AdminJobCardApplications() {
                         <p className="text-sm text-gray-600">{t('submittedOn')}</p>
                         <p className="font-medium">{new Date(selectedApplication.createdAt).toLocaleString()}</p>
                       </div>
-                      {selectedApplication.jobCardNumber && (
+                      {(selectedApplication.jobCardNumber || selectedApplication.jobCardId) && (
                         <div>
                           <p className="text-sm text-gray-600">{t('jobCardNumber')}</p>
-                          <p className="font-medium">{selectedApplication.jobCardNumber}</p>
+                          <p className="font-medium">{selectedApplication.jobCardNumber || selectedApplication.jobCardId || 'N/A'}</p>
                         </div>
                       )}
                     </div>

@@ -44,6 +44,15 @@ export class JobCardApplicationService {
       throw new AppError('Application not found', 404);
     }
 
+    // Fetch job card number if job_card_id exists
+    let jobCardNumber = null;
+    if (application.job_card_id) {
+      const jobCard = await this.jobCardModel.findByAadhaarNumber(application.aadhaar_number);
+      if (jobCard) {
+        jobCardNumber = jobCard.job_card_number;
+      }
+    }
+
     return {
       trackingId: application.tracking_id,
       status: application.status,
@@ -63,6 +72,7 @@ export class JobCardApplicationService {
       district: application.district,
       pincode: application.pincode,
       jobCardId: application.job_card_id,
+      jobCardNumber: jobCardNumber,
       applicants: application.applicants,
       imageUrl: application.image_url,
       createdAt: application.created_at,
