@@ -27,7 +27,7 @@ export class PaymentModel {
       project_id: payment.project_id,
       approved_by: payment.approved_by,
       approved_at: payment.approved_at,
-      paid_at: payment.paid_at,
+      paid_at: payment.payment_date,
       created_at: payment.created_at,
       updated_at: payment.updated_at,
       amount: parseFloat(payment.amount),
@@ -47,7 +47,7 @@ export class PaymentModel {
       project_id: payment.project_id,
       approved_by: payment.approved_by,
       approved_at: payment.approved_at,
-      paid_at: payment.paid_at,
+      paid_at: payment.payment_date,
       created_at: payment.created_at,
       updated_at: payment.updated_at,
       amount: parseFloat(payment.amount),
@@ -75,7 +75,7 @@ export class PaymentModel {
       project_id: payment.project_id,
       approved_by: payment.approved_by,
       approved_at: payment.approved_at,
-      paid_at: payment.paid_at,
+      paid_at: payment.payment_date,
       created_at: payment.created_at,
       updated_at: payment.updated_at,
       amount: parseFloat(payment.amount),
@@ -103,7 +103,7 @@ export class PaymentModel {
       
       // Set paidAt timestamp when status is changed to PAID
       if (paymentData.status === 'PAID') {
-        updateFields.push(`paid_at = NOW()`);
+        updateFields.push(`payment_date = NOW()`);
       }
     }
     
@@ -139,7 +139,7 @@ export class PaymentModel {
       project_id: payment.project_id,
       approved_by: payment.approved_by,
       approved_at: payment.approved_at,
-      paid_at: payment.paid_at,
+      paid_at: payment.payment_date,
       created_at: payment.created_at,
       updated_at: payment.updated_at,
       amount: parseFloat(payment.amount),
@@ -181,7 +181,7 @@ export class PaymentModel {
       project_id: payment.project_id,
       approved_by: payment.approved_by,
       approved_at: payment.approved_at,
-      paid_at: payment.paid_at,
+      paid_at: payment.payment_date,
       created_at: payment.created_at,
       updated_at: payment.updated_at,
       amount: parseFloat(payment.amount),
@@ -201,7 +201,7 @@ export class PaymentModel {
       project_id: payment.project_id,
       approved_by: payment.approved_by,
       approved_at: payment.approved_at,
-      paid_at: payment.paid_at,
+      paid_at: payment.payment_date,
       created_at: payment.created_at,
       updated_at: payment.updated_at,
       amount: parseFloat(payment.amount),
