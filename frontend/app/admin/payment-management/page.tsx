@@ -219,7 +219,7 @@ export default function PaymentManagementPage() {
         const projectsData = projectsResponse.data || [];
 
         // Fetch attendances to calculate days worked
-        const attendanceResponse = await adminApi.get('/attendance');
+        const attendanceResponse = await adminApi.get('/attendances');
         const attendanceData = attendanceResponse.data || [];
 
         // Combine all data to create payment records with details

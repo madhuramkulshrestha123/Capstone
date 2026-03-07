@@ -51,7 +51,7 @@ export default function ProjectProgressPage() {
         setWorkers(workersResponse || []);
         
         // Fetch real attendance data for this project
-        const attendanceResponse = await adminApi.get(`/attendance/project/${projectId}/date-range?startDate=${dateRange.start}&endDate=${dateRange.end}`);
+        const attendanceResponse = await adminApi.get(`/attendances/project/${projectId}/date-range?startDate=${dateRange.start}&endDate=${dateRange.end}`);
         
         // Fetch all workers with details to get job card IDs
         const allWorkersResponse = await adminApi.get('/users/workers/details');

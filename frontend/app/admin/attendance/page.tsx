@@ -164,7 +164,7 @@ export default function AttendanceManagementPage() {
         setProjectWorkers(enhancedProjectWorkers);
         
         // Fetch attendance records
-        const attendanceResponse = await adminApi.get(`/attendance/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+        const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
         
         // Fetch user details to get supervisor names
         const usersResponse = await adminApi.get('/users');
@@ -200,7 +200,7 @@ export default function AttendanceManagementPage() {
       const response = await adminApi.get('/users/profile');
       const supervisorId = response.data.id;
       
-      await adminApi.post('/attendance', {
+      await adminApi.post('/attendances', {
         worker_id: workerId,
         project_id: selectedProject,
         date: date,
@@ -209,7 +209,7 @@ export default function AttendanceManagementPage() {
       });
       
       // Refresh attendance records with supervisor names
-      const attendanceResponse = await adminApi.get(`/attendance/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+      const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
       const usersResponse = await adminApi.get('/users');
       const users = usersResponse.data || [];
       
@@ -247,13 +247,13 @@ export default function AttendanceManagementPage() {
     
     try {
       const newStatus = selectedAttendance.status === 'PRESENT' ? 'ABSENT' : 'PRESENT'; // Already uppercase
-      await adminApi.patch(`/attendance/${selectedAttendance.id}`, {
+      await adminApi.patch(`/attendances/${selectedAttendance.id}`, {
         status: newStatus,
         edit_reason: editReason
       });
       
       // Refresh attendance records with supervisor names
-      const attendanceResponse = await adminApi.get(`/attendance/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+      const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
       const usersResponse = await adminApi.get('/users');
       const users = usersResponse.data || [];
       
