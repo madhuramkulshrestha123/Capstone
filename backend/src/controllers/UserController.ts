@@ -637,8 +637,21 @@ export class UserController {
       // Get user model instance
       const userModel = this.userService.getUserModel();
       
-      // First, find the job card by job card ID
-      const jobCard = await userModel.getJobCardById(jobCardId);
+      // First, find the job card by job card NUMBER or ID
+      let jobCard;
+      try {
+        // First try to find by job_card_number (the human-readable ID)
+        jobCard = await userModel.getJobCardByNumber(jobCardId);
+        
+        // If not found, try by job_card_id (UUID) for backward compatibility
+        if (!jobCard) {
+          jobCard = await userModel.getJobCardById(jobCardId);
+        }
+      } catch (error) {
+        // If error occurs (e.g., invalid UUID format), try by number only
+        jobCard = await userModel.getJobCardByNumber(jobCardId);
+      }
+      
       if (!jobCard) {
         res.status(404).json({
           success: false,
@@ -691,11 +704,11 @@ export class UserController {
           totalAmount = latestProject.wage_per_worker || 374;
           currentStatus = 'assigned';
           
-          // Calculate payment deadline (15 days from project assignment date)
-          if (latestProject.allocated_at) {
-            const assignedDate = new Date(latestProject.allocated_at);
-            assignedDate.setDate(assignedDate.getDate() + 15);
-            paymentDeadline = assignedDate.toISOString().split('T')[0];
+          // Calculate payment deadline (15 days from project END date, not allocation date)
+          if (latestProject.end_date) {
+            const endDate = new Date(latestProject.end_date);
+            endDate.setDate(endDate.getDate() + 15);
+            paymentDeadline = endDate.toISOString().split('T')[0];
           }
         }
       }
@@ -706,6 +719,7 @@ export class UserController {
         name: user.name,
         aadhaar_number: user.aadhaar_number,
         job_card_id: jobCard.job_card_id,
+        job_card_number: jobCard.job_card_number,
         current_status: currentStatus,
         work_history: workHistory,
         total_amount: totalAmount,
@@ -755,8 +769,21 @@ export class UserController {
       // Get user model instance
       const userModel = this.userService.getUserModel();
       
-      // Find job card by job card ID
-      const jobCard = await userModel.getJobCardById(jobCardNumber);
+      // Find job card by job card NUMBER (human-readable format like FNJP739927)
+      let jobCard;
+      try {
+        // First try to find by job_card_number (the human-readable ID)
+        jobCard = await userModel.getJobCardByNumber(jobCardNumber);
+        
+        // If not found, try by job_card_id (UUID) for backward compatibility
+        if (!jobCard) {
+          jobCard = await userModel.getJobCardById(jobCardNumber);
+        }
+      } catch (error) {
+        // If error occurs (e.g., invalid UUID format), try by number only
+        jobCard = await userModel.getJobCardByNumber(jobCardNumber);
+      }
+      
       if (!jobCard) {
         res.status(404).json({
           success: false,
@@ -808,11 +835,11 @@ export class UserController {
           totalAmount = latestProject.wage_per_worker || 374;
           currentStatus = 'assigned';
           
-          // Calculate payment deadline (15 days from project assignment date)
-          if (latestProject.allocated_at) {
-            const assignedDate = new Date(latestProject.allocated_at);
-            assignedDate.setDate(assignedDate.getDate() + 15);
-            paymentDeadline = assignedDate.toISOString().split('T')[0];
+          // Calculate payment deadline (15 days from project END date, not allocation date)
+          if (latestProject.end_date) {
+            const endDate = new Date(latestProject.end_date);
+            endDate.setDate(endDate.getDate() + 15);
+            paymentDeadline = endDate.toISOString().split('T')[0];
           }
         }
       }
@@ -824,6 +851,7 @@ export class UserController {
         aadhaar_number: user.aadhaar_number,
         phone_number: user.phone_number,
         job_card_id: jobCard.job_card_id,
+        job_card_number: jobCard.job_card_number,
         head_of_household_name: jobCard.head_of_household_name,
         father_or_husband_name: jobCard.father_or_husband_name,
         category: jobCard.category,
@@ -862,8 +890,21 @@ export class UserController {
       // Get user model instance
       const userModel = this.userService.getUserModel();
       
-      // First, find the job card by job card ID
-      const jobCard = await userModel.getJobCardById(jobCardId);
+      // First, find the job card by job card NUMBER or ID
+      let jobCard;
+      try {
+        // First try to find by job_card_number (the human-readable ID)
+        jobCard = await userModel.getJobCardByNumber(jobCardId);
+        
+        // If not found, try by job_card_id (UUID) for backward compatibility
+        if (!jobCard) {
+          jobCard = await userModel.getJobCardById(jobCardId);
+        }
+      } catch (error) {
+        // If error occurs (e.g., invalid UUID format), try by number only
+        jobCard = await userModel.getJobCardByNumber(jobCardId);
+      }
+      
       if (!jobCard) {
         res.status(404).json({
           success: false,

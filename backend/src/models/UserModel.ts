@@ -400,6 +400,16 @@ export class UserModel {
     return result.rows.length > 0 ? result.rows[0] : null;
   }
 
+  // Method to get job card by job card NUMBER (human-readable format)
+  async getJobCardByNumber(jobCardNumber: string): Promise<any> {
+    const result = await this.db.query(
+      'SELECT * FROM job_cards WHERE job_card_number = $1 LIMIT 1',
+      [jobCardNumber]
+    );
+    
+    return result.rows.length > 0 ? result.rows[0] : null;
+  }
+
   // Method to get work history by user ID
   async getWorkHistoryByUserId(userId: string): Promise<any[]> {
     const result = await this.db.query(
