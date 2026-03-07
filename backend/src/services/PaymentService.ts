@@ -169,7 +169,7 @@ export class PaymentService {
     // Group attendance by worker_id to calculate days worked per worker
     const attendanceByWorker: Record<string, any[]> = {};
     attendanceRecords.forEach(record => {
-      if (record && record.status === 'PRESENT') {
+      if (record && record.status?.toUpperCase() === 'PRESENT') {
         const workerId = record.worker_id;
         if (!attendanceByWorker[workerId]) {
           attendanceByWorker[workerId] = [];
