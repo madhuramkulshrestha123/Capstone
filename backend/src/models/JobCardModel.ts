@@ -12,9 +12,10 @@ function generateJobCardNumber(): string {
     result += letters.charAt(Math.floor(Math.random() * letters.length));
   }
   
-  // Generate 6 random digits (ensure uniqueness with timestamp)
-  const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
-  result += timestamp;
+  // Generate 6 random digits
+  for (let i = 0; i < 6; i++) {
+    result += Math.floor(Math.random() * 10);
+  }
   
   return result;
 }
@@ -164,10 +165,14 @@ export class JobCardModel {
         if (error.code === '23505') {
           const retryLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
           let retryJobCardNumber = '';
+          // Generate 4 random uppercase letters
           for (let i = 0; i < 4; i++) {
             retryJobCardNumber += retryLetters.charAt(Math.floor(Math.random() * retryLetters.length));
           }
-          retryJobCardNumber += (Date.now() + Math.floor(Math.random() * 100000)).toString().slice(-6);
+          // Generate 6 random digits
+          for (let i = 0; i < 6; i++) {
+            retryJobCardNumber += Math.floor(Math.random() * 10);
+          }
           
           const retryResult = await this.db.query(
             `INSERT INTO job_cards (
