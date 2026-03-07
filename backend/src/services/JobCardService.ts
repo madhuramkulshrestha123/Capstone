@@ -17,7 +17,7 @@ export class JobCardService {
     this.cloudinaryService = new CloudinaryService();
   }
 
-  async registerJobCard(registrationData: JobCardRegistrationRequest, imageBuffer?: Buffer): Promise<{ userId: string; jobCardId: string; message: string }> {
+  async registerJobCard(registrationData: JobCardRegistrationRequest, imageBuffer?: Buffer): Promise<{ userId: string; jobCardId: string; jobCardNumber: string; message: string }> {
     // Validate Aadhaar number (simplified validation)
     if (!this.isValidAadhaar(registrationData.aadhaarNumber)) {
       throw new AppError('Invalid Aadhaar number', 400);
@@ -106,6 +106,7 @@ export class JobCardService {
     return {
       userId: user.user_id,
       jobCardId: jobCard.job_card_id,
+      jobCardNumber: jobCard.job_card_number,
       message: 'Job card registered successfully',
     };
   }

@@ -163,6 +163,7 @@ export interface JobCardRegistrationRequest {
 export interface JobCardRegistrationResponse {
   userId: number;
   jobCardId: string;
+  jobCardNumber: string;
   message: string;
 }
 
