@@ -51,7 +51,7 @@ export default function ProjectProgressPage() {
         setWorkers(workersResponse || []);
         
         // Fetch real attendance data for this project
-        const attendanceResponse = await adminApi.get(`/attendances/project/${projectId}/date-range?startDate=${dateRange.start}&endDate=${dateRange.end}`);
+        const attendanceResponse = await adminApi.get(`/attendance/project/${projectId}/date-range?startDate=${dateRange.start}&endDate=${dateRange.end}`);
         
         // Fetch all workers with details to get job card IDs
         const allWorkersResponse = await adminApi.get('/users/workers/details');
@@ -68,9 +68,9 @@ export default function ProjectProgressPage() {
             attendanceByDate[date] = { present: 0, absent: 0, records: [] };
           }
           
-          if (record.status === 'present') {
+          if (record.status === 'PRESENT') { // Changed to uppercase
             attendanceByDate[date].present += 1;
-          } else if (record.status === 'absent') {
+          } else if (record.status === 'ABSENT') { // Changed to uppercase
             attendanceByDate[date].absent += 1;
           }
           
@@ -150,7 +150,8 @@ export default function ProjectProgressPage() {
         endDate: dateRange.end
       });
       
-      alert(`${response.message || response.data?.message || `Successfully generated ${response.data?.length || 0} payment records`}. ${t('refreshPaymentManagement')}`);
+      const generatedCount = response.data?.length || 0;
+      alert(`Successfully generated ${generatedCount} payment records. ${t('refreshPaymentManagement')}`);
     } catch (err: any) {
       setError(err.message || 'Failed to generate payments');
       console.error('Error generating payments:', err);

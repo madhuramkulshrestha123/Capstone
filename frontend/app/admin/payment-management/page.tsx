@@ -232,7 +232,7 @@ export default function PaymentManagementPage() {
             (att: AttendanceRecord) => 
               att.worker_id === payment.worker_id && 
               att.project_id === payment.project_id &&
-              att.status === 'PRESENT'
+              att.status === 'PRESENT' // Changed to uppercase
           );
           
           const daysWorked = workerAttendances.length;

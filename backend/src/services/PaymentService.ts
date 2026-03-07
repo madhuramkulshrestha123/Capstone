@@ -186,13 +186,11 @@ export class PaymentService {
       const amount = daysWorked * (project.wage_per_worker || 0);
       
       if (amount > 0) {
-        // Check if a payment record already exists for this worker and project for the given date range
-        // We'll get all payments for this project and check if one already exists for this worker
-        // with similar amount that corresponds to the days worked in the given date range
+        // Check if a payment record already exists for this worker and project
         const existingPaymentsForProject = await this.paymentModel.findByProjectId(projectId, 1000, 0);
         const existingPaymentForWorkerInProject = existingPaymentsForProject.some(payment => 
           payment.worker_id === workerId &&
-          payment.amount === amount // Match the exact amount which should correspond to days worked * wage
+          payment.project_id === projectId
         );
         
         if (!existingPaymentForWorkerInProject) {

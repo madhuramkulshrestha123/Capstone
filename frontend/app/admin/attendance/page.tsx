@@ -27,7 +27,7 @@ interface AttendanceRecord {
   worker_id: string;
   project_id: string;
   date: string;
-  status: 'present' | 'absent' | 'half_day';
+  status: 'PRESENT' | 'ABSENT' | 'LEAVE'; // Changed to match backend enum
   marked_by: string;
   created_at: string;
   updated_at: string;
@@ -65,8 +65,8 @@ export default function AttendanceManagementPage() {
   
   // Summary statistics
   const summaryStats = useMemo(() => {
-    const presentCount = attendanceRecords.filter(a => a.status === 'present').length;
-    const absentCount = attendanceRecords.filter(a => a.status === 'absent').length;
+    const presentCount = attendanceRecords.filter(a => a.status === 'PRESENT').length;
+    const absentCount = attendanceRecords.filter(a => a.status === 'ABSENT').length;
     const totalCount = attendanceRecords.length;
     const attendancePercentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
     
@@ -164,7 +164,7 @@ export default function AttendanceManagementPage() {
         setProjectWorkers(enhancedProjectWorkers);
         
         // Fetch attendance records
-        const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+        const attendanceResponse = await adminApi.get(`/attendance/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
         
         // Fetch user details to get supervisor names
         const usersResponse = await adminApi.get('/users');
@@ -195,21 +195,21 @@ export default function AttendanceManagementPage() {
   }, [selectedProject, date]);
   
   // Mark attendance
-  const markAttendance = async (workerId: string, status: 'present' | 'absent') => {
+  const markAttendance = async (workerId: string, status: 'PRESENT' | 'ABSENT') => {
     try {
       const response = await adminApi.get('/users/profile');
       const supervisorId = response.data.id;
       
-      await adminApi.post('/attendances', {
+      await adminApi.post('/attendance', {
         worker_id: workerId,
         project_id: selectedProject,
         date: date,
-        status: status, // Status is already lowercase
+        status: status.toUpperCase(), // Convert to uppercase to match backend enum
         marked_by: supervisorId
       });
       
       // Refresh attendance records with supervisor names
-      const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+      const attendanceResponse = await adminApi.get(`/attendance/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
       const usersResponse = await adminApi.get('/users');
       const users = usersResponse.data || [];
       
@@ -246,14 +246,14 @@ export default function AttendanceManagementPage() {
     }
     
     try {
-      const newStatus = selectedAttendance.status === 'present' ? 'absent' : 'present';
-      await adminApi.patch(`/attendances/${selectedAttendance.id}`, {
+      const newStatus = selectedAttendance.status === 'PRESENT' ? 'ABSENT' : 'PRESENT'; // Already uppercase
+      await adminApi.patch(`/attendance/${selectedAttendance.id}`, {
         status: newStatus,
         edit_reason: editReason
       });
       
       // Refresh attendance records with supervisor names
-      const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+      const attendanceResponse = await adminApi.get(`/attendance/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
       const usersResponse = await adminApi.get('/users');
       const users = usersResponse.data || [];
       
@@ -562,17 +562,17 @@ export default function AttendanceManagementPage() {
   
   // Get status badge class
   const getStatusBadgeClass = (status: string | null) => {
-    if (status === 'present') return 'bg-green-100 text-green-800';
-    if (status === 'absent') return 'bg-red-100 text-red-800';
-    if (status === 'half_day') return 'bg-yellow-100 text-yellow-800';
+    if (status === 'PRESENT') return 'bg-green-100 text-green-800';
+    if (status === 'ABSENT') return 'bg-red-100 text-red-800';
+    if (status === 'LEAVE') return 'bg-yellow-100 text-yellow-800';
     return 'bg-gray-100 text-gray-800';
   };
   
   // Get status text
   const getStatusText = (status: string | null) => {
-    if (status === 'present') return t('present');
-    if (status === 'absent') return t('absent');
-    if (status === 'half_day') return 'Half Day';
+    if (status === 'PRESENT') return t('present');
+    if (status === 'ABSENT') return t('absent');
+    if (status === 'LEAVE') return 'Leave';
     return t('notMarked');
   };
   
@@ -887,13 +887,13 @@ Time
                               {!attendanceRecord ? (
                                 <div className="flex space-x-2">
                                   <button
-                                    onClick={() => markAttendance(worker.id, 'present')}
+                                    onClick={() => markAttendance(worker.id, 'PRESENT')}
                                     className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200"
                                   >
                                     {t('present')}
                                   </button>
                                   <button
-                                    onClick={() => markAttendance(worker.id, 'absent')}
+                                    onClick={() => markAttendance(worker.id, 'ABSENT')}
                                     className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200"
                                   >
                                     {t('absent')}
@@ -960,15 +960,15 @@ Edit
                 
                 <div>
                   <p className="text-sm text-gray-500">{t('currentStatus')}</p>
-                  <p className={`font-medium ${selectedAttendance.status === 'present' ? 'text-green-600' : 'text-red-600'}`}>
+                  <p className={`font-medium ${selectedAttendance.status === 'PRESENT' ? 'text-green-600' : 'text-red-600'}`}>
                     {getStatusText(selectedAttendance.status)}
                   </p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-gray-500">{t('newStatus')}</p>
-                  <p className={`font-medium ${selectedAttendance.status === 'present' ? 'text-red-600' : 'text-green-600'}`}>
-                    {getStatusText(selectedAttendance.status === 'present' ? 'absent' : 'present')}
+                  <p className={`font-medium ${selectedAttendance.status === 'PRESENT' ? 'text-red-600' : 'text-green-600'}`}>
+                    {getStatusText(selectedAttendance.status === 'PRESENT' ? 'ABSENT' : 'PRESENT')}
                   </p>
                 </div>
                 
