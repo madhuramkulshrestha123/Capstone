@@ -141,7 +141,7 @@ export class PaymentService {
 
   async markAsPaid(id: string): Promise<Payment> {
     const paymentData: UpdatePaymentRequest = {
-      status: 'PAID',
+      status: 'completed',
     };
 
     return this.updatePayment(id, paymentData);

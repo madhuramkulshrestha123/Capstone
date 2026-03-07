@@ -93,16 +93,16 @@ export class PaymentModel {
       values.push(paymentData.status);
       paramCount++;
       
-      // Set approvedAt timestamp when status is changed to APPROVED
-      if (paymentData.status === 'APPROVED' && adminId) {
+      // Set approvedAt timestamp when status is changed to processed
+      if (paymentData.status === 'processed' && adminId) {
         updateFields.push(`approved_by = $${paramCount}`);
         values.push(adminId);
         paramCount++;
         updateFields.push(`approved_at = NOW()`);
       }
       
-      // Set paidAt timestamp when status is changed to PAID
-      if (paymentData.status === 'PAID') {
+      // Set paidAt timestamp when status is changed to completed
+      if (paymentData.status === 'completed') {
         updateFields.push(`payment_date = NOW()`);
       }
     }

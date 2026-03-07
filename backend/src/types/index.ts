@@ -268,7 +268,7 @@ export interface Payment {
   worker_id: string; // Changed from number to string to match UUID
   project_id: string;
   amount: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID';
+  status: 'pending' | 'processed' | 'completed' | 'failed';
   approved_by?: string; // Changed from number to string to match UUID
   approved_at?: Date;
   paid_at?: Date;
@@ -283,7 +283,7 @@ export interface CreatePaymentRequest {
 }
 
 export interface UpdatePaymentRequest {
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PAID';
+  status: 'pending' | 'processed' | 'completed' | 'failed';
   approved_by?: string; // Changed from number to string to match UUID
 }
 
