@@ -332,7 +332,11 @@ export default function PaymentManagementPage() {
     if (selectedPayments.length === filteredPayments.length) {
       setSelectedPayments([]);
     } else {
-      setSelectedPayments(filteredPayments.map(p => p.id));
+      // Ensure we're using the correct ID field
+      const paymentIds = filteredPayments
+        .map(p => p.id || p.payment_id)
+        .filter(id => id !== undefined && id !== null);
+      setSelectedPayments(paymentIds);
     }
   };
 
@@ -343,8 +347,14 @@ export default function PaymentManagementPage() {
     try {
       setLoading(true);
       
+      console.log('Selected payments to mark as paid:', selectedPayments);
+      
       // Mark each selected payment as paid
       for (const paymentId of selectedPayments) {
+        if (!paymentId) {
+          console.error('Skipping undefined payment ID');
+          continue;
+        }
         await adminApi.patch(`/payments/${paymentId}/paid`, {});
       }
       
