@@ -15,7 +15,7 @@ export class AdminJobCardApplicationService {
     this.userModel = new UserModel();
   }
 
-  async approveApplication(trackingId: string): Promise<{ message: string; jobCardId: string; jobCardNumber: string }> {
+  async approveApplication(trackingId: string): Promise<{ message: string; jobCardId: string }> {
     // Find the application
     const application = await this.jobCardApplicationModel.findByTrackingId(trackingId);
     
@@ -31,14 +31,9 @@ export class AdminJobCardApplicationService {
     if (application.job_card_id) {
       // Job card already exists, just update the application status to approved
       await this.jobCardApplicationModel.updateStatus(trackingId, 'approved', application.job_card_id);
-      
-      // Fetch the job card to get the job card number
-      const existingJobCard = await this.jobCardModel.findById(application.job_card_id);
-      
       return {
         message: 'Application was already approved',
-        jobCardId: application.job_card_id,
-        jobCardNumber: existingJobCard?.job_card_number || 'N/A'
+        jobCardId: application.job_card_id
       };
     }
 
@@ -136,8 +131,7 @@ export class AdminJobCardApplicationService {
 
       return {
         message: 'Application approved successfully',
-        jobCardId: jobCard.job_card_id,
-        jobCardNumber: jobCard.job_card_number
+        jobCardId: jobCard.job_card_id
       };
     } catch (error: any) {
       console.error('Error creating job card:', {
@@ -154,8 +148,7 @@ export class AdminJobCardApplicationService {
           await this.jobCardApplicationModel.updateStatus(trackingId, 'approved', existingJobCard.job_card_id);
           return {
             message: 'Application approved successfully (job card already existed)',
-            jobCardId: existingJobCard.job_card_id,
-            jobCardNumber: existingJobCard.job_card_number
+            jobCardId: existingJobCard.job_card_id
           };
         }
       }
