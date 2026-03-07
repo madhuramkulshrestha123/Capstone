@@ -5,7 +5,8 @@ import { useTranslation } from '../../lib/useTranslation';
 import { adminApi, setAuthToken } from '../../lib/api';
 
 interface Payment {
-  id: string;
+  id?: string;  // For backward compatibility
+  payment_id?: string;  // Actual backend field name
   worker_id: string;
   project_id: string;
   amount: number;
@@ -50,6 +51,8 @@ interface AttendanceRecord {
 }
 
 interface PaymentWithDetails extends Payment {
+  id?: string;  // For backward compatibility
+  payment_id?: string;  // Actual backend field name
   worker_name: string;
   worker_aadhaar: string;
   worker_job_card: string;
@@ -320,6 +323,7 @@ export default function PaymentManagementPage() {
 
   // Toggle selection of a payment
   const togglePaymentSelection = (paymentId: string) => {
+    if (!paymentId) return;
     setSelectedPayments(prev => 
       prev.includes(paymentId) 
         ? prev.filter(id => id !== paymentId) 
@@ -332,10 +336,10 @@ export default function PaymentManagementPage() {
     if (selectedPayments.length === filteredPayments.length) {
       setSelectedPayments([]);
     } else {
-      // Ensure we're using the correct ID field
+      // Ensure we're using the correct ID field (payment_id from backend, fallback to id)
       const paymentIds = filteredPayments
-        .map(p => p.id || p.payment_id)
-        .filter(id => id !== undefined && id !== null);
+        .map(p => p.payment_id || p.id)
+        .filter(id => id !== undefined && id !== null) as string[];
       setSelectedPayments(paymentIds);
     }
   };
@@ -1658,12 +1662,17 @@ export default function PaymentManagementPage() {
                           style={{ cursor: 'pointer' }}
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
-                          <input
-                            type="checkbox"
-                            checked={selectedPayments.includes(payment.id)}
-                            onChange={() => togglePaymentSelection(payment.id)}
-                            className="rounded text-blue-600 focus:ring-blue-500"
-                          />
+                          {(() => {
+                            const paymentId = payment.payment_id || payment.id || '';
+                            return (
+                              <input
+                                type="checkbox"
+                                checked={selectedPayments.includes(paymentId)}
+                                onChange={() => togglePaymentSelection(paymentId)}
+                                className="rounded text-blue-600 focus:ring-blue-500"
+                              />
+                            );
+                          })()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{payment.worker_name}</div>
@@ -1708,7 +1717,9 @@ export default function PaymentManagementPage() {
                           <button
                             onClick={() => {
                               // Toggle selection - if same payment is clicked again, deselect it
-                              if (selectedPayment && selectedPayment.id === payment.id) {
+                              const currentId = payment.payment_id || payment.id;
+                              const selectedId = selectedPayment?.payment_id || selectedPayment?.id;
+                              if (currentId && selectedId === currentId) {
                                 setSelectedPayment(null);
                               } else {
                                 setSelectedPayment(payment);
@@ -1720,7 +1731,7 @@ export default function PaymentManagementPage() {
                           </button>
                           {payment.status === 'PENDING' && (
                             <button
-                              onClick={() => alert(`Marking payment ${payment.id} as paid`)}
+                              onClick={() => alert(`Marking payment ${payment.payment_id || payment.id} as paid`)}
                               className="text-green-600 hover:text-green-900"
                             >
                               {t('markPaid')}
