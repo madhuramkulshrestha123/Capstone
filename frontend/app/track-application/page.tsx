@@ -177,13 +177,13 @@ export default function TrackApplicationPage() {
       }
     }
     
-    // Job Card ID (if available)
+    // Job Card Number (if available)
     currentY += lineHeight;
-    if (applicationData.jobCardId) {
+    if (applicationData.jobCardNumber || applicationData.jobCardId) {
       doc.setFont('helvetica', 'bold');
-      doc.text('Job Card ID:', labelX, currentY);
+      doc.text('Job Card Number:', labelX, currentY);
       doc.setFont('helvetica', 'normal');
-      doc.text(applicationData.jobCardId, valueX, currentY);
+      doc.text(applicationData.jobCardNumber || applicationData.jobCardId || '', valueX, currentY);
     }
     
     // Approved On (instead of submitted)
@@ -391,10 +391,10 @@ export default function TrackApplicationPage() {
                     <span className="text-gray-900">{applicationData.district}</span>
                   </div>
                   
-                  {applicationData.jobCardId && (
+                  {(applicationData.jobCardNumber || applicationData.jobCardId) && (
                     <div className="flex justify-between">
-                      <span className="font-medium text-gray-700">{t('jobCardId')}:</span>
-                      <span className="text-gray-900">{applicationData.jobCardId}</span>
+                      <span className="font-medium text-gray-700">{t('jobCardNumber')}:</span>
+                      <span className="text-gray-900">{applicationData.jobCardNumber || applicationData.jobCardId}</span>
                     </div>
                   )}
                   
@@ -447,7 +447,7 @@ export default function TrackApplicationPage() {
                   )}
                 </div>
                 
-                {applicationData.status === 'approved' && applicationData.jobCardId && (
+                {(applicationData.status === 'approved' || applicationData.status === 'Identity Verified (Job Card ID generated)') && (applicationData.jobCardNumber || applicationData.jobCardId) && (
                   <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <h3 className="font-semibold text-blue-800">{t('registrationSuccessful')}</h3>
                     <p className="text-blue-700 mt-1">
