@@ -22,6 +22,7 @@ export default function AuthPage() {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
+  const [otpMethod, setOtpMethod] = useState<'email' | 'mobile' | null>(null); // Track which OTP method was used
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -45,6 +46,7 @@ export default function AuthPage() {
     setOtp('');
     setOtpSent(false);
     setOtpVerified(false);
+    setOtpMethod(null);
     setError('');
     setSuccess('');
   };
@@ -74,13 +76,23 @@ export default function AuthPage() {
 
       // Step 1: Send OTP
       if (!otpSent) {
+        // Determine which identifier to use based on OTP method
+        const identifier = otpMethod === 'email' ? email : phoneNumber;
+        const identifierType = otpMethod === 'email' ? 'email' : 'phone';
+        
+        if (!identifier) {
+          setError(`Please provide your ${identifierType === 'email' ? 'email' : 'mobile number'}`);
+          setLoading(false);
+          return;
+        }
+        
         const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/register/send-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            email,
+            [identifierType]: identifier,
             captchaToken: '' // Send empty captchaToken to satisfy backend validation
           }),
         });
@@ -89,7 +101,7 @@ export default function AuthPage() {
 
         if (response.ok) {
           setOtpSent(true);
-          setSuccess('OTP sent to your email');
+          setSuccess(`OTP sent to your ${identifierType === 'email' ? 'email' : 'mobile number'}`);
         } else {
           setError(data.error?.message || 'Failed to send OTP');
         }
@@ -98,13 +110,16 @@ export default function AuthPage() {
 
       // Step 2: Verify OTP
       if (otpSent && !otpVerified) {
+        const identifier = otpMethod === 'email' ? email : phoneNumber;
+        const identifierType = otpMethod === 'email' ? 'email' : 'phone';
+        
         const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/register/verify-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            email,
+            [identifierType]: identifier,
             otp,
             captchaToken: '' // Send empty captchaToken to satisfy backend validation
           }),
@@ -292,6 +307,10 @@ export default function AuthPage() {
           setLoading(false);
           return;
         }
+        
+        // Determine which identifier to use based on OTP method
+        const identifier = otpMethod === 'email' ? employmentId : phoneNumber;
+        const identifierType = otpMethod === 'email' ? 'email' : 'phone';
 
         const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/login/send-otp', {
           method: 'POST',
@@ -299,7 +318,7 @@ export default function AuthPage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            email: employmentId, // Using employment ID as email for admin/supervisor
+            [identifierType]: identifier,
             password,
             captchaToken: '' // Send empty captchaToken to satisfy backend validation
           }),
@@ -309,7 +328,7 @@ export default function AuthPage() {
 
         if (response.ok) {
           setOtpSent(true);
-          setSuccess('OTP sent to your email');
+          setSuccess(`OTP sent to your ${identifierType === 'email' ? 'email' : 'mobile number'}`);
         } else {
           setError(data.error?.message || 'Failed to send OTP');
         }
@@ -318,13 +337,16 @@ export default function AuthPage() {
 
       // Step 2: Verify OTP for login
       if (otpSent) {
+        const identifier = otpMethod === 'email' ? employmentId : phoneNumber;
+        const identifierType = otpMethod === 'email' ? 'email' : 'phone';
+        
         const response = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/login/verify-otp', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            email: employmentId,
+            [identifierType]: identifier,
             otp,
             captchaToken: null // Explicitly send null captcha token
           }),
@@ -614,6 +636,45 @@ export default function AuthPage() {
                       placeholder="Enter 6-digit pincode"
                     />
                   </div>
+                  
+                  {/* OTP Method Selection for Registration */}
+                  {!otpSent && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Send OTP via:
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setOtpMethod('email')}
+                          className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center ${
+                            otpMethod === 'email'
+                              ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                          </svg>
+                          Email
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setOtpMethod('mobile')}
+                          className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center ${
+                            otpMethod === 'mobile'
+                              ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                          </svg>
+                          Mobile
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
               
@@ -696,6 +757,45 @@ export default function AuthPage() {
                       />
                     </div>
                   )}
+                  
+                  {/* OTP Method Selection for Admin Login */}
+                  {userType === 'admin' && !otpSent && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Send OTP via:
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setOtpMethod('email')}
+                          className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center ${
+                            otpMethod === 'email'
+                              ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                          </svg>
+                          Email
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setOtpMethod('mobile')}
+                          className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center ${
+                            otpMethod === 'mobile'
+                              ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                          </svg>
+                          Mobile
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
               
@@ -724,8 +824,8 @@ export default function AuthPage() {
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-50"
+                disabled={loading || (userType === 'admin' && !otpSent && !otpMethod)}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <span className="flex items-center">
@@ -740,10 +840,12 @@ export default function AuthPage() {
                     {isLogin 
                       ? (userType === 'worker' 
                           ? 'Login as Worker' 
-                          : (otpSent ? 'Verify OTP & Login' : 'Send OTP'))
+                          : (otpSent 
+                              ? 'Verify OTP & Login' 
+                              : (otpMethod ? `Send OTP via ${otpMethod === 'email' ? 'Email' : 'Mobile'}` : 'Select OTP Method')))
                       : (otpSent 
                           ? (otpVerified ? 'Complete Registration' : 'Verify OTP') 
-                          : 'Send OTP')}
+                          : (otpMethod ? `Send OTP via ${otpMethod === 'email' ? 'Email' : 'Mobile'}` : 'Select OTP Method'))}
                   </>
                 )}
               </button>
