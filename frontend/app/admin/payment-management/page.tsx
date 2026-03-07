@@ -236,7 +236,7 @@ export default function PaymentManagementPage() {
           );
           
           const daysWorked = workerAttendances.length;
-          const wagePerDay = project?.wage_per_worker ? project.wage_per_worker : 0;
+          const wagePerDay = project?.wage_per_worker ? Number(project.wage_per_worker) : 0;
 
           return {
             ...payment,
@@ -375,7 +375,7 @@ export default function PaymentManagementPage() {
         );
         
         const daysWorked = workerAttendances.length;
-        const wagePerDay = project?.wage_per_worker ? project.wage_per_worker : 0;
+        const wagePerDay = project?.wage_per_worker ? Number(project.wage_per_worker) : 0;
 
         return {
           ...payment,
