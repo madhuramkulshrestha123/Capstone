@@ -90,9 +90,15 @@ export const updateProfile = async (formData: any) => {
 // Attendance endpoints
 export const getMyAttendances = async (page = 1, limit = 10, workerId?: string) => {
   // For workers without token, pass worker_id in query params
-  const response = await api.get('/attendances/my/attendances', {
-    params: { page, limit, worker_id: workerId },
-  });
+  const params: any = { page, limit };
+  
+  if (workerId) {
+    params.worker_id = workerId;
+  }
+  
+  console.log('Making attendance request with params:', params);
+  
+  const response = await api.get('/attendances/my/attendances', { params });
   return response.data;
 };
 
