@@ -221,92 +221,137 @@ export default function WorkerDashboard() {
     <div className={`min-h-screen ${isDarkTheme ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Sticky Top Navigation Bar */}
       <nav className={`sticky top-0 z-50 ${isDarkTheme ? 'bg-gray-900/95 backdrop-blur-lg border-b border-gray-800' : 'bg-white/95 backdrop-blur-lg border-b border-gray-200'} shadow-lg`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Left - Logo */}
-            <div className="flex items-center flex-shrink-0">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${isDarkTheme ? 'bg-blue-600' : 'bg-blue-500'}`}>
+            {/* Left Section - Logo & Primary Navigation */}
+            <div className="flex items-center flex-1 min-w-0">
+              {/* Logo */}
+              <div className="flex items-center flex-shrink-0 space-x-2 sm:space-x-3">
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${isDarkTheme ? 'bg-blue-600' : 'bg-blue-500'} shadow-md`}>
                   <span className="text-white font-bold text-base sm:text-xl">S</span>
                 </div>
                 <span className={`text-base sm:text-xl font-bold ${isDarkTheme ? 'text-white' : 'text-gray-900'} hidden xs:block`}>
                   Smart Rozgar
                 </span>
               </div>
+
+              {/* Primary Navigation - Left Aligned */}
+              <div className="hidden lg:flex items-center space-x-1 ml-6 xl:ml-8">
+                <button 
+                  onClick={() => window.location.href = '/worker/work-history'}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
+                    isDarkTheme 
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-800/50' 
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50'
+                  }`}
+                >
+                  Work History
+                </button>
+                <button 
+                  onClick={() => window.location.href = '/worker/attendance'}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
+                    isDarkTheme 
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-800/50' 
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50'
+                  }`}
+                >
+                  Attendance
+                </button>
+                <button 
+                  onClick={() => window.location.href = '/worker/payments'}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
+                    isDarkTheme 
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-800/50' 
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50'
+                  }`}
+                >
+                  Payments
+                </button>
+                <button 
+                  onClick={() => window.location.href = '/raise-complaint'}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
+                    isDarkTheme 
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-800/50' 
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50'
+                  }`}
+                >
+                  Complaints
+                </button>
+              </div>
             </div>
 
-            {/* Center - Primary Navigation (Hidden on mobile) */}
-            <div className="hidden lg:flex items-center space-x-4 xl:space-x-8">
-              <button 
-                onClick={() => window.location.href = '/worker/work-history'}
-                className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${isDarkTheme ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                Work History
-              </button>
-              <button 
-                onClick={() => window.location.href = '/worker/attendance'}
-                className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${isDarkTheme ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                Attendance
-              </button>
-              <button 
-                onClick={() => window.location.href = '/worker/payments'}
-                className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${isDarkTheme ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                Payments
-              </button>
-              <button 
-                onClick={() => window.location.href = '/raise-complaint'}
-                className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base ${isDarkTheme ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                Complaints
-              </button>
-            </div>
-
-            {/* Right - Controls */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            {/* Right Section - Controls & Profile */}
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+              {/* Theme Toggle */}
               <button 
                 onClick={toggleTheme}
-                className={`p-2 rounded-lg transition-colors text-lg sm:text-base ${isDarkTheme ? 'text-yellow-400 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'}`}
+                className={`p-2 rounded-lg transition-all duration-200 text-base sm:text-lg hover:scale-110 ${
+                  isDarkTheme 
+                    ? 'text-yellow-400 hover:bg-gray-800/50 hover:shadow-lg' 
+                    : 'text-gray-600 hover:bg-gray-100/50 hover:shadow-lg'
+                }`}
                 title="Toggle Dark Mode"
               >
                 {isDarkTheme ? '☀️' : '🌙'}
               </button>
               
+              {/* Language Toggle - Hidden on small mobile */}
               <button 
                 onClick={toggleLanguage}
-                className={`hidden sm:block px-3 py-1 rounded-lg text-sm font-medium transition-colors ${isDarkTheme ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                className={`hidden sm:flex px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${
+                  isDarkTheme 
+                    ? 'text-gray-300 hover:text-white hover:bg-gray-800/50' 
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50'
+                }`}
               >
                 {language === 'en' ? 'हिंदी' : 'English'}
               </button>
               
+              {/* Profile Dropdown */}
               <div className="relative">
                 <button 
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 rounded-lg transition-colors ${isDarkTheme ? 'text-gray-300 hover:bg-gray-800' : 'text-gray-600 hover:bg-gray-100'}`}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 ${
+                    isDarkTheme 
+                      ? 'text-gray-300 hover:bg-gray-800/50 hover:shadow-lg' 
+                      : 'text-gray-700 hover:bg-gray-100/50 hover:shadow-lg'
+                  }`}
                 >
-                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${isDarkTheme ? 'bg-blue-600' : 'bg-blue-500'}`}>
-                    <span className="text-white text-xs sm:text-sm font-medium">👤</span>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDarkTheme ? 'bg-blue-600 shadow-md' : 'bg-blue-500 shadow-md'}`}>
+                    <span className="text-white text-sm font-medium">👤</span>
                   </div>
-                  <span className="hidden sm:inline text-sm">Profile</span>
-                  <svg className={`w-3 h-3 sm:w-4 sm:h-4 transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="hidden sm:inline text-sm font-medium">Profile</span>
+                  <svg className={`w-3.5 h-3.5 transform transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 
-                {/* Profile Dropdown */}
+                {/* Profile Dropdown Menu */}
                 {isProfileDropdownOpen && (
                   <div 
-                    className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 profile-dropdown-container ${isDarkTheme ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}
+                    className={`absolute right-0 mt-2 w-52 rounded-xl shadow-2xl z-50 profile-dropdown-container overflow-hidden ${
+                      isDarkTheme ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+                    }`}
                   >
                     <div className="py-1">
+                      <div className={`px-4 py-3 border-b ${isDarkTheme ? 'border-gray-700 bg-gray-800/50' : 'border-gray-100 bg-gray-50/50'}`}>
+                        <p className={`text-sm font-medium truncate ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>
+                          {workerData?.name || 'Worker'}
+                        </p>
+                        <p className={`text-xs truncate mt-0.5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {workerData?.job_card_number || workerData?.job_card_id || 'N/A'}
+                        </p>
+                      </div>
                       <button 
                         onClick={() => {
                           window.location.href = '/worker/profile';
                           setIsProfileDropdownOpen(false);
                         }}
-                        className={`block w-full text-left px-4 py-2 text-sm transition-colors ${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                          isDarkTheme ? 'text-gray-300 hover:bg-gray-700/50' : 'text-gray-700 hover:bg-gray-50'
+                        }`}
                       >
+                        <span className="text-base">👤</span>
                         View Profile
                       </button>
                       <button 
@@ -314,8 +359,11 @@ export default function WorkerDashboard() {
                           handleLogout();
                           setIsProfileDropdownOpen(false);
                         }}
-                        className={`block w-full text-left px-4 py-2 text-sm transition-colors ${isDarkTheme ? 'text-red-400 hover:bg-gray-700' : 'text-red-600 hover:bg-gray-100'}`}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                          isDarkTheme ? 'text-red-400 hover:bg-red-900/20' : 'text-red-600 hover:bg-red-50'
+                        }`}
                       >
+                        <span className="text-base">🚪</span>
                         Logout
                       </button>
                     </div>
