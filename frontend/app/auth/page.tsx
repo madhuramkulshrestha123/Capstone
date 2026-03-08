@@ -649,9 +649,10 @@ export default function AuthPage() {
                           onClick={() => setOtpMethod('email')}
                           className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center ${
                             otpMethod === 'email'
-                              ? 'border-indigo-600 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-400'
-                              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600 dark:text-gray-300'
+                              ? 'border-indigo-600 bg-indigo-50 text-black dark:bg-indigo-900/30 dark:border-indigo-400'
+                              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
                           } [color-scheme:light]`}
+                          style={{ color: '#000000' }}
                         >
                           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
@@ -663,9 +664,10 @@ export default function AuthPage() {
                           onClick={() => setOtpMethod('mobile')}
                           className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center ${
                             otpMethod === 'mobile'
-                              ? 'border-indigo-600 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-400'
-                              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600 dark:text-gray-300'
+                              ? 'border-indigo-600 bg-indigo-50 text-black dark:bg-indigo-900/30 dark:border-indigo-400'
+                              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
                           } [color-scheme:light]`}
+                          style={{ color: '#000000' }}
                         >
                           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
@@ -770,9 +772,10 @@ export default function AuthPage() {
                           onClick={() => setOtpMethod('email')}
                           className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center ${
                             otpMethod === 'email'
-                              ? 'border-indigo-600 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-400'
-                              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600 dark:text-gray-300'
+                              ? 'border-indigo-600 bg-indigo-50 text-black dark:bg-indigo-900/30 dark:border-indigo-400'
+                              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
                           } [color-scheme:light]`}
+                          style={{ color: '#000000' }}
                         >
                           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
@@ -784,9 +787,10 @@ export default function AuthPage() {
                           onClick={() => setOtpMethod('mobile')}
                           className={`px-4 py-3 rounded-lg border-2 transition-all duration-200 flex items-center justify-center ${
                             otpMethod === 'mobile'
-                              ? 'border-indigo-600 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-400'
-                              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600 dark:text-gray-300'
+                              ? 'border-indigo-600 bg-indigo-50 text-black dark:bg-indigo-900/30 dark:border-indigo-400'
+                              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
                           } [color-scheme:light]`}
+                          style={{ color: '#000000' }}
                         >
                           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
