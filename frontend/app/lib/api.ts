@@ -479,9 +479,10 @@ export const adminApi = {
   },
   
   // Get my attendance records
-  getMyAttendance: async (page: number = 1, limit: number = 10) => {
+  getMyAttendance: async (page: number = 1, limit: number = 10, workerId?: string) => {
     try {
-      const response = await apiFetch(`/attendances/my/attendances?page=${page}&limit=${limit}`);
+      const url = `/attendances/my/attendances?page=${page}&limit=${limit}${workerId ? `&worker_id=${workerId}` : ''}`;
+      const response = await apiFetch(url);
       return response;
     } catch (error) {
       console.error('Error fetching attendance data:', error);

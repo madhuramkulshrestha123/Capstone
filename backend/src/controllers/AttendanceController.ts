@@ -136,13 +136,13 @@ export class AttendanceController {
 
   public getMyAttendances = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Get user ID from authenticated user (works for both admin and worker)
-      const userId = req.user?.user_id;
+      // Get user ID from authenticated user OR from query parameter
+      let userId = req.user?.user_id || req.query.worker_id as string;
       
       if (!userId) {
         res.status(401).json({
           success: false,
-          error: 'Authentication required'
+          error: 'Authentication required or worker_id must be provided'
         });
         return;
       }

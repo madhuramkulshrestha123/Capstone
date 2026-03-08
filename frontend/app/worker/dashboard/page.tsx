@@ -100,7 +100,7 @@ export default function WorkerDashboard() {
   const fetchAttendanceData = async (workerId: string) => {
     try {
       // Fetch attendance data from backend
-      const response = await adminApi.getMyAttendance(1, 100); // Get all records
+      const response = await adminApi.getMyAttendance(1, 100, workerId); // Pass worker ID
       
       // Transform the data to match our expected format
       const transformedData = response.data.map((record: any) => ({

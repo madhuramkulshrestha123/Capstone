@@ -32,7 +32,8 @@ router.put('/:id', requireAdmin, validateParams(idParamSchema), validateRequest(
 router.delete('/:id', requireAdmin, validateParams(idParamSchema), attendanceController.deleteAttendance);
 
 // Get my attendances (Supervisor/Worker - they can view their own attendances)
-router.get('/my/attendances', validateQuery(paginationSchema), attendanceController.getMyAttendances);
+// Note: This endpoint accepts worker_id as query parameter for unauthenticated worker access
+router.get('/my/attendances', attendanceController.getMyAttendances);
 
 // Get attendances by project (Admin only)
 router.get('/project/:projectId', requireAdmin, validateParams(projectIdParamSchema), validateQuery(paginationSchema), attendanceController.getAttendancesByProject);
