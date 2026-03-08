@@ -50,14 +50,23 @@ class App {
         // Allow requests with no origin (like mobile apps or Postman)
         if (!origin) return callback(null, true);
         
-        // Check if origin is in the allowed list
+        // Allow all origins in development mode
+        if (config.server.nodeEnv === 'development') {
+          callback(null, true);
+          return;
+        }
+        
+        // Check if origin is in the allowed list for production
         if (allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
           callback(new Error('Not allowed by CORS'));
         }
       },
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
       credentials: true,
+      optionsSuccessStatus: 200,
     }));
 
     // Rate limiting
