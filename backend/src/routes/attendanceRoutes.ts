@@ -13,7 +13,11 @@ import {
 const router = Router();
 const attendanceController = new AttendanceController();
 
-// All attendance routes require authentication
+// Public route for workers (no authentication required - uses worker_id query parameter)
+// Get my attendances (Supervisor/Worker - they can view their own attendances)
+router.get('/my/attendances', validateQuery(paginationSchema), attendanceController.getMyAttendances);
+
+// All other attendance routes require authentication
 router.use(authenticateToken);
 
 // Get all attendances (Admin only)
@@ -30,10 +34,6 @@ router.put('/:id', requireAdmin, validateParams(idParamSchema), validateRequest(
 
 // Delete attendance (Admin only)
 router.delete('/:id', requireAdmin, validateParams(idParamSchema), attendanceController.deleteAttendance);
-
-// Get my attendances (Supervisor/Worker - they can view their own attendances)
-// Note: This endpoint accepts worker_id as query parameter for unauthenticated worker access
-router.get('/my/attendances', attendanceController.getMyAttendances);
 
 // Get attendances by project (Admin only)
 router.get('/project/:projectId', requireAdmin, validateParams(projectIdParamSchema), validateQuery(paginationSchema), attendanceController.getAttendancesByProject);

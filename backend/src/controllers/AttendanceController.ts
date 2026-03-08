@@ -134,10 +134,11 @@ export class AttendanceController {
     }
   };
 
-  public getMyAttendances = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  public getMyAttendances = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Get user ID from authenticated user OR from query parameter
-      let userId = req.user?.user_id || req.query.worker_id as string;
+      const authReq = req as AuthenticatedRequest;
+      let userId = authReq.user?.user_id || req.query.worker_id as string;
       
       if (!userId) {
         res.status(401).json({
