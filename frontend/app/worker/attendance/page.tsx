@@ -455,7 +455,7 @@ export default function WorkerAttendance() {
                     isDarkTheme 
                       ? 'bg-gray-800 border-gray-700 text-white' 
                       : 'bg-white border-gray-300 text-gray-900'
-                  }`}
+                  } [color-scheme:${isDarkTheme ? 'dark' : 'light'}]`}
                 />
                 <input
                   type="date"
@@ -465,7 +465,7 @@ export default function WorkerAttendance() {
                     isDarkTheme 
                       ? 'bg-gray-800 border-gray-700 text-white' 
                       : 'bg-white border-gray-300 text-gray-900'
-                  }`}
+                  } [color-scheme:${isDarkTheme ? 'dark' : 'light'}]`}
                 />
               </div>
             </div>
@@ -479,7 +479,7 @@ export default function WorkerAttendance() {
                   isDarkTheme 
                     ? 'bg-gray-800 border-gray-700 text-white' 
                     : 'bg-white border-gray-300 text-gray-900'
-                }`}
+                } [color-scheme:${isDarkTheme ? 'dark' : 'light'}]`}
               >
                 <option value="">All Projects</option>
                 {uniqueProjects.map(projectId => {
@@ -503,7 +503,7 @@ export default function WorkerAttendance() {
                   isDarkTheme 
                     ? 'bg-gray-800 border-gray-700 text-white' 
                     : 'bg-white border-gray-300 text-gray-900'
-                }`}
+                } [color-scheme:${isDarkTheme ? 'dark' : 'light'}]`}
               />
             </div>
           </div>

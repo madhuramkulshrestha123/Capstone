@@ -58,3 +58,37 @@ input:focus, button:focus, a:focus {
   outline-offset: 2px;
   outline-width: 3px;
 }
+
+/* Prevent browser forced dark mode from breaking input visibility */
+input,
+textarea,
+select {
+  color-scheme: inherit;
+  --tw-text-opacity: 1;
+}
+
+/* Ensure light themed inputs always have visible text */
+.bg-white input,
+.bg-white textarea,
+.bg-white select,
+[class*="bg-white/"] input,
+[class*="bg-white/"] textarea,
+[class*="bg-white/"] select {
+  color: rgb(0 0 0 / var(--tw-text-opacity));
+  caret-color: rgb(0 0 0 / var(--tw-text-opacity));
+}
+
+/* Force placeholder visibility */
+input::placeholder,
+textarea::placeholder {
+  color: rgb(107 114 128 / 1);
+  opacity: 1;
+}
+
+/* Override browser dark mode for date inputs specifically */
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+  color-scheme: inherit;
+}
