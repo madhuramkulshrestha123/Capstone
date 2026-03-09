@@ -30,6 +30,7 @@ export default function PaymentDetails() {
     
     try {
       const data = JSON.parse(workerDataStr);
+      console.log('Worker data loaded:', data);
       setWorkerData(data);
       // Pre-fill bank details if available
       if (data.bank_details) {
