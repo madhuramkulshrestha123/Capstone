@@ -63,10 +63,14 @@ export default function AttendanceManagementPage() {
   const [selectedAttendance, setSelectedAttendance] = useState<AttendanceRecord | null>(null);
   const [editReason, setEditReason] = useState<string>('');
   
-  // Summary statistics
+  // Summary statistics - handle both uppercase and lowercase status values
   const summaryStats = useMemo(() => {
-    const presentCount = attendanceRecords.filter(a => a.status === 'PRESENT').length;
-    const absentCount = attendanceRecords.filter(a => a.status === 'ABSENT').length;
+    const presentCount = attendanceRecords.filter(a => 
+      a.status && a.status.toUpperCase() === 'PRESENT'
+    ).length;
+    const absentCount = attendanceRecords.filter(a => 
+      a.status && a.status.toUpperCase() === 'ABSENT'
+    ).length;
     const totalCount = attendanceRecords.length;
     const attendancePercentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
     
@@ -197,6 +201,8 @@ export default function AttendanceManagementPage() {
   // Mark attendance
   const markAttendance = async (workerId: string, status: 'PRESENT' | 'ABSENT') => {
     try {
+      console.log('Marking attendance:', { workerId, project_id: selectedProject, date, status });
+      
       const response = await adminApi.get('/users/profile');
       const supervisorId = response.data.id;
       
@@ -208,8 +214,12 @@ export default function AttendanceManagementPage() {
         marked_by: supervisorId
       });
       
+      console.log('Attendance marked successfully, refreshing data...');
+      
       // Refresh attendance records with supervisor names
       const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+      console.log('Fetched attendance records:', attendanceResponse.data);
+      
       const usersResponse = await adminApi.get('/users');
       const users = usersResponse.data || [];
       
@@ -222,6 +232,7 @@ export default function AttendanceManagementPage() {
         };
       });
       
+      console.log('Enhanced attendance records:', enhancedAttendanceRecords);
       setAttendanceRecords(enhancedAttendanceRecords);
       setSuccess(`Attendance marked as ${status}`);
       setTimeout(() => setSuccess(''), 3000);
@@ -246,7 +257,8 @@ export default function AttendanceManagementPage() {
     }
     
     try {
-      const newStatus = selectedAttendance.status === 'PRESENT' ? 'ABSENT' : 'PRESENT';
+      const currentStatusUpper = selectedAttendance.status?.toUpperCase();
+      const newStatus = currentStatusUpper === 'PRESENT' ? 'ABSENT' : 'PRESENT';
       await adminApi.patch(`/attendances/${selectedAttendance.id}`, {
         status: newStatus.toLowerCase(), // Convert to lowercase to match backend validation
         edit_reason: editReason
@@ -560,19 +572,25 @@ export default function AttendanceManagementPage() {
     }
   };
   
-  // Get status badge class
+  // Get status badge class - handle both uppercase and lowercase status values
   const getStatusBadgeClass = (status: string | null) => {
-    if (status === 'PRESENT') return 'bg-green-100 text-green-800';
-    if (status === 'ABSENT') return 'bg-red-100 text-red-800';
-    if (status === 'LEAVE') return 'bg-yellow-100 text-yellow-800';
+    if (!status) return 'bg-gray-100 text-gray-800';
+    
+    const upperStatus = status.toUpperCase();
+    if (upperStatus === 'PRESENT') return 'bg-green-100 text-green-800';
+    if (upperStatus === 'ABSENT') return 'bg-red-100 text-red-800';
+    if (upperStatus === 'LEAVE') return 'bg-yellow-100 text-yellow-800';
     return 'bg-gray-100 text-gray-800';
   };
   
-  // Get status text
+  // Get status text - handle both uppercase and lowercase status values
   const getStatusText = (status: string | null) => {
-    if (status === 'PRESENT') return t('present');
-    if (status === 'ABSENT') return t('absent');
-    if (status === 'LEAVE') return 'Leave';
+    if (!status) return t('notMarked');
+    
+    const upperStatus = status.toUpperCase();
+    if (upperStatus === 'PRESENT') return t('present');
+    if (upperStatus === 'ABSENT') return t('absent');
+    if (upperStatus === 'LEAVE') return 'Leave';
     return t('notMarked');
   };
   
