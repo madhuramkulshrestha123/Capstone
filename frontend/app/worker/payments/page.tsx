@@ -32,6 +32,7 @@ export default function PaymentDetails() {
       const data = JSON.parse(workerDataStr);
       console.log('Worker data loaded:', data);
       setWorkerData(data);
+      
       // Pre-fill bank details if available
       if (data.bank_details) {
         setBankDetails({
@@ -50,20 +51,25 @@ export default function PaymentDetails() {
     }
     
     setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchBankDetails = async (jobCardId: string) => {
     try {
+      console.log('Fetching bank details for job card ID:', jobCardId);
       // Fetch worker details from backend
       const response = await fetch(`https://capstone-backend-8k6x.onrender.com/api/v1/job-cards/${jobCardId}`);
+      console.log('Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('Backend response data:', data);
         if (data.data) {
           const updatedWorkerData = {
             ...workerData,
             bank_name: data.data.bank_name,
             account_number: data.data.account_number,
             ifsc_code: data.data.ifsc_code,
+            branch_name: data.data.branch_name,
             bank_details: {
               bank_name: data.data.bank_name,
               account_number: data.data.account_number,
@@ -71,7 +77,9 @@ export default function PaymentDetails() {
               branch_name: data.data.branch_name
             }
           };
+          console.log('Updated worker data:', updatedWorkerData);
           setWorkerData(updatedWorkerData);
+          localStorage.setItem('workerData', JSON.stringify(updatedWorkerData));
           setBankDetails({
             bankName: data.data.bank_name || '',
             accountNumber: data.data.account_number || '',
@@ -258,7 +266,8 @@ SUMMARY
           };
         }
         
-        monthlyData[monthKey].totalAmount += work.wage_per_worker || work.wage || 0;
+        const wage = work.wage_per_worker || work.wage || 0;
+        monthlyData[monthKey].totalAmount += wage;
         monthlyData[monthKey].projects += 1;
       }
     });
@@ -269,6 +278,12 @@ SUMMARY
   };
 
   const monthlyTotals = calculateMonthlyTotals();
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Current workerData state:', workerData);
+    console.log('Bank details being displayed:', workerData?.bank_details || workerData?.bank_name);
+  }, [workerData]);
 
   if (loading) {
     return (
@@ -377,28 +392,28 @@ SUMMARY
               <div className="p-4 sm:p-6 rounded-xl bg-green-50 dark:bg-green-900/30">
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Total Earned</p>
                 <p className="text-2xl sm:text-3xl font-bold text-green-700 dark:text-green-300 mt-1">
-                  ₹{workerData?.total_amount || 0}
+                  ₹{workerData?.total_amount !== undefined && workerData?.total_amount !== null ? workerData.total_amount : 0}
                 </p>
               </div>
               
               <div className="p-4 sm:p-6 rounded-xl bg-blue-50 dark:bg-blue-900/30">
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Completed</p>
                 <p className="text-2xl sm:text-3xl font-bold text-blue-700 dark:text-blue-300 mt-1">
-                  {workerData?.work_history?.filter((w: any) => w.status === 'completed' || w.status === 'paid').length || 0}
+                  {workerData?.work_history ? workerData.work_history.filter((w: any) => w.status === 'completed' || w.status === 'paid').length : 0}
                 </p>
               </div>
               
               <div className="p-4 sm:p-6 rounded-xl bg-amber-50 dark:bg-amber-900/30">
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Pending</p>
                 <p className="text-2xl sm:text-3xl font-bold text-amber-700 dark:text-amber-300 mt-1">
-                  {workerData?.work_history?.filter((w: any) => w.status !== 'completed' && w.status !== 'paid').length || 0}
+                  {workerData?.work_history ? workerData.work_history.filter((w: any) => w.status !== 'completed' && w.status !== 'paid').length : 0}
                 </p>
               </div>
               
               <div className="p-4 sm:p-6 rounded-xl bg-purple-50 dark:bg-purple-900/30">
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Total Projects</p>
                 <p className="text-2xl sm:text-3xl font-bold text-purple-700 dark:text-purple-300 mt-1">
-                  {workerData?.work_history?.length || 0}
+                  {workerData?.work_history ? workerData.work_history.length : 0}
                 </p>
               </div>
             </div>
@@ -441,28 +456,28 @@ SUMMARY
             
             {!showBankForm ? (
               <div>
-                {workerData?.bank_details ? (
+                {(workerData?.bank_details || workerData?.bank_name) ? (
                   <div className="space-y-4">
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Bank Name</p>
-                      <p className="font-medium">{workerData.bank_details.bank_name || 'N/A'}</p>
+                      <p className="font-medium">{workerData.bank_details?.bank_name || workerData.bank_name || 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Account Number</p>
                       <p className="font-medium">
-                        {workerData.bank_details.account_number 
-                          ? 'XXXXXX' + workerData.bank_details.account_number.slice(-4)
+                        {workerData.bank_details?.account_number || workerData.account_number
+                          ? 'XXXXXX' + (workerData.bank_details?.account_number || workerData.account_number).slice(-4)
                           : 'N/A'
                         }
                       </p>
                     </div>
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">IFSC Code</p>
-                      <p className="font-medium">{workerData.bank_details.ifsc_code || 'N/A'}</p>
+                      <p className="font-medium">{workerData.bank_details?.ifsc_code || workerData.ifsc_code || 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Branch Name</p>
-                      <p className="font-medium">{workerData.bank_details.branch_name || 'N/A'}</p>
+                      <p className="font-medium">{workerData.bank_details?.branch_name || workerData.branch_name || 'N/A'}</p>
                     </div>
                     <button
                       onClick={() => setShowBankForm(true)}
