@@ -101,7 +101,18 @@ export class AttendanceModel {
 
   async findByWorkerId(workerId: string, limit: number = 10, offset: number = 0): Promise<Attendance[]> {
     const result = await this.db.query(
-      'SELECT * FROM attendance WHERE worker_id = $1 ORDER BY date DESC LIMIT $2 OFFSET $3',
+      `
+        SELECT 
+          a.*,
+          p.name as project_name,
+          u.name as marked_by_name
+        FROM attendance a
+        LEFT JOIN projects p ON a.project_id = p.project_id
+        LEFT JOIN users u ON a.marked_by = u.user_id
+        WHERE a.worker_id = $1 
+        ORDER BY a.date DESC 
+        LIMIT $2 OFFSET $3
+      `,
       [workerId, limit, offset]
     );
     
