@@ -35,16 +35,16 @@ export default function PaymentDetails() {
     try {
       const data = JSON.parse(workerDataStr);
       console.log('✅ Worker data loaded from localStorage:', data);
-      console.log('Bank details in data:', data.bank_details);
-      console.log('Individual bank fields:', { 
-        bank_name: data.bank_name, 
-        account_number: data.account_number,
-        ifsc_code: data.ifsc_code,
-        branch_name: data.branch_name
-      });
+      
+      // Check if we have minimal required data (job_card_id or aadhaar_number)
+      const jobCardId = data.job_card_id || data.jobCardId;
+      const aadhaarNumber = data.aadhaar_number || data.aadhaarNumber;
+      const workerId = data.id || data.worker_id || data.workerId;
+      
+      console.log('Identifiers found:', { jobCardId, aadhaarNumber, workerId });
       
       // Filter out dummy/test data
-      const cleanedData = { ...data };
+      let cleanedData = { ...data };
       if (cleanedData.bank_name === 'Test Bank') cleanedData.bank_name = undefined;
       if (cleanedData.account_number === '1234567890') cleanedData.account_number = undefined;
       if (cleanedData.ifsc_code === 'BARB00SIDDA') cleanedData.ifsc_code = undefined;
@@ -52,31 +52,35 @@ export default function PaymentDetails() {
         cleanedData.bank_details = undefined;
       }
       
-      setWorkerData(cleanedData);
-      
-      // Pre-fill bank details if available (and not test data)
-      if (cleanedData.bank_details && Object.keys(cleanedData.bank_details).length > 0) {
-        console.log('Using bank_details object');
-        setBankDetails({
-          bankName: cleanedData.bank_details.bank_name || '',
-          accountNumber: cleanedData.bank_details.account_number || '',
-          ifscCode: cleanedData.bank_details.ifsc_code || '',
-          branchName: cleanedData.bank_details.branch_name || ''
-        });
-      } else if (cleanedData.bank_name || cleanedData.account_number || cleanedData.ifsc_code) {
-        console.log('Using individual bank fields');
-        setBankDetails({
-          bankName: cleanedData.bank_name || '',
-          accountNumber: cleanedData.account_number || '',
-          ifscCode: cleanedData.ifsc_code || '',
-          branchName: cleanedData.branch_name || ''
-        });
-      } else if (cleanedData.job_card_id) {
-        console.log('No bank data found, will fetch from backend');
-        // Fetch bank details from backend using job_card_id
-        fetchBankDetails(cleanedData.job_card_id);
+      // If we have minimal data, use it; otherwise fetch from backend
+      if (jobCardId || aadhaarNumber) {
+        console.log('Have identifiers, will fetch complete worker data from backend');
+        fetchCompleteWorkerData(jobCardId || undefined, aadhaarNumber || undefined, cleanedData);
+      } else if (workerId) {
+        console.log('Have worker ID, fetching from backend');
+        fetchCompleteWorkerData(undefined, undefined, cleanedData, workerId);
       } else {
-        console.log('No bank data available and no job_card_id to fetch from backend');
+        console.log('No identifiers found, using available data');
+        setWorkerData(cleanedData);
+        
+        // Pre-fill bank details if available (and not test data)
+        if (cleanedData.bank_details && Object.keys(cleanedData.bank_details).length > 0) {
+          console.log('Using bank_details object');
+          setBankDetails({
+            bankName: cleanedData.bank_details.bank_name || '',
+            accountNumber: cleanedData.bank_details.account_number || '',
+            ifscCode: cleanedData.bank_details.ifsc_code || '',
+            branchName: cleanedData.bank_details.branch_name || ''
+          });
+        } else if (cleanedData.bank_name || cleanedData.account_number || cleanedData.ifsc_code) {
+          console.log('Using individual bank fields');
+          setBankDetails({
+            bankName: cleanedData.bank_name || '',
+            accountNumber: cleanedData.account_number || '',
+            ifscCode: cleanedData.ifsc_code || '',
+            branchName: cleanedData.branch_name || ''
+          });
+        }
       }
     } catch (error) {
       console.error('Error parsing worker data:', error);
@@ -123,6 +127,83 @@ export default function PaymentDetails() {
       }
     } catch (error) {
       console.error('Error fetching bank details:', error);
+    }
+  };
+
+  const fetchCompleteWorkerData = async (jobCardId?: string | null, aadhaarNumber?: string | null, existingData?: any, workerId?: string | null) => {
+    try {
+      console.log('Fetching complete worker data...', { jobCardId, aadhaarNumber, workerId });
+      
+      let response;
+      
+      // Try to fetch using job card ID first (most reliable)
+      if (jobCardId) {
+        response = await fetch(`https://capstone-backend-8k6x.onrender.com/api/v1/job-cards/${jobCardId}`);
+      } 
+      // Fallback: fetch using worker ID from users endpoint
+      else if (workerId) {
+        response = await fetch(`https://capstone-backend-8k6x.onrender.com/api/v1/users/${workerId}`);
+      }
+      // Last resort: try to find worker by Aadhaar (if API supports it)
+      else if (aadhaarNumber) {
+        // This endpoint might not exist, but worth trying
+        response = await fetch(`https://capstone-backend-8k6x.onrender.com/api/v1/users/by-aadhaar/${aadhaarNumber}`);
+      }
+      
+      if (!response) {
+        console.log('No fetch method available, using existing data');
+        setWorkerData(existingData);
+        return;
+      }
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Complete worker data fetched:', data);
+        
+        if (data.data) {
+          // Merge existing data with fetched data
+          const mergedData = {
+            ...existingData,
+            ...data.data,
+            // Ensure these fields are mapped correctly
+            name: data.data.name || data.data.worker_name || existingData?.name,
+            job_card_number: data.data.job_card_number || existingData?.job_card_number,
+            job_card_id: data.data.job_card_id || jobCardId || existingData?.job_card_id,
+            aadhaar_number: data.data.aadhaar_number || existingData?.aadhaar_number,
+            phone_number: data.data.phone_number || existingData?.phone_number,
+            bank_name: data.data.bank_name,
+            account_number: data.data.account_number,
+            ifsc_code: data.data.ifsc_code,
+            branch_name: data.data.branch_name,
+            bank_details: data.data.bank_name ? {
+              bank_name: data.data.bank_name,
+              account_number: data.data.account_number,
+              ifsc_code: data.data.ifsc_code,
+              branch_name: data.data.branch_name
+            } : undefined
+          };
+          
+          console.log('Merged worker data:', mergedData);
+          setWorkerData(mergedData);
+          localStorage.setItem('workerData', JSON.stringify(mergedData));
+          
+          // Update bank details
+          if (mergedData.bank_details || mergedData.bank_name) {
+            setBankDetails({
+              bankName: mergedData.bank_details?.bank_name || mergedData.bank_name || '',
+              accountNumber: mergedData.bank_details?.account_number || mergedData.account_number || '',
+              ifscCode: mergedData.bank_details?.ifsc_code || mergedData.ifsc_code || '',
+              branchName: mergedData.bank_details?.branch_name || mergedData.branch_name || ''
+            });
+          }
+        }
+      } else {
+        console.log('Failed to fetch worker data, using existing data');
+        setWorkerData(existingData);
+      }
+    } catch (error) {
+      console.error('Error fetching complete worker data:', error);
+      setWorkerData(existingData);
     }
   };
 
