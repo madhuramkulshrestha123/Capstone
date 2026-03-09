@@ -265,14 +265,14 @@ export default function AdminDashboard() {
         {/* Mobile Navigation - Horizontal scroll */}
         <div className="lg:hidden w-full overflow-x-auto pb-2">
           <div className="flex space-x-2 min-w-max">
-            {navItems.slice(0, 6).map((item) => (
+            {navItems.map((item) => (
               <a 
                 key={item.id}
                 href={item.href || '#'} 
-                className="flex flex-col items-center justify-center px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-blue-50 transition-colors duration-200 min-w-[80px]"
+                className="flex flex-col items-center justify-center px-3 sm:px-4 py-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-blue-50 transition-colors duration-200 min-w-[70px] sm:min-w-[80px]"
               >
-                <span className="text-2xl mb-1">{item.icon}</span>
-                <span className="text-xs font-medium text-gray-700 whitespace-nowrap">{t(item.label as any) || item.label}</span>
+                <span className="text-xl sm:text-2xl mb-1">{item.icon}</span>
+                <span className="text-xs font-medium text-gray-700 whitespace-nowrap truncate max-w-[70px] sm:max-w-none">{t(item.label as any) || item.label}</span>
               </a>
             ))}
           </div>
