@@ -1385,19 +1385,19 @@ export default function PaymentManagementPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">{t('paymentManagement')}</h1>
-            <div className="flex items-center space-x-4">
+        <div className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+            <h1 className="text-xl sm:text-2xl font-bold">{t('paymentManagement')}</h1>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               <button 
                 onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200"
+                className="px-3 sm:px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200 text-sm sm:text-base"
               >
                 {language === 'en' ? t('hindi') : t('english')}
               </button>
               <button 
                 onClick={() => window.location.href = '/admin/dashboard'}
-                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200"
+                className="px-3 sm:px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors duration-200 text-sm sm:text-base"
               >
                 {t('back')}
               </button>
@@ -1406,92 +1406,92 @@ export default function PaymentManagementPage() {
         </div>
       </header>
       
-      <div className="container mx-auto px-6 py-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8">{t('paymentManagement')}</h2>
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8">{t('paymentManagement')}</h2>
         
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Total Active Workers */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-blue-100 text-blue-600 mr-4">
-                <span className="text-2xl">👷</span>
+              <div className="p-2 sm:p-3 rounded-lg bg-blue-100 text-blue-600 mr-3 sm:mr-4">
+                <span className="text-xl sm:text-2xl">👷</span>
               </div>
               <div>
-                <p className="text-gray-500 text-sm">{t('totalActiveWorkers')}</p>
-                <p className="text-3xl font-bold text-gray-800">{summaryStats.totalActiveWorkers}</p>
+                <p className="text-gray-500 text-xs sm:text-sm">{t('totalActiveWorkers')}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-800">{summaryStats.totalActiveWorkers}</p>
               </div>
             </div>
           </div>
 
           {/* Total Pending Payments */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-yellow-100 text-yellow-600 mr-4">
-                <span className="text-2xl">💰</span>
+              <div className="p-2 sm:p-3 rounded-lg bg-yellow-100 text-yellow-600 mr-3 sm:mr-4">
+                <span className="text-xl sm:text-2xl">💰</span>
               </div>
               <div>
-                <p className="text-gray-500 text-sm">{t('pendingPayments')}</p>
-                <p className="text-3xl font-bold text-gray-800">{summaryStats.totalPendingPayments}</p>
+                <p className="text-gray-500 text-xs sm:text-sm">{t('pendingPayments')}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-800">{summaryStats.totalPendingPayments}</p>
               </div>
             </div>
           </div>
 
           {/* Total Amount Due */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-purple-100 text-purple-600 mr-4">
-                <span className="text-2xl">💸</span>
+              <div className="p-2 sm:p-3 rounded-lg bg-purple-100 text-purple-600 mr-3 sm:mr-4">
+                <span className="text-xl sm:text-2xl">💸</span>
               </div>
               <div>
-                <p className="text-gray-500 text-sm">{t('totalAmountDue')}</p>
-                <p className="text-3xl font-bold text-gray-800">₹{summaryStats.totalAmountDue.toLocaleString()}</p>
+                <p className="text-gray-500 text-xs sm:text-sm">{t('totalAmountDue')}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-800">₹{summaryStats.totalAmountDue.toLocaleString()}</p>
               </div>
             </div>
           </div>
 
           {/* Payments Due This Week */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-orange-100 text-orange-600 mr-4">
-                <span className="text-2xl">📅</span>
+              <div className="p-2 sm:p-3 rounded-lg bg-orange-100 text-orange-600 mr-3 sm:mr-4">
+                <span className="text-xl sm:text-2xl">📅</span>
               </div>
               <div>
-                <p className="text-gray-500 text-sm">{t('paymentsDueThisWeek')}</p>
-                <p className="text-3xl font-bold text-gray-800">{summaryStats.paymentsDueThisWeek}</p>
+                <p className="text-gray-500 text-xs sm:text-sm">{t('paymentsDueThisWeek')}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-800">{summaryStats.paymentsDueThisWeek}</p>
               </div>
             </div>
           </div>
 
           {/* Overdue Payments */}
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-red-100 text-red-600 mr-4">
-                <span className="text-2xl">🚨</span>
+              <div className="p-2 sm:p-3 rounded-lg bg-red-100 text-red-600 mr-3 sm:mr-4">
+                <span className="text-xl sm:text-2xl">🚨</span>
               </div>
               <div>
-                <p className="text-gray-500 text-sm">{t('overduePayments')}</p>
-                <p className="text-3xl font-bold text-gray-800">{summaryStats.overduePayments}</p>
+                <p className="text-gray-500 text-xs sm:text-sm">{t('overduePayments')}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-800">{summaryStats.overduePayments}</p>
               </div>
             </div>
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700">{error}</p>
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-700 text-sm sm:text-base">{error}</p>
           </div>
         )}
 
         {/* Filter Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-4 sm:mb-6">
           {/* Project Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('project')}</label>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">{t('project')}</label>
             <select
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
             >
               <option value="all">All Projects</option>
               {uniqueProjects.map((project, index) => (
@@ -1502,11 +1502,11 @@ export default function PaymentManagementPage() {
           
           {/* Time Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Time Period</label>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Time Period</label>
             <select
               value={timeFilter}
               onChange={(e) => setTimeFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
             >
               <option value="all">All Time</option>
               <option value="last7days">Last 7 Days</option>
@@ -1518,11 +1518,11 @@ export default function PaymentManagementPage() {
           
           {/* Status Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Status</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
             >
               <option value="all">All Statuses</option>
               <option value="PENDING">Pending</option>
@@ -1534,7 +1534,7 @@ export default function PaymentManagementPage() {
           
           {/* Deadline Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Deadline</label>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Deadline</label>
             <select
               value="all" // Using a temporary value
               onChange={(e) => {
@@ -1546,7 +1546,7 @@ export default function PaymentManagementPage() {
                   setStatusFilter('all');
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
             >
               <option value="all">All Deadlines</option>
               <option value="approaching">Deadline Approaching (5 days)</option>
@@ -1555,20 +1555,20 @@ export default function PaymentManagementPage() {
           
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Search</label>
             <input
               type="text"
               placeholder="Search workers, projects..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
             />
           </div>
         </div>
         
         {/* Bulk Actions and Export Options */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             <label className="flex items-center">
               <input
                 type="checkbox"
@@ -1576,14 +1576,14 @@ export default function PaymentManagementPage() {
                 onChange={selectAllPayments}
                 className="rounded text-blue-600 focus:ring-blue-500"
               />
-              <span className="ml-2 text-gray-700">{t('selectAll')}</span>
+              <span className="ml-2 text-gray-700 text-sm sm:text-base">{t('selectAll')}</span>
             </label>
             
             {selectedPayments.length > 0 && (
               <button
                 onClick={handleMarkAsPaid}
                 disabled={loading}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50"
+                className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50 text-sm sm:text-base whitespace-nowrap"
               >
                 {t('markSelectedAsPaid')} ({selectedPayments.length})
               </button>
@@ -1593,13 +1593,13 @@ export default function PaymentManagementPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleExportExcel('all')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
             >
               {t('exportExcel')}
             </button>
             <button
               onClick={exportToPdf}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+              className="px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
             >
               {t('exportPdf')}
             </button>
@@ -1611,24 +1611,25 @@ export default function PaymentManagementPage() {
                   alert('Please select a payment to export user history');
                 }
               }}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200"
+              className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 text-sm sm:text-base whitespace-nowrap"
             >
-              {selectedPayment ? `Export ${selectedPayment.worker_name}'s History PDF` : 'Export User History PDF'}
+              <span className="hidden sm:inline">{selectedPayment ? `Export ${selectedPayment.worker_name}'s History PDF` : 'Export User History PDF'}</span>
+              <span className="sm:hidden">{selectedPayment ? 'Export History PDF' : 'Export History PDF'}</span>
             </button>
           </div>
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+          <div className="flex justify-center items-center h-48 sm:h-64">
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-blue-600"></div>
           </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <input
                         type="checkbox"
                         checked={(() => {
@@ -1639,16 +1640,16 @@ export default function PaymentManagementPage() {
                         className="rounded text-blue-600 focus:ring-blue-500"
                       />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('workerName')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('jobCardIdLabel')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('projectName')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('daysWorked')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('wagePerDay')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('totalAmount')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('projectEndDate')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('paymentDueDate')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('status')}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('actions')}</th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t('workerName')}</th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t('jobCardIdLabel')}</th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t('projectName')}</th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t('daysWorked')}</th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t('wagePerDay')}</th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t('totalAmount')}</th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t('projectEndDate')}</th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t('paymentDueDate')}</th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t('status')}</th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -1673,7 +1674,7 @@ export default function PaymentManagementPage() {
                           }}
                           style={{ cursor: 'pointer' }}
                         >
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                           {(() => {
                             const paymentId = payment.payment_id || payment.id || '';
                             const isPaid = payment.status === 'completed';
@@ -1688,43 +1689,43 @@ export default function PaymentManagementPage() {
                             );
                           })()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{payment.worker_name}</div>
-                          <div className="text-sm text-gray-500">{payment.worker_aadhaar}</div>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                          <div className="text-xs sm:text-sm font-medium text-gray-900">{payment.worker_name}</div>
+                          <div className="text-xs sm:text-sm text-gray-500">{payment.worker_aadhaar}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                           {payment.worker_job_card}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 max-w-xs truncate">
                           {payment.project_name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                           {payment.daysWorked}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                           ₹{payment.wage_per_day.toFixed(2)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
                           ₹{payment.amount.toFixed(2)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                           {new Date(payment.project_end_date).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                           {getPaymentDueDate(payment.project_end_date)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(payment.status, payment.project_end_date)}`}>
                             {getStatusDisplay(payment.status, payment.project_end_date)}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium space-y-1 sm:space-y-0 sm:space-x-3 sm:mr-3">
                           <button
                             onClick={() => {
                               setSelectedPayment(payment);
                               setShowBankDetails(true);
                             }}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
+                            className="text-blue-600 hover:text-blue-900 block sm:inline"
                           >
                             {t('viewBankDetails')}
                           </button>
@@ -1739,14 +1740,14 @@ export default function PaymentManagementPage() {
                                 setSelectedPayment(payment);
                               }
                             }}
-                            className="text-purple-600 hover:text-purple-900 mr-4"
+                            className="text-purple-600 hover:text-purple-900 block sm:inline"
                           >
                             {isSelectedForExport ? 'Deselect Export' : 'Select for Export'}
                           </button>
                           {payment.status === 'pending' && (
                             <button
                               onClick={() => alert(`Marking payment ${payment.payment_id || payment.id} as paid`)}
-                              className="text-green-600 hover:text-green-900"
+                              className="text-green-600 hover:text-green-900 block sm:inline"
                             >
                               {t('markPaid')}
                             </button>
@@ -1757,7 +1758,7 @@ export default function PaymentManagementPage() {
                   })
                   ) : (
                     <tr>
-                      <td colSpan={11} className="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colSpan={11} className="px-3 sm:px-6 py-4 text-center text-xs sm:text-sm text-gray-500">
                         {t('noPaymentsFound')}
                       </td>
                     </tr>
@@ -1772,34 +1773,34 @@ export default function PaymentManagementPage() {
       {/* Bank Details Modal */}
       {showBankDetails && selectedPayment && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full">
-            <div className="p-6">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-gray-800">{t('viewBankDetails')}</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800">{t('viewBankDetails')}</h3>
                 <button 
                   onClick={closeBankDetailsModal}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500">{t('workerName')}</p>
-                  <p className="font-medium">{selectedPayment.worker_name}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">{t('workerName')}</p>
+                  <p className="font-medium text-sm sm:text-base">{selectedPayment.worker_name}</p>
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-500">{t('bankName')}</p>
-                  <p className="font-medium">{selectedPayment.bank_name || 'N/A'}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">{t('bankName')}</p>
+                  <p className="font-medium text-sm sm:text-base">{selectedPayment.bank_name || 'N/A'}</p>
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-500">{t('accountNumber')}</p>
-                  <p className="font-medium">
+                  <p className="text-xs sm:text-sm text-gray-500">{t('accountNumber')}</p>
+                  <p className="font-medium text-sm sm:text-base">
                     {selectedPayment.account_number 
                       ? `XXXXXXX${selectedPayment.account_number.slice(-4)}` 
                       : 'N/A'}
@@ -1807,30 +1808,30 @@ export default function PaymentManagementPage() {
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-500">{t('ifscCode')}</p>
-                  <p className="font-medium">{selectedPayment.ifsc_code || 'N/A'}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">{t('ifscCode')}</p>
+                  <p className="font-medium text-sm sm:text-base">{selectedPayment.ifsc_code || 'N/A'}</p>
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-500">{t('aadhaarLinked')}</p>
-                  <p className="font-medium">
+                  <p className="text-xs sm:text-sm text-gray-500">{t('aadhaarLinked')}</p>
+                  <p className="font-medium text-sm sm:text-base">
                     {selectedPayment.aadhaar_linked ? t('yes') : t('no')}
                   </p>
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-500">{t('lastPaymentDate')}</p>
-                  <p className="font-medium">
+                  <p className="text-xs sm:text-sm text-gray-500">{t('lastPaymentDate')}</p>
+                  <p className="font-medium text-sm sm:text-base">
                     {selectedPayment.last_payment_date 
                       ? new Date(selectedPayment.last_payment_date).toLocaleDateString() 
                       : 'N/A'}
                   </p>
                 </div>
                 
-                <div className="pt-4 flex flex-col sm:flex-row gap-2">
+                <div className="pt-3 sm:pt-4 flex flex-col gap-2">
                   <button
                     onClick={() => alert(t('verifyIFSC'))}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                    className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base"
                   >
                     {t('verifyIFSC')}
                   </button>
@@ -1840,17 +1841,17 @@ export default function PaymentManagementPage() {
                         handleExportUserHistoryPdf(selectedPayment.worker_id);
                       }
                     }}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200"
+                    className="px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 text-sm sm:text-base"
                   >
                     Export {selectedPayment?.worker_name || 'User'}'s History PDF
                   </button>
                 </div>
               </div>
               
-              <div className="mt-6 flex justify-end">
+              <div className="mt-4 sm:mt-6 flex justify-end">
                 <button
                   onClick={closeBankDetailsModal}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base"
                 >
                   {t('close')}
                 </button>

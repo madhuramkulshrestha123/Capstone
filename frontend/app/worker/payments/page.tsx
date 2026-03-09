@@ -23,6 +23,10 @@ export default function PaymentDetails() {
     const isWorker = localStorage.getItem('isWorker');
     const workerDataStr = localStorage.getItem('workerData');
     
+    console.log('=== PAYMENT PAGE INITIALIZATION ===');
+    console.log('isWorker:', isWorker);
+    console.log('workerDataStr:', workerDataStr);
+    
     if (!isWorker || !workerDataStr) {
       window.location.href = '/auth';
       return;
@@ -30,20 +34,39 @@ export default function PaymentDetails() {
     
     try {
       const data = JSON.parse(workerDataStr);
-      console.log('Worker data loaded:', data);
+      console.log('✅ Worker data loaded from localStorage:', data);
+      console.log('Bank details in data:', data.bank_details);
+      console.log('Individual bank fields:', { 
+        bank_name: data.bank_name, 
+        account_number: data.account_number,
+        ifsc_code: data.ifsc_code,
+        branch_name: data.branch_name
+      });
       setWorkerData(data);
       
       // Pre-fill bank details if available
-      if (data.bank_details) {
+      if (data.bank_details && Object.keys(data.bank_details).length > 0) {
+        console.log('Using bank_details object');
         setBankDetails({
           bankName: data.bank_details.bank_name || '',
           accountNumber: data.bank_details.account_number || '',
           ifscCode: data.bank_details.ifsc_code || '',
           branchName: data.bank_details.branch_name || ''
         });
+      } else if (data.bank_name || data.account_number || data.ifsc_code) {
+        console.log('Using individual bank fields');
+        setBankDetails({
+          bankName: data.bank_name || '',
+          accountNumber: data.account_number || '',
+          ifscCode: data.ifsc_code || '',
+          branchName: data.branch_name || ''
+        });
       } else if (data.job_card_id) {
+        console.log('No bank data found, will fetch from backend');
         // Fetch bank details from backend using job_card_id
         fetchBankDetails(data.job_card_id);
+      } else {
+        console.log('No bank data available and no job_card_id to fetch from backend');
       }
     } catch (error) {
       console.error('Error parsing worker data:', error);
@@ -456,44 +479,56 @@ SUMMARY
             
             {!showBankForm ? (
               <div>
-                {(workerData?.bank_details || workerData?.bank_name) ? (
+                {(workerData?.bank_details || workerData?.bank_name || workerData?.account_number || workerData?.ifsc_code) ? (
                   <div className="space-y-4">
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Bank Name</p>
-                      <p className="font-medium">{workerData.bank_details?.bank_name || workerData.bank_name || 'N/A'}</p>
+                      <p className="font-medium text-base sm:text-lg">
+                        {workerData.bank_details?.bank_name || 
+                         workerData.bank_name || 
+                         'Not provided'}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Account Number</p>
-                      <p className="font-medium">
+                      <p className="font-medium text-base sm:text-lg">
                         {workerData.bank_details?.account_number || workerData.account_number
                           ? 'XXXXXX' + (workerData.bank_details?.account_number || workerData.account_number).slice(-4)
-                          : 'N/A'
+                          : 'Not provided'
                         }
                       </p>
                     </div>
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">IFSC Code</p>
-                      <p className="font-medium">{workerData.bank_details?.ifsc_code || workerData.ifsc_code || 'N/A'}</p>
+                      <p className="font-medium text-base sm:text-lg">
+                        {workerData.bank_details?.ifsc_code || 
+                         workerData.ifsc_code || 
+                         'Not provided'}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Branch Name</p>
-                      <p className="font-medium">{workerData.bank_details?.branch_name || workerData.branch_name || 'N/A'}</p>
+                      <p className="font-medium text-base sm:text-lg">
+                        {workerData.bank_details?.branch_name || 
+                         workerData.branch_name || 
+                         'Not provided'}
+                      </p>
                     </div>
                     <button
                       onClick={() => setShowBankForm(true)}
-                      className="w-full mt-6 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                      className="w-full mt-6 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base"
                     >
                       Update Bank Details
                     </button>
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm sm:text-base">
                       No bank details found
                     </p>
                     <button
                       onClick={() => setShowBankForm(true)}
-                      className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                      className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base"
                     >
                       Add Bank Details
                     </button>
