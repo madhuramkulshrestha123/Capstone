@@ -103,25 +103,15 @@ export default function WorkerDashboard() {
       const response = await adminApi.getMyAttendance(1, 100, workerId); // Pass worker ID
       console.log('Raw attendance data:', response.data);
       
-      // Fetch projects to get project names
-      const projectsResponse = await adminApi.get('/projects');
-      const projects = projectsResponse.data || [];
-      console.log('Fetched projects:', projects);
-      
-      // Transform and enrich the data
-      const transformedData = response.data.map((record: any) => {
-        // Find project name from projects
-        const project = projects.find((p: any) => p.id === record.project_id || p.project_id === record.project_id);
-        
-        return {
-          id: record.id,
-          date: record.date,
-          project_name: project?.name || record.project?.name || 'Unknown Project',
-          status: record.status?.toUpperCase() || 'ABSENT', // Normalize status to uppercase
-          marked_by: record.marked_by_name || record.marked_by || 'Unknown Supervisor',
-          project_id: record.project_id
-        };
-      });
+      // Transform the data - backend should provide marked_by_name and project name
+      const transformedData = response.data.map((record: any) => ({
+        id: record.id || record.attendance_id,
+        date: record.date,
+        project_name: record.project?.name || record.project_name || 'Unknown Project',
+        status: record.status?.toUpperCase() || 'ABSENT', // Normalize status to uppercase
+        marked_by: record.marked_by_name || record.marked_by || 'Unknown Supervisor',
+        project_id: record.project_id
+      }));
       
       console.log('Transformed attendance data:', transformedData);
       setAttendanceData(transformedData);
