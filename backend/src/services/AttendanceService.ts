@@ -138,4 +138,20 @@ export class AttendanceService {
     
     return attendances;
   }
+
+  async getAttendancesWithDetails(workerId: string, page: number = 1, limit: number = 10): Promise<{
+    attendances: any[];
+    total: number;
+    totalPages: number;
+  }> {
+    const offset = (page - 1) * limit;
+    const result = await this.attendanceModel.findByWorkerIdWithDetails(workerId, limit, offset);
+    const total = await this.attendanceModel.countByWorkerId(workerId);
+
+    return {
+      attendances: result,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
 }

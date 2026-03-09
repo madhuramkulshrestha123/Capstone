@@ -71,9 +71,9 @@ export default function WorkerAttendance() {
       const transformedData = response.data.map((record: any) => ({
         id: record.attendance_id || record.id,
         date: record.date,
-        project_name: record.project?.name || record.project_name || 'Unknown Project',
+        project_name: record.project_name || 'Unknown Project',
         status: record.status,
-        marked_by: record.marked_by_user?.name || record.supervisor_name || 'Unknown Supervisor',
+        marked_by: record.marked_by_user_name || record.marked_by_user?.name || 'Unknown Supervisor',
         project_id: record.project_id
       }));
       
