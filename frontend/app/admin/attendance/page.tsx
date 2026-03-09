@@ -169,6 +169,7 @@ export default function AttendanceManagementPage() {
         
         // Fetch attendance records
         const attendanceResponse = await adminApi.get(`/attendances/project/${selectedProject}/date-range?startDate=${date}&endDate=${date}`);
+        console.log('Raw attendance response:', attendanceResponse.data);
         
         // Fetch user details to get supervisor names
         const usersResponse = await adminApi.get('/users');
@@ -176,6 +177,7 @@ export default function AttendanceManagementPage() {
         
         // Enhance attendance records with worker names and supervisor names
         const enhancedAttendanceRecords = (attendanceResponse.data || []).map((record: any) => {
+          console.log('Processing attendance record:', record);
           const supervisor = users.find((user: any) => user.user_id === record.marked_by);
           return {
             ...record,
@@ -257,9 +259,23 @@ export default function AttendanceManagementPage() {
     }
     
     try {
+      console.log('Selected attendance for edit:', selectedAttendance);
+      
+      // Try multiple possible ID fields since backend might return different structures
+      const attendanceId = (selectedAttendance as any).id || (selectedAttendance as any).attendance_id;
+      
+      if (!attendanceId) {
+        setError('Attendance record ID not found');
+        console.error('No ID field found in selectedAttendance:', selectedAttendance);
+        return;
+      }
+      
       const currentStatusUpper = selectedAttendance.status?.toUpperCase();
       const newStatus = currentStatusUpper === 'PRESENT' ? 'ABSENT' : 'PRESENT';
-      await adminApi.patch(`/attendances/${selectedAttendance.id}`, {
+      
+      console.log('Updating attendance with ID:', attendanceId, 'New status:', newStatus);
+      
+      await adminApi.patch(`/attendances/${attendanceId}`, {
         status: newStatus.toLowerCase(), // Convert to lowercase to match backend validation
         edit_reason: editReason
       });
