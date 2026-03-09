@@ -64,26 +64,29 @@ export default function WorkerAttendance() {
       
       // Fetch attendance data from backend
       const response = await adminApi.getMyAttendance(1, 100, workerId); // Pass worker ID
+      console.log('Raw attendance data:', response.data);
       
-      // Fetch users to get project names and supervisor names
-      const usersResponse = await adminApi.get('/users');
-      const users = usersResponse.data || [];
+      // Fetch projects to get project names
+      const projectsResponse = await adminApi.get('/projects');
+      const projects = projectsResponse.data || [];
+      console.log('Fetched projects:', projects);
       
       // Transform and enrich the data
       const transformedData = response.data.map((record: any) => {
-        // Find supervisor name from users
-        const supervisor = users.find((user: any) => user.user_id === record.marked_by);
+        // Find project name from projects
+        const project = projects.find((p: any) => p.id === record.project_id || p.project_id === record.project_id);
         
         return {
           id: record.id,
           date: record.date,
-          project_name: record.project?.name || 'Unknown Project',
+          project_name: project?.name || record.project?.name || 'Unknown Project',
           status: record.status?.toUpperCase() || 'ABSENT', // Normalize status to uppercase
-          marked_by: supervisor ? supervisor.name : 'Unknown Supervisor',
+          marked_by: record.marked_by_name || record.marked_by || 'Unknown Supervisor',
           project_id: record.project_id
         };
       });
       
+      console.log('Transformed attendance data:', transformedData);
       setAttendanceData(transformedData);
       setFilteredAttendance(transformedData);
     } catch (error) {
