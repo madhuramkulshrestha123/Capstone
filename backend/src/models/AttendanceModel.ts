@@ -25,7 +25,7 @@ export class AttendanceModel {
   }
 
   async findById(id: string): Promise<Attendance | null> {
-    const result = await this.db.query('SELECT * FROM attendance WHERE id = $1', [id]);
+    const result = await this.db.query('SELECT * FROM attendance WHERE attendance_id = $1', [id]);
     
     if (result.rows.length === 0) return null;
     
@@ -65,7 +65,7 @@ export class AttendanceModel {
 
     try {
       const result = await this.db.query(
-        'UPDATE attendance SET status = $1 WHERE id = $2 RETURNING *',
+        'UPDATE attendance SET status = $1 WHERE attendance_id = $2 RETURNING *',
         [attendanceData.status, id]
       );
 
@@ -79,7 +79,7 @@ export class AttendanceModel {
 
   async delete(id: string): Promise<boolean> {
     try {
-      const result = await this.db.query('DELETE FROM attendance WHERE id = $1', [id]);
+      const result = await this.db.query('DELETE FROM attendance WHERE attendance_id = $1', [id]);
       return result.rowCount > 0;
     } catch (error) {
       return false;
