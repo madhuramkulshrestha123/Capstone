@@ -107,7 +107,7 @@ export default function WorkerDashboard() {
         id: record.id,
         date: record.date,
         project_name: record.project?.name || 'Unknown Project',
-        status: record.status,
+        status: record.status?.toUpperCase() || 'ABSENT', // Normalize status to uppercase
         marked_by: record.marked_by_user?.name || 'Unknown Supervisor',
         project_id: record.project_id
       }));

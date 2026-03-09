@@ -49,7 +49,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       if (attendanceRecords.length > 0) {
         const totalDays = attendanceRecords.length;
         const presentDays = attendanceRecords.filter(
-          (record: any) => record.status === 'PRESENT' || record.status === 'present'
+          (record: any) => record.status?.toUpperCase() === 'PRESENT'
         ).length;
         const percentage = Math.round((presentDays / totalDays) * 100);
         setAttendancePercentage(percentage);
