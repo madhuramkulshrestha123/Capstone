@@ -42,29 +42,39 @@ export default function PaymentDetails() {
         ifsc_code: data.ifsc_code,
         branch_name: data.branch_name
       });
-      setWorkerData(data);
       
-      // Pre-fill bank details if available
-      if (data.bank_details && Object.keys(data.bank_details).length > 0) {
+      // Filter out dummy/test data
+      const cleanedData = { ...data };
+      if (cleanedData.bank_name === 'Test Bank') cleanedData.bank_name = undefined;
+      if (cleanedData.account_number === '1234567890') cleanedData.account_number = undefined;
+      if (cleanedData.ifsc_code === 'BARB00SIDDA') cleanedData.ifsc_code = undefined;
+      if (cleanedData.bank_details?.bank_name === 'Test Bank') {
+        cleanedData.bank_details = undefined;
+      }
+      
+      setWorkerData(cleanedData);
+      
+      // Pre-fill bank details if available (and not test data)
+      if (cleanedData.bank_details && Object.keys(cleanedData.bank_details).length > 0) {
         console.log('Using bank_details object');
         setBankDetails({
-          bankName: data.bank_details.bank_name || '',
-          accountNumber: data.bank_details.account_number || '',
-          ifscCode: data.bank_details.ifsc_code || '',
-          branchName: data.bank_details.branch_name || ''
+          bankName: cleanedData.bank_details.bank_name || '',
+          accountNumber: cleanedData.bank_details.account_number || '',
+          ifscCode: cleanedData.bank_details.ifsc_code || '',
+          branchName: cleanedData.bank_details.branch_name || ''
         });
-      } else if (data.bank_name || data.account_number || data.ifsc_code) {
+      } else if (cleanedData.bank_name || cleanedData.account_number || cleanedData.ifsc_code) {
         console.log('Using individual bank fields');
         setBankDetails({
-          bankName: data.bank_name || '',
-          accountNumber: data.account_number || '',
-          ifscCode: data.ifsc_code || '',
-          branchName: data.branch_name || ''
+          bankName: cleanedData.bank_name || '',
+          accountNumber: cleanedData.account_number || '',
+          ifscCode: cleanedData.ifsc_code || '',
+          branchName: cleanedData.branch_name || ''
         });
-      } else if (data.job_card_id) {
+      } else if (cleanedData.job_card_id) {
         console.log('No bank data found, will fetch from backend');
         // Fetch bank details from backend using job_card_id
-        fetchBankDetails(data.job_card_id);
+        fetchBankDetails(cleanedData.job_card_id);
       } else {
         console.log('No bank data available and no job_card_id to fetch from backend');
       }
