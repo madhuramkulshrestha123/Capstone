@@ -108,24 +108,6 @@ export class AttendanceModel {
     return result.rows;
   }
 
-  async findByWorkerIdWithDetails(workerId: string, limit: number = 10, offset: number = 0): Promise<any[]> {
-    const query = `
-      SELECT 
-        a.*,
-        p.name as project_name,
-        u.name as marked_by_user_name
-      FROM attendance a
-      LEFT JOIN projects p ON a.project_id = p.id
-      LEFT JOIN users u ON a.marked_by = u.user_id
-      WHERE a.worker_id = $1
-      ORDER BY a.date DESC
-      LIMIT $2 OFFSET $3
-    `;
-    
-    const result = await this.db.query(query, [workerId, limit, offset]);
-    return result.rows;
-  }
-
   async findByProjectId(projectId: string, limit: number = 10, offset: number = 0): Promise<Attendance[]> {
     const result = await this.db.query(
       'SELECT * FROM attendance WHERE project_id = $1 ORDER BY date DESC LIMIT $2 OFFSET $3',

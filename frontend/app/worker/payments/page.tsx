@@ -17,7 +17,6 @@ export default function PaymentDetails() {
     branchName: ''
   });
   const [isUpdating, setIsUpdating] = useState(false);
-  const [fetchingBankDetails, setFetchingBankDetails] = useState(false);
 
   useEffect(() => {
     // Check if worker is logged in
@@ -41,9 +40,6 @@ export default function PaymentDetails() {
           ifscCode: data.bank_details.ifsc_code || '',
           branchName: data.bank_details.branch_name || ''
         });
-      } else {
-        // Fetch bank details from backend if not in localStorage
-        fetchBankDetails(data.id || data.worker_id);
       }
     } catch (error) {
       console.error('Error parsing worker data:', error);
@@ -52,33 +48,6 @@ export default function PaymentDetails() {
     
     setLoading(false);
   }, []);
-
-  const fetchBankDetails = async (workerId: string) => {
-    setFetchingBankDetails(true);
-    try {
-      // In a real implementation, this would call an API endpoint
-      // For now, we'll use mock data
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockBankDetails = {
-        bank_name: 'State Bank of India',
-        account_number: '1234567890',
-        ifsc_code: 'SBIN0001234',
-        branch_name: 'New Delhi Branch'
-      };
-      
-      setBankDetails({
-        bankName: mockBankDetails.bank_name,
-        accountNumber: mockBankDetails.account_number,
-        ifscCode: mockBankDetails.ifsc_code,
-        branchName: mockBankDetails.branch_name
-      });
-    } catch (error) {
-      console.error('Error fetching bank details:', error);
-    } finally {
-      setFetchingBankDetails(false);
-    }
-  };
 
   const toggleTheme = () => setIsDarkTheme(!isDarkTheme);
   const toggleLanguage = () => setLanguage(language === 'en' ? 'hi' : 'en');
@@ -325,7 +294,7 @@ SUMMARY
                 Welcome, {workerData?.name || 'Worker'}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Job Card Number: <span className="font-semibold text-indigo-600">{workerData?.job_card_number || workerData?.job_card_id || 'N/A'}</span>
+                Job Card ID: <span className="font-semibold text-indigo-600">{workerData?.job_card_id || 'N/A'}</span>
               </p>
             </div>
             {workerData?.payment_deadline && (
@@ -411,12 +380,7 @@ SUMMARY
             
             {!showBankForm ? (
               <div>
-                {fetchingBankDetails ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading bank details...</p>
-                  </div>
-                ) : workerData?.bank_details || bankDetails.bankName ? (
+                {workerData?.bank_details ? (
                   <div className="space-y-4">
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Bank Name</p>

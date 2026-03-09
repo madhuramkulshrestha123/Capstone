@@ -182,7 +182,7 @@ export default function WorkerWorkHistory() {
                 Welcome, {workerData?.name || 'Worker'}
               </h1>
               <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
-                Job Card Number: <span className="font-semibold text-indigo-600">{workerData?.job_card_number || workerData?.job_card_id || 'N/A'}</span>
+                Job Card ID: <span className="font-semibold text-indigo-600">{workerData?.job_card_id || 'N/A'}</span>
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Last Login: {formatDateTime(workerData?.login_time)}

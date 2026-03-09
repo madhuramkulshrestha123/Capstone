@@ -151,8 +151,7 @@ export class AttendanceController {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
 
-      // Use the new method that includes project and supervisor details
-      const result = await this.attendanceService.getAttendancesWithDetails(userId, page, limit);
+      const result = await this.attendanceService.getAttendancesByWorkerId(userId, page, limit);
 
       const response: ApiResponse = {
         success: true,

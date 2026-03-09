@@ -65,19 +65,16 @@ export default function WorkerAttendance() {
       // Fetch attendance data from backend
       const response = await adminApi.getMyAttendance(1, 100, workerId); // Pass worker ID
       
-      console.log('Raw attendance response:', response.data);
-      
       // Transform the data to match our expected format
       const transformedData = response.data.map((record: any) => ({
-        id: record.attendance_id || record.id,
+        id: record.id,
         date: record.date,
-        project_name: record.project_name || 'Unknown Project',
+        project_name: record.project?.name || 'Unknown Project',
         status: record.status,
-        marked_by: record.marked_by_user_name || record.marked_by_user?.name || 'Unknown Supervisor',
+        marked_by: record.marked_by_user?.name || 'Unknown Supervisor',
         project_id: record.project_id
       }));
       
-      console.log('Transformed attendance data:', transformedData);
       setAttendanceData(transformedData);
       setFilteredAttendance(transformedData);
     } catch (error) {
@@ -352,7 +349,7 @@ export default function WorkerAttendance() {
                           {workerData?.name || 'Worker'}
                         </p>
                         <p className={`text-xs truncate mt-0.5 ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {workerData?.job_card_number || workerData?.job_card_id || 'N/A'}
+                          {workerData?.job_card_id || 'N/A'}
                         </p>
                       </div>
                       <button 
@@ -398,7 +395,7 @@ export default function WorkerAttendance() {
             </div>
             <div>
               <h2 className="text-base sm:text-lg lg:text-xl font-bold mb-2 text-indigo-700 dark:text-indigo-300">Job Card Number</h2>
-              <p className="text-lg sm:text-xl lg:text-2xl font-semibold truncate">{workerData?.job_card_number || workerData?.job_card_id || 'N/A'}</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-semibold truncate">{workerData?.job_card_id || 'N/A'}</p>
             </div>
             <div>
               <h2 className="text-base sm:text-lg lg:text-xl font-bold mb-2 text-indigo-700 dark:text-indigo-300">Active Projects</h2>
