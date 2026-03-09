@@ -32,44 +32,13 @@ export default function WorkerAttendance() {
     
     try {
       const data = JSON.parse(workerDataStr);
-      // Fetch updated worker data with job_card_number
-      fetchWorkerDetails(data.id);
+      setWorkerData(data);
+      fetchAttendanceData(data.id);
     } catch (error) {
       console.error('Error parsing worker data:', error);
       window.location.href = '/auth';
     }
   }, []);
-
-  const fetchWorkerDetails = async (workerId: string) => {
-    try {
-      // Fetch all workers to find this worker's details with job_card_number
-      const response = await adminApi.get('/users/workers/details');
-      const workers = response.data || [];
-      const workerDetails = workers.find((w: any) => w.id === workerId);
-      
-      if (workerDetails) {
-        // Update workerData with complete information including job_card_number
-        const updatedWorkerData = {
-          ...JSON.parse(localStorage.getItem('workerData') || '{}'),
-          job_card_number: workerDetails.job_card_number,
-          job_card_id: workerDetails.job_card_id
-        };
-        setWorkerData(updatedWorkerData);
-        fetchAttendanceData(workerId);
-      } else {
-        // Fallback to localStorage data
-        const localData = JSON.parse(localStorage.getItem('workerData') || '{}');
-        setWorkerData(localData);
-        fetchAttendanceData(workerId);
-      }
-    } catch (error) {
-      console.error('Error fetching worker details:', error);
-      // Fallback to localStorage data
-      const localData = JSON.parse(localStorage.getItem('workerData') || '{}');
-      setWorkerData(localData);
-      fetchAttendanceData(workerId);
-    }
-  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

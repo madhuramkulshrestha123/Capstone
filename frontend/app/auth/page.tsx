@@ -276,8 +276,32 @@ export default function AuthPage() {
         const data = await response.json();
 
         if (response.ok) {
-          // Store worker data in localStorage
-          localStorage.setItem('workerData', JSON.stringify(data.data));
+          // Fetch complete worker details including job_card_number
+          try {
+            const workersResponse = await fetch('https://capstone-backend-8k6x.onrender.com/api/v1/users/workers/details', {
+              headers: {
+                'Authorization': `Bearer ${data.data.token}`,
+              }
+            });
+            const workersData = await workersResponse.json();
+            const workers = workersData.data || [];
+            const workerDetails = workers.find((w: any) => w.id === data.data.user.id);
+            
+            // Merge worker details with login response
+            const updatedWorkerData = {
+              ...data.data.user,
+              job_card_number: workerDetails?.job_card_number,
+              job_card_id: workerDetails?.job_card_id
+            };
+            
+            // Store updated worker data in localStorage
+            localStorage.setItem('workerData', JSON.stringify(updatedWorkerData));
+          } catch (err) {
+            console.error('Error fetching worker details:', err);
+            // Fallback to original data
+            localStorage.setItem('workerData', JSON.stringify(data.data.user));
+          }
+          
           localStorage.setItem('isWorker', 'true');
           
           setSuccess('Login successful! Redirecting to Worker Dashboard...');
