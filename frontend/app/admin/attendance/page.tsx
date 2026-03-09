@@ -204,7 +204,7 @@ export default function AttendanceManagementPage() {
         worker_id: workerId,
         project_id: selectedProject,
         date: date,
-        status: status.toUpperCase(), // Convert to uppercase to match backend enum
+        status: status.toLowerCase(), // Convert to lowercase to match backend validation (present, absent, half_day)
         marked_by: supervisorId
       });
       
@@ -246,9 +246,9 @@ export default function AttendanceManagementPage() {
     }
     
     try {
-      const newStatus = selectedAttendance.status === 'PRESENT' ? 'ABSENT' : 'PRESENT'; // Already uppercase
+      const newStatus = selectedAttendance.status === 'PRESENT' ? 'ABSENT' : 'PRESENT';
       await adminApi.patch(`/attendances/${selectedAttendance.id}`, {
-        status: newStatus,
+        status: newStatus.toLowerCase(), // Convert to lowercase to match backend validation
         edit_reason: editReason
       });
       
