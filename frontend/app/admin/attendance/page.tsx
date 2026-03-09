@@ -18,7 +18,8 @@ interface Project {
 interface Worker {
   id: string;
   name: string;
-  job_card_id: string;
+  job_card_id?: string; // UUID fallback
+  job_card_number?: string; // Human-readable job card number like ABVB018451
   skill: string;
 }
 
@@ -97,7 +98,7 @@ export default function AttendanceManagementPage() {
   const filteredProjectWorkers = useMemo(() => {
     return projectWorkers.filter((worker: Worker) => 
       worker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      worker.job_card_id.includes(searchTerm)
+      (worker.job_card_number || worker.job_card_id || '').toString().includes(searchTerm)
     );
   }, [projectWorkers, searchTerm]);
   
