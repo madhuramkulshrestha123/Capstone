@@ -24,7 +24,6 @@ export default function PaymentDetails() {
     const workerDataStr = localStorage.getItem('workerData');
     
     if (!isWorker || !workerDataStr) {
-      // Redirect to login if not logged in
       window.location.href = '/auth';
       return;
     }
@@ -40,6 +39,9 @@ export default function PaymentDetails() {
           ifscCode: data.bank_details.ifsc_code || '',
           branchName: data.bank_details.branch_name || ''
         });
+      } else if (data.job_card_id) {
+        // Fetch bank details from backend using job_card_id
+        fetchBankDetails(data.job_card_id);
       }
     } catch (error) {
       console.error('Error parsing worker data:', error);
@@ -48,6 +50,39 @@ export default function PaymentDetails() {
     
     setLoading(false);
   }, []);
+
+  const fetchBankDetails = async (jobCardId: string) => {
+    try {
+      // Fetch worker details from backend
+      const response = await fetch(`https://capstone-backend-8k6x.onrender.com/api/v1/job-cards/${jobCardId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data) {
+          const updatedWorkerData = {
+            ...workerData,
+            bank_name: data.data.bank_name,
+            account_number: data.data.account_number,
+            ifsc_code: data.data.ifsc_code,
+            bank_details: {
+              bank_name: data.data.bank_name,
+              account_number: data.data.account_number,
+              ifsc_code: data.data.ifsc_code,
+              branch_name: data.data.branch_name
+            }
+          };
+          setWorkerData(updatedWorkerData);
+          setBankDetails({
+            bankName: data.data.bank_name || '',
+            accountNumber: data.data.account_number || '',
+            ifscCode: data.data.ifsc_code || '',
+            branchName: data.data.branch_name || ''
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching bank details:', error);
+    }
+  };
 
   const toggleTheme = () => setIsDarkTheme(!isDarkTheme);
   const toggleLanguage = () => setLanguage(language === 'en' ? 'hi' : 'en');
@@ -95,7 +130,7 @@ export default function PaymentDetails() {
 `;
     report += `Name: ${workerData?.name || 'N/A'}
 `;
-    report += `Job Card ID: ${workerData?.job_card_id || 'N/A'}
+    report += `Job Card Number: ${workerData?.job_card_number || workerData?.job_card_id || 'N/A'}
 `;
     report += `Aadhaar Number: ${workerData?.aadhaar_number || 'N/A'}
 
@@ -157,19 +192,43 @@ SUMMARY
 
     setIsUpdating(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Update backend via job card API
+      const response = await fetch(`https://capstone-backend-8k6x.onrender.com/api/v1/job-cards/${workerData?.job_card_id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bank_name: bankDetails.bankName,
+          account_number: bankDetails.accountNumber,
+          ifsc_code: bankDetails.ifscCode,
+          branch_name: bankDetails.branchName
+        })
+      });
       
-      // Update local storage
-      const updatedWorkerData = {
-        ...workerData,
-        bank_details: bankDetails
-      };
-      localStorage.setItem('workerData', JSON.stringify(updatedWorkerData));
-      setWorkerData(updatedWorkerData);
-      
-      alert('Bank details updated successfully!');
-      setShowBankForm(false);
+      if (response.ok) {
+        const data = await response.json();
+        // Update local storage
+        const updatedWorkerData = {
+          ...workerData,
+          bank_name: data.data.bank_name,
+          account_number: data.data.account_number,
+          ifsc_code: data.data.ifsc_code,
+          bank_details: {
+            bank_name: data.data.bank_name,
+            account_number: data.data.account_number,
+            ifsc_code: data.data.ifsc_code,
+            branch_name: data.data.branch_name
+          }
+        };
+        localStorage.setItem('workerData', JSON.stringify(updatedWorkerData));
+        setWorkerData(updatedWorkerData);
+        
+        alert('Bank details updated successfully!');
+        setShowBankForm(false);
+      } else {
+        throw new Error('Failed to update bank details');
+      }
     } catch (error) {
       console.error('Error updating bank details:', error);
       alert('Failed to update bank details. Please try again.');
@@ -224,28 +283,28 @@ SUMMARY
   return (
     <div className={`min-h-screen ${isDarkTheme ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 text-gray-900'}`}>
       {/* Header */}
-      <header className={`py-5 px-6 flex items-center justify-between ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg shadow-lg' : 'bg-white/90 backdrop-blur-lg shadow-lg'} transition-colors duration-300`}>
+      <header className={`py-4 sm:py-5 px-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg shadow-lg' : 'bg-white/90 backdrop-blur-lg shadow-lg'} transition-colors duration-300`}>
         <button 
           onClick={() => window.location.href = '/worker/dashboard'}
-          className="text-2xl font-extrabold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-none hover:opacity-80 transition-opacity"
+          className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-none hover:opacity-80 transition-opacity"
         >
           Payment Details
         </button>
-        <div className="flex items-center space-x-5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button 
             onClick={toggleTheme}
-            className={`px-5 py-2 rounded-lg font-semibold shadow-md transform transition-transform duration-300 ease-in-out ${
+            className={`px-3 sm:px-5 py-2 rounded-lg font-semibold shadow-md transform transition-transform duration-300 ease-in-out text-xs sm:text-sm ${
               isDarkTheme 
                 ? 'bg-indigo-700 text-white hover:bg-indigo-800 hover:shadow-xl hover:scale-105' 
                 : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 hover:shadow-lg hover:scale-105'
             }`}
           >
-            {isDarkTheme ? 'Light Mode' : 'Dark Mode'}
+            {isDarkTheme ? '☀️ Light' : '🌙 Dark'}
           </button>
           
           <button 
             onClick={toggleLanguage}
-            className={`px-5 py-2 rounded-lg font-semibold shadow-md transform transition-transform duration-300 ease-in-out ${
+            className={`px-3 sm:px-5 py-2 rounded-lg font-semibold shadow-md transform transition-transform duration-300 ease-in-out text-xs sm:text-sm ${
               isDarkTheme 
                 ? 'bg-purple-700 text-white hover:bg-purple-800 hover:shadow-xl hover:scale-105' 
                 : 'bg-purple-100 text-purple-700 hover:bg-purple-200 hover:shadow-lg hover:scale-105'
@@ -256,89 +315,88 @@ SUMMARY
           
           <button 
             onClick={handleLogout}
-            className="px-5 py-2 rounded-lg font-semibold shadow-md transform transition-transform duration-300 ease-in-out bg-red-600 text-white hover:bg-red-700 hover:shadow-lg hover:scale-105"
+            className="px-3 sm:px-5 py-2 rounded-lg font-semibold shadow-md transform transition-transform duration-300 ease-in-out bg-red-600 text-white hover:bg-red-700 hover:shadow-lg hover:scale-105 text-xs sm:text-sm"
           >
-            Logout
+            🚪 Logout
           </button>
           
           <button 
             onClick={() => {
-              // Generate and download payment report
               const reportContent = generatePaymentReport();
               const blob = new Blob([reportContent], { type: 'text/plain' });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `payment-report-${workerData?.job_card_id || 'worker'}.txt`;
+              a.download = `payment-report-${workerData?.job_card_number || workerData?.job_card_id || 'worker'}.txt`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
               URL.revokeObjectURL(url);
             }}
-            className="px-5 py-2 rounded-lg font-semibold shadow-md transform transition-transform duration-300 ease-in-out bg-green-600 text-white hover:bg-green-700 hover:shadow-lg hover:scale-105"
+            className="px-3 sm:px-5 py-2 rounded-lg font-semibold shadow-md transform transition-transform duration-300 ease-in-out bg-green-600 text-white hover:bg-green-700 hover:shadow-lg hover:scale-105 text-xs sm:text-sm whitespace-nowrap"
           >
-            Download Report
+            📄 Download
           </button>
         </div>
       </header>
 
-      <main className="container max-w-7xl mx-auto px-6 py-10">
+      <main className="container max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {/* Welcome Section */}
-        <div className={`rounded-3xl p-8 mb-8 shadow-xl ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div className={`rounded-2xl sm:rounded-3xl p-6 sm:p-8 mb-6 sm:mb-8 shadow-xl ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
                 Payment Details
               </h1>
-              <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
-                Welcome, {workerData?.name || 'Worker'}
+              <p className="mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-300">
+                Welcome, {workerData?.name || 'Worker'} 👋
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Job Card ID: <span className="font-semibold text-indigo-600">{workerData?.job_card_id || 'N/A'}</span>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 break-all">
+                Job Card No: <span className="font-semibold text-indigo-600 dark:text-indigo-400">{workerData?.job_card_number || workerData?.job_card_id || 'N/A'}</span>
               </p>
             </div>
             {workerData?.payment_deadline && (
-              <div className={`mt-4 md:mt-0 px-6 py-3 rounded-xl bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200`}>
-                <p className="text-center font-semibold">
-                  Next Payment Deadline: {formatDate(workerData?.payment_deadline)}
+              <div className={`px-4 sm:px-6 py-3 rounded-xl bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 text-xs sm:text-sm text-center whitespace-nowrap`}>
+                <p className="font-semibold">
+                  ⏰ Next Deadline: {formatDate(workerData?.payment_deadline)}
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Payment Summary */}
-          <div className={`lg:col-span-2 rounded-3xl p-8 shadow-xl ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
-              Payment Summary
+          <div className={`lg:col-span-2 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <h2 className="text-xl sm:text-2xl font-bold mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
+              💰 Payment Summary
             </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="p-6 rounded-xl bg-green-50 dark:bg-green-900/30">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Amount Earned</p>
-                <p className="text-3xl font-bold text-green-700 dark:text-green-300">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div className="p-4 sm:p-6 rounded-xl bg-green-50 dark:bg-green-900/30">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Total Earned</p>
+                <p className="text-2xl sm:text-3xl font-bold text-green-700 dark:text-green-300 mt-1">
                   ₹{workerData?.total_amount || 0}
                 </p>
               </div>
               
-              <div className="p-6 rounded-xl bg-blue-50 dark:bg-blue-900/30">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Completed Projects</p>
-                <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">
+              <div className="p-4 sm:p-6 rounded-xl bg-blue-50 dark:bg-blue-900/30">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Completed</p>
+                <p className="text-2xl sm:text-3xl font-bold text-blue-700 dark:text-blue-300 mt-1">
                   {workerData?.work_history?.filter((w: any) => w.status === 'completed' || w.status === 'paid').length || 0}
                 </p>
               </div>
               
-              <div className="p-6 rounded-xl bg-amber-50 dark:bg-amber-900/30">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Pending Payments</p>
-                <p className="text-3xl font-bold text-amber-700 dark:text-amber-300">
+              <div className="p-4 sm:p-6 rounded-xl bg-amber-50 dark:bg-amber-900/30">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Pending</p>
+                <p className="text-2xl sm:text-3xl font-bold text-amber-700 dark:text-amber-300 mt-1">
                   {workerData?.work_history?.filter((w: any) => w.status !== 'completed' && w.status !== 'paid').length || 0}
                 </p>
               </div>
               
-              <div className="p-6 rounded-xl bg-purple-50 dark:bg-purple-900/30">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Total Projects</p>
-                <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
+              <div className="p-4 sm:p-6 rounded-xl bg-purple-50 dark:bg-purple-900/30">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Total Projects</p>
+                <p className="text-2xl sm:text-3xl font-bold text-purple-700 dark:text-purple-300 mt-1">
                   {workerData?.work_history?.length || 0}
                 </p>
               </div>
@@ -347,21 +405,23 @@ SUMMARY
             {/* Monthly Breakdown */}
             {monthlyTotals.length > 0 && (
               <div>
-                <h3 className="text-xl font-semibold mb-4 text-indigo-700 dark:text-indigo-300">Monthly Earnings</h3>
+                <h3 className="text-base sm:text-xl font-semibold mb-4 text-indigo-700 dark:text-indigo-300">
+                  📅 Monthly Earnings
+                </h3>
                 <div className="space-y-3">
                   {monthlyTotals.map((month: any, index: number) => (
                     <div 
                       key={index} 
-                      className={`p-4 rounded-lg border ${isDarkTheme ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}`}
+                      className={`p-3 sm:p-4 rounded-lg border ${isDarkTheme ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}`}
                     >
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="font-semibold text-lg">{month.month}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="font-semibold text-sm sm:text-lg">{month.month}</p>
+                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                             {month.projects} project{month.projects !== 1 ? 's' : ''}
                           </p>
                         </div>
-                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                        <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">
                           ₹{month.totalAmount}
                         </p>
                       </div>
@@ -373,8 +433,8 @@ SUMMARY
           </div>
 
           {/* Bank Details */}
-          <div className={`rounded-3xl p-8 shadow-xl ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
+          <div className={`rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <h2 className="text-xl sm:text-2xl font-bold mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
               Bank Details
             </h2>
             
@@ -383,11 +443,11 @@ SUMMARY
                 {workerData?.bank_details ? (
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Bank Name</p>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Bank Name</p>
                       <p className="font-medium">{workerData.bank_details.bank_name || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Account Number</p>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Account Number</p>
                       <p className="font-medium">
                         {workerData.bank_details.account_number 
                           ? 'XXXXXX' + workerData.bank_details.account_number.slice(-4)
@@ -396,11 +456,11 @@ SUMMARY
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">IFSC Code</p>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">IFSC Code</p>
                       <p className="font-medium">{workerData.bank_details.ifsc_code || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Branch Name</p>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Branch Name</p>
                       <p className="font-medium">{workerData.bank_details.branch_name || 'N/A'}</p>
                     </div>
                     <button
