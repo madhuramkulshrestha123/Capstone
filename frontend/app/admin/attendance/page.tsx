@@ -275,7 +275,8 @@ export default function AttendanceManagementPage() {
       
       console.log('Updating attendance with ID:', attendanceId, 'New status:', newStatus);
       
-      await adminApi.patch(`/attendances/${attendanceId}`, {
+      // Use PUT method instead of PATCH - backend expects PUT /attendances/:id
+      await adminApi.put(`/attendances/${attendanceId}`, {
         status: newStatus.toLowerCase(), // Convert to lowercase to match backend validation
         edit_reason: editReason
       });

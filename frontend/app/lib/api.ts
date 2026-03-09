@@ -464,6 +464,20 @@ export const adminApi = {
     }
   },
   
+  // Generic PUT request
+  put: async (endpoint: string, data: any) => {
+    try {
+      const response = await apiFetch(endpoint, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error making PUT request:', error);
+      throw error;
+    }
+  },
+  
   // Generic POST request
   post: async (endpoint: string, data: any) => {
     try {
