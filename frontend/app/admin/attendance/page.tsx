@@ -836,15 +836,15 @@ export default function AttendanceManagementPage() {
         {/* Worker Attendance Table */}
         {selectedProject && (
           <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-800">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800">
                 {t('workerAttendance')} - {projects.find(p => p.id === selectedProject)?.name}
               </h2>
-              <p className="text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 mt-1">
                 {new Date(date).toLocaleDateString('en-IN', { 
-                  weekday: 'long', 
+                  weekday: 'short', 
                   year: 'numeric', 
-                  month: 'long', 
+                  month: 'short', 
                   day: 'numeric' 
                 })}
               </p>
@@ -859,23 +859,22 @@ export default function AttendanceManagementPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         {t('workerName')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                         {t('jobCardId')}
                       </th>
-
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         {t('attendance')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                         {t('markedBy')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
 Time
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         {t('actions')}
                       </th>
                     </tr>
@@ -888,28 +887,31 @@ Time
                         
                         return (
                           <tr key={worker.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900">{worker.name}</div>
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                              <div className="max-w-[150px] sm:max-w-none">
+                                <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{worker.name}</div>
+                                <div className="text-xs text-gray-500 sm:hidden truncate">{worker.job_card_id}</div>
+                              </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 hidden sm:table-cell">
                               {worker.job_card_id}
                             </td>
 
-                            <td className="px-6 py-4 whitespace-nowrap">
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                               {attendanceRecord ? (
-                                <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(attendanceRecord.status)}`}>
+                                <span className={`px-2 sm:px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeClass(attendanceRecord.status)}`}>
                                   {getStatusText(attendanceRecord.status)}
                                 </span>
                               ) : (
-                                <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                <span className="px-2 sm:px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                   {t('notMarked')}
                                 </span>
                               )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 hidden md:table-cell">
                               {attendanceRecord?.supervisor_name || 'N/A'}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 hidden lg:table-cell">
                               {attendanceRecord 
                                 ? new Date(attendanceRecord.created_at).toLocaleTimeString('en-IN', { 
                                     hour: '2-digit', 
@@ -918,18 +920,18 @@ Time
                                 : 'N/A'
                               }
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
                               {!attendanceRecord ? (
-                                <div className="flex space-x-2">
+                                <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
                                   <button
                                     onClick={() => markAttendance(worker.id, 'PRESENT')}
-                                    className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200"
+                                    className="px-2 sm:px-3 py-1.5 bg-green-600 text-white text-xs sm:text-sm rounded-md hover:bg-green-700 transition-colors duration-200 min-w-[70px]"
                                   >
                                     {t('present')}
                                   </button>
                                   <button
                                     onClick={() => markAttendance(worker.id, 'ABSENT')}
-                                    className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200"
+                                    className="px-2 sm:px-3 py-1.5 bg-red-600 text-white text-xs sm:text-sm rounded-md hover:bg-red-700 transition-colors duration-200 min-w-[70px]"
                                   >
                                     {t('absent')}
                                   </button>
@@ -938,7 +940,7 @@ Time
                                 <button
                                   onClick={() => handleEditAttendance(attendanceRecord)}
                                   disabled={!canEdit}
-                                  className={`px-3 py-1 rounded-md transition-colors duration-200 ${
+                                  className={`px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm transition-colors duration-200 min-w-[70px] ${
                                     canEdit 
                                       ? 'bg-blue-600 text-white hover:bg-blue-700' 
                                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -953,7 +955,7 @@ Edit
                       })
                     ) : (
                       <tr>
-                        <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                        <td colSpan={7} className="px-3 sm:px-6 py-4 text-center text-xs sm:text-sm text-gray-500">
                           {t('noWorkersFound')}
                         </td>
                       </tr>
@@ -968,11 +970,11 @@ Edit
       
       {/* Edit Attendance Modal */}
       {showEditModal && selectedAttendance && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full">
-            <div className="p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full my-8 mx-3 sm:mx-4">
+            <div className="p-4 sm:p-6">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-gray-800">{t('editAttendance')}</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800">{t('editAttendance')}</h3>
                 <button 
                   onClick={() => {
                     setShowEditModal(false);
@@ -981,62 +983,62 @@ Edit
                   }}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500">{t('workerName')}</p>
-                  <p className="font-medium">{selectedAttendance.worker_name}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">{t('workerName')}</p>
+                  <p className="font-medium text-sm sm:text-base break-all">{selectedAttendance.worker_name}</p>
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-500">{t('currentStatus')}</p>
-                  <p className={`font-medium ${selectedAttendance.status === 'PRESENT' ? 'text-green-600' : 'text-red-600'}`}>
+                  <p className="text-xs sm:text-sm text-gray-500">{t('currentStatus')}</p>
+                  <p className={`font-medium text-sm sm:text-base ${selectedAttendance.status === 'PRESENT' ? 'text-green-600' : 'text-red-600'}`}>
                     {getStatusText(selectedAttendance.status)}
                   </p>
                 </div>
                 
                 <div>
-                  <p className="text-sm text-gray-500">{t('newStatus')}</p>
-                  <p className={`font-medium ${selectedAttendance.status === 'PRESENT' ? 'text-red-600' : 'text-green-600'}`}>
+                  <p className="text-xs sm:text-sm text-gray-500">{t('newStatus')}</p>
+                  <p className={`font-medium text-sm sm:text-base ${selectedAttendance.status === 'PRESENT' ? 'text-red-600' : 'text-green-600'}`}>
                     {getStatusText(selectedAttendance.status === 'PRESENT' ? 'ABSENT' : 'PRESENT')}
                   </p>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                     {t('reasonForChange')} <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     value={editReason}
                     onChange={(e) => setEditReason(e.target.value)}
                     placeholder={t('enterReasonForAttendanceChange')}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                     rows={3}
                     required
                   />
                 </div>
               </div>
               
-              <div className="mt-6 flex justify-end space-x-3">
+              <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
                 <button
                   onClick={() => {
                     setShowEditModal(false);
                     setSelectedAttendance(null);
                     setEditReason('');
                   }}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200"
+                  className="w-full sm:w-auto px-4 py-2.5 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200 text-sm font-medium"
                 >
                   {t('cancel')}
                 </button>
                 <button
                   onClick={saveAttendanceEdit}
                   disabled={!editReason.trim()}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
                 >
                   {t('save')}
                 </button>
