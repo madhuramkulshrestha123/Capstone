@@ -29,10 +29,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const loadWorkerData = async () => {
     try {
       const workerDataStr = await AsyncStorage.getItem('workerData');
-      if (workerDataStr) {
+      console.log('Raw workerData from storage:', workerDataStr);
+      
+     if (workerDataStr) {
         const data = JSON.parse(workerDataStr);
+        console.log('Parsed workerData:', data);
+        console.log('Data fields:', Object.keys(data));
         setWorkerData(data);
         fetchAttendanceData(data.id);
+      } else {
+        console.log('No workerData found in storage');
       }
     } catch (error) {
       console.error('Error loading worker data:', error);
@@ -320,11 +326,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: '45%',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
   },
   statIcon: {
     width: 40,
@@ -371,11 +373,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
   },
   actionEmoji: {
     fontSize: 32,
@@ -390,11 +388,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
   },
   infoRow: {
     flexDirection: 'row',
@@ -420,11 +414,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
   },
   recentWorkName: {
     fontSize: 16,
