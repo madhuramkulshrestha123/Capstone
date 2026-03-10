@@ -35,8 +35,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     setLoading(true);
     try {
       await workerLoginWithJobCard(jobCardNumber.toUpperCase(), aadhaarNumber);
-      Alert.alert('Success', 'Login successful! Redirecting to dashboard...');
-      // Navigation will be handled by AppNavigator automatically
+      // Navigation must be handled manually - AppNavigator won't auto-navigate
+     navigation.replace('Home');
     } catch (error: any) {
       Alert.alert('Error', error.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
