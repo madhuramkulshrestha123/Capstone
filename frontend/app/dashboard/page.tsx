@@ -646,106 +646,106 @@ export default function Dashboard() {
           <h2 className="text-2xl md:text-3xl font-extrabold mb-6 md:mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
             Download Mobile APK
           </h2>
-          <div className={`p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl overflow-hidden ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          <div className={`p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-xl overflow-hidden ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-center">
               {/* Left Side - Content */}
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
+              <div className="space-y-4 md:space-y-6 order-2 lg:order-1">
+                <div className="flex items-center space-x-3 md:space-x-4">
                   <img 
                     src="/images/apk logo.png" 
                     alt="Smart Rozgaar App Logo" 
-                    className="w-16 h-16 object-contain"
+                    className="w-12 h-12 md:w-16 md:h-16 object-contain flex-shrink-0"
                     onError={(e) => {
                       e.currentTarget.src = 'https://placehold.co/64x64/4F46E5/FFFFFF?text=Logo';
                     }}
                   />
                   <div>
-                    <h3 className="text-xl md:text-2xl font-bold">Smart Rozgaar App</h3>
-                    <p className={`text-sm md:text-base ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>Version 1.0.0 | 6 MB</p>
+                    <h3 className="text-lg md:text-2xl font-bold">Smart Rozgaar App</h3>
+                    <p className={`text-xs md:text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>Version 1.0.0 | 6 MB</p>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                <div className="space-y-3 md:space-y-4">
+                  <div className="flex items-start space-x-2 md:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
                       isDarkTheme ? 'bg-indigo-700' : 'bg-indigo-100'
                     }`}>
-                      <svg className={`w-5 h-5 ${isDarkTheme ? 'text-white' : 'text-indigo-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-3 h-3 md:w-5 md:h-5 ${isDarkTheme ? 'text-white' : 'text-indigo-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <p className={`text-sm md:text-base flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <p className={`text-xs md:text-sm flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
                       <strong>Instant Job Access:</strong> Browse and apply for daily wage jobs instantly in your area
                     </p>
                   </div>
 
-                  <div className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                  <div className="flex items-start space-x-2 md:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
                       isDarkTheme ? 'bg-purple-700' : 'bg-purple-100'
                     }`}>
-                      <svg className={`w-5 h-5 ${isDarkTheme ? 'text-white' : 'text-purple-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-3 h-3 md:w-5 md:h-5 ${isDarkTheme ? 'text-white' : 'text-purple-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <p className={`text-sm md:text-base flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <p className={`text-xs md:text-sm flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
                       <strong>Digital Attendance:</strong> Mark attendance on-site with GPS verification and OTP
                     </p>
                   </div>
 
-                  <div className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                  <div className="flex items-start space-x-2 md:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
                       isDarkTheme ? 'bg-pink-700' : 'bg-pink-100'
                     }`}>
-                      <svg className={`w-5 h-5 ${isDarkTheme ? 'text-white' : 'text-pink-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-3 h-3 md:w-5 md:h-5 ${isDarkTheme ? 'text-white' : 'text-pink-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <p className={`text-sm md:text-base flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <p className={`text-xs md:text-sm flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
                       <strong>Real-time Payments:</strong> Track wage payments and view payment history anytime
                     </p>
                   </div>
 
-                  <div className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                  <div className="flex items-start space-x-2 md:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
                       isDarkTheme ? 'bg-blue-700' : 'bg-blue-100'
                     }`}>
-                      <svg className={`w-5 h-5 ${isDarkTheme ? 'text-white' : 'text-blue-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-3 h-3 md:w-5 md:h-5 ${isDarkTheme ? 'text-white' : 'text-blue-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <p className={`text-sm md:text-base flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <p className={`text-xs md:text-sm flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
                       <strong>Multilingual Support:</strong> Available in English and Hindi for easy accessibility
                     </p>
                   </div>
                 </div>
 
-                <button className="w-full md:w-auto px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transform transition-transform duration-300 hover:scale-105 flex items-center justify-center space-x-3">
+                <button className="w-full px-6 py-3 md:px-8 md:py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transform transition-transform duration-300 hover:scale-105 flex items-center justify-center space-x-2 md:space-x-3">
                   <img 
                     src="/images/apk.png" 
                     alt="Android APK" 
-                    className="w-6 h-6 object-contain"
+                    className="w-5 h-5 md:w-6 md:h-6 object-contain"
                     onError={(e) => {
                       e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xNy41MjMgMTUuMzQxNGMtLjU1MTEgMC0uOTk5My0uMDAyNy0xLjQzMjItLjAyMzktMS40MjkzLS4wNjk0LTIuNzQwOS0uNDE2My0zLjkzMjctMS4yMjUzLS4yNTcxLS4xNzQzLS40ODU1LS4zNzU2LS42ODI4LS42MTczLS4wMzQ3LS4wNDI2LS4wNzA5LS4wODQ1LS4xMTE0LS4xMzA4LS4wMzc5LjA0NDItLjA3MjYuMDg0OS0uMTA4NS4xMjYxLS4yMDI1LjIzMjgtLjQzMTkuNDI3Mi0uNjg5Ni41OTU4LTEuMTg4OS43NzY3LTIuNDk3OSAxLjExMzctMy45MjQxIDEuMTc5Mi0uNDM1LjAyMDEtLjg4NTMuMDIwNC0xLjQzODYuMDIwNC0uMjIxMyAwLS40NDI2LS4wMDEzLS42NjM4LS4wMDM4IDEuNjc5NS0yLjQwODggMy4zNDgzLTQuODI1MSA1LjAyNTgtNy4yMzYxLjE2OTgtLjI0MzYuMzU1Mi0uNDY5My41NjkzLS42NjM5LjIxMDQtLjE5MTIuNDQ0NC0uMzUwNi43MTI2LS40NTkzLjI3MTYtLjExMDEuNTU0Ny0uMTY1OC44NTAzLS4xNjU4LjI5MjkgMCAuNTczNy4wNTQ3Ljg0MzYuMTYzNi4yNjc1LjEwNzkuNTAxMi4yNjY2LjcxMTcuNDU2NS4yMTQ5LjE5MzkuNDAxMi40MTg5LjU3MjEuNjYxNyAxLjY3NjcgMi40MTIxIDMuMzQ0OSA0LjgyOTUgNS4wMjM3IDcuMjM5My0uMjIzMS4wMDI1LS40NDY0LjAwMzktLjY2OTcuMDAzOS0uNTU2NSAwLTEuMDA5NS0uMDAwMy0xLjQ1NTgtLjAyMDN6TTEyLjAwMDEgMi4wMDAxYy0yLjc2MTQgMC01IDIuMjM4Ni01IDUuMDAwMSAwIDIuNzYxNCAyLjIzODYgNSA1IDVzNS0yLjIzODYgNS01YzAtMi43NjE1LTIuMjM4Ni01LjAwMDEtNS01LjAwMDF6bTAgMi4wMDAxYzEuNjU2OSAwIDMgMS4zNDMxIDMgMyAwIDEuNjU2OC0xLjM0MzEgMy0zIDNzLTMtMS4zNDMyLTMtM2MwLTEuNjU2OSAxLjM0MzEtMyAzLTN6Ii8+PC9zdmc+';
                     }}
                   />
-                  <span>Download Android APK</span>
+                  <span className="text-sm md:text-base">Download Android APK</span>
                 </button>
               </div>
 
               {/* Right Side - Mobile App Image */}
-              <div className="relative flex justify-center items-center">
-                <div className={`absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-3xl transform rotate-3 ${isDarkTheme ? 'opacity-50' : 'opacity-70'}`}></div>
+              <div className="relative flex justify-center items-center order-1 lg:order-2 mb-4 lg:mb-0">
+                <div className={`absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-3xl transform rotate-2 ${isDarkTheme ? 'opacity-40' : 'opacity-60'}`}></div>
                 <div className="relative">
                   <img 
                     src="/images/apk image -1.png" 
                     alt="Smart Rozgaar Mobile App" 
-                    className="h-[500px] md:h-[600px] w-auto object-cover rounded-3xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
+                    className="h-[400px] sm:h-[500px] md:h-[600px] w-auto object-cover rounded-3xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
                     onError={(e) => {
                       e.currentTarget.src = 'https://placehold.co/432x932/4F46E5/FFFFFF?text=Smart+Rozgaar+App';
                     }}
                   />
-                  <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-xl animate-bounce">
-                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="absolute -bottom-4 -right-4 w-16 h-16 md:w-24 md:h-24 bg-green-500 rounded-full flex items-center justify-center shadow-xl animate-bounce">
+                    <svg className="w-8 h-8 md:w-12 md:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
                   </div>
