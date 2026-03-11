@@ -1,0 +1,29 @@
+R_DEF: Internal format may change without notice
+local
+color black
+color colorAccent
+color colorPrimary
+color colorPrimaryDark
+color splashBackground
+color white
+drawable ic_launcher_background
+drawable ic_launcher_foreground
+drawable splash_background
+id loadingContainer
+id progressBar
+id splashAppName
+id splashLogo
+id splashTagline
+id swipeRefreshLayout
+id webView
+layout activity_main
+layout activity_splash
+mipmap ic_launcher
+mipmap ic_launcher_foreground
+mipmap ic_launcher_round
+string app_name
+string loading
+string no_internet
+string press_back_again
+style Theme.SmartRozgaarApp
+style Theme.SmartRozgaarApp.Splash

@@ -121,8 +121,8 @@ export const translations = {
     'newApp': 'New Mobile App Release',
     'newAppDesc': 'Download our updated app for better experience',
     
-    // Upcoming Features
-    'upcomingFeaturesTitle': 'Upcoming Online Features',
+    // Latest Features
+    'latestFeaturesTitle': 'Latest Features',
     'upcomingFeaturesDescription': 'Soon you will be able to access all services online instead of visiting your panchayat office. Our digital transformation will make the process more efficient and transparent.',
     'payments': 'Payments',
     'paymentsDescription': 'Receive your payments directly to your bank account with real-time tracking',
@@ -855,8 +855,8 @@ export const translations = {
     'newApp': 'नया मोबाइल ऐप रिलीज',
     'newAppDesc': 'बेहतर अनुभव के लिए हमारा अपडेटेड ऐप डाउनलोड करें',
     
-    // Upcoming Features
-    'upcomingFeaturesTitle': 'आगामी ऑनलाइन सुविधाएं',
+    // Latest Features
+    'latestFeaturesTitle': 'नवीनतम विशेषताएं',
     'upcomingFeaturesDescription': 'जल्द ही आप अपने पंचायत कार्यालय जाने के बजाय सभी सेवाओं का ऑनलाइन उपयोग कर पाएंगे। हमारा डिजिटल परिवर्तन प्रक्रिया को अधिक कुशल और पारदर्शी बनाएगा।',
     'payments': 'भुगतान',
     'paymentsDescription': 'अपने बैंक खाते में सीधे भुगतान प्राप्त करें वास्तविक समय ट्रैकिंग के साथ',

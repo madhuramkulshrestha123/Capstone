@@ -596,10 +596,10 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Upcoming Online Features */}
+        {/* Latest Features */}
         <section className="mb-16">
           <h2 className="text-2xl md:text-3xl font-extrabold mb-6 md:mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
-            {t('upcomingFeaturesTitle')}
+            {t('latestFeaturesTitle')}
           </h2>
           <div className={`p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
             <p className="text-base md:text-lg mb-4 md:mb-6 select-text">Soon you will be able to access all services online instead of visiting your panchayat office. Our digital transformation will make the process more efficient and transparent.</p>
@@ -637,6 +637,114 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Download Mobile App Section */}
+        <section className="mb-16">
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-6 md:mb-8 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent select-text">
+            Download Mobile APK
+          </h2>
+          <div className={`p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl overflow-hidden ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              {/* Left Side - Content */}
+              <div className="space-y-6">
+                <div className="flex items-center space-x-4">
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
+                    isDarkTheme ? 'bg-green-600' : 'bg-green-500'
+                  }`}>
+                    <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M17.523 15.3414c-.5511 0-.9993-.0027-1.4322-.0239-1.4293-.0694-2.7409-.4163-3.9327-1.2253-.2571-.1743-.4855-.3756-.6828-.6173-.0347-.0426-.0709-.0845-.1114-.1308-.0379.0442-.0726.0849-.1085.1261-.2025.2328-.4319.4272-.6896.5958-1.1889.7767-2.4979 1.1137-3.9241 1.1792-.435.0201-.8853.0204-1.4386.0204-.2213 0-.4426-.0013-.6638-.0038 1.6795-2.4088 3.3483-4.8251 5.0258-7.2361.1698-.2436.3552-.4693.5693-.6639.2104-.1912.4444-.3506.7126-.4593.2716-.1101.5547-.1658.8503-.1658.2929 0 .5737.0547.8436.1636.2675.1079.5012.2666.7117.4565.2149.1939.4012.4189.5721.6617 1.6767 2.4121 3.3449 4.8295 5.0237 7.2393-.2231.0025-.4464.0039-.6697.0039-.5565 0-1.0095-.0003-1.4558-.0203zM12.0001 2.0001c-2.7614 0-5 2.2386-5 5.0001 0 2.7614 2.2386 5 5 5s5-2.2386 5-5c0-2.7615-2.2386-5.0001-5-5.0001zm0 2.0001c1.6569 0 3 1.3431 3 3 0 1.6568-1.3431 3-3 3s-3-1.3432-3-3c0-1.6569 1.3431-3 3-3z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-bold">Smart Rozgaar App</h3>
+                    <p className={`text-sm md:text-base ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>Version 1.0.0 | 15 MB</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      isDarkTheme ? 'bg-indigo-700' : 'bg-indigo-100'
+                    }`}>
+                      <svg className={`w-5 h-5 ${isDarkTheme ? 'text-white' : 'text-indigo-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className={`text-sm md:text-base flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <strong>Instant Job Access:</strong> Browse and apply for daily wage jobs instantly in your area
+                    </p>
+                  </div>
+
+                  <div className="flex items-start space-x-3">
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      isDarkTheme ? 'bg-purple-700' : 'bg-purple-100'
+                    }`}>
+                      <svg className={`w-5 h-5 ${isDarkTheme ? 'text-white' : 'text-purple-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className={`text-sm md:text-base flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <strong>Digital Attendance:</strong> Mark attendance on-site with GPS verification and OTP
+                    </p>
+                  </div>
+
+                  <div className="flex items-start space-x-3">
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      isDarkTheme ? 'bg-pink-700' : 'bg-pink-100'
+                    }`}>
+                      <svg className={`w-5 h-5 ${isDarkTheme ? 'text-white' : 'text-pink-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className={`text-sm md:text-base flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <strong>Real-time Payments:</strong> Track wage payments and view payment history anytime
+                    </p>
+                  </div>
+
+                  <div className="flex items-start space-x-3">
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      isDarkTheme ? 'bg-blue-700' : 'bg-blue-100'
+                    }`}>
+                      <svg className={`w-5 h-5 ${isDarkTheme ? 'text-white' : 'text-blue-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className={`text-sm md:text-base flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <strong>Multilingual Support:</strong> Available in English and Hindi for easy accessibility
+                    </p>
+                  </div>
+                </div>
+
+                <button className="w-full md:w-auto px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transform transition-transform duration-300 hover:scale-105 flex items-center justify-center space-x-3">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.523 15.3414c-.5511 0-.9993-.0027-1.4322-.0239-1.4293-.0694-2.7409-.4163-3.9327-1.2253-.2571-.1743-.4855-.3756-.6828-.6173-.0347-.0426-.0709-.0845-.1114-.1308-.0379.0442-.0726.0849-.1085.1261-.2025.2328-.4319.4272-.6896.5958-1.1889.7767-2.4979 1.1137-3.9241 1.1792-.435.0201-.8853.0204-1.4386.0204-.2213 0-.4426-.0013-.6638-.0038 1.6795-2.4088 3.3483-4.8251 5.0258-7.2361.1698-.2436.3552-.4693.5693-.6639.2104-.1912.4444-.3506.7126-.4593.2716-.1101.5547-.1658.8503-.1658.2929 0 .5737.0547.8436.1636.2675.1079.5012.2666.7117.4565.2149.1939.4012.4189.5721.6617 1.6767 2.4121 3.3449 4.8295 5.0237 7.2393-.2231.0025-.4464.0039-.6697.0039-.5565 0-1.0095-.0003-1.4558-.0203zM12.0001 2.0001c-2.7614 0-5 2.2386-5 5.0001 0 2.7614 2.2386 5 5 5s5-2.2386 5-5c0-2.7615-2.2386-5.0001-5-5.0001zm0 2.0001c1.6569 0 3 1.3431 3 3 0 1.6568-1.3431 3-3 3s-3-1.3432-3-3c0-1.6569 1.3431-3 3-3z"/>
+                  </svg>
+                  <span>Download Android APK</span>
+                </button>
+              </div>
+
+              {/* Right Side - Mobile App Image */}
+              <div className="relative flex justify-center items-center">
+                <div className={`absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-3xl transform rotate-3 ${isDarkTheme ? 'opacity-50' : 'opacity-70'}`}></div>
+                <div className="relative">
+                  <img 
+                    src="/images/mobile-app-mockup.jpg" 
+                    alt="Smart Rozgaar Mobile App" 
+                    className="h-[500px] md:h-[600px] w-auto object-cover rounded-3xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/432x932/4F46E5/FFFFFF?text=Smart+Rozgaar+App';
+                    }}
+                  />
+                  <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-xl animate-bounce">
+                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
