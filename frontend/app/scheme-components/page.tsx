@@ -43,6 +43,11 @@ export default function SchemeComponents() {
     }
   };
 
+  const navItems = [
+    'aboutMinistry', 'aboutScheme', 'keyFeatures', 'schemeComponents',
+    'mobileApps', 'raiseComplaint', 'login'
+  ];
+
   return (
     <div className={`min-h-screen ${isDarkTheme ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 text-gray-900'}`}>
       <Header 
@@ -56,72 +61,96 @@ export default function SchemeComponents() {
         onNavClick={handleNavClick}
       />
 
-      <main className="container max-w-7xl mx-auto px-6 py-10 space-y-14">
+      {/* Navigation Bar - Desktop Only */}
+      <nav className={`hidden md:block py-3 px-6 ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg shadow-inner' : 'bg-white/90 backdrop-blur-lg shadow-inner'} sticky top-0 z-20 transition-colors duration-300`}>
+        <ul className="flex flex-wrap justify-center gap-3 md:gap-6 font-medium tracking-wide">
+          {navItems.map((item, index) => (
+            <li key={index} className="my-2">
+              <button 
+                onClick={() => handleNavClick(item)}
+                className={`px-5 py-2 rounded-lg transition-transform duration-300 ease-in-out hover:scale-110 ${
+                  item === 'login' 
+                    ? `font-bold ${isDarkTheme 
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg' 
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'}`
+                    : isDarkTheme 
+                      ? 'text-white hover:bg-indigo-700 hover:shadow-md' 
+                      : 'text-gray-900 hover:bg-indigo-200 hover:text-indigo-700 hover:shadow-md'
+                }`}
+              >
+                {t(item as any)}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <main className="container max-w-7xl mx-auto px-4 md:px-6 py-10 space-y-14">
         {/* Hero Section */}
-        <section className="text-center py-16">
-          <h1 className="text-5xl font-extrabold mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
+        <section className="text-center py-12 md:py-16">
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 md:mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent px-4">
             {t('schemeComponents')}
           </h1>
-          <p className="text-2xl font-light max-w-3xl mx-auto">
+          <p className="text-base md:text-2xl font-light max-w-3xl mx-auto px-4">
             {t('schemeComponentsDesc')}
           </p>
         </section>
 
         {/* Main Components */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <div className={`p-8 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <h2 className="text-3xl font-bold mb-6 text-indigo-700">{t('coreComponents')}</h2>
-            <ul className="space-y-4">
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
+          <div className={`p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-indigo-700">{t('coreComponents')}</h2>
+            <ul className="space-y-3 md:space-y-4">
               <li className="flex items-start">
-                <span className="text-green-500 mr-3 text-xl">✓</span>
-                <span>{t('jobCardSystem')}</span>
+                <span className="text-green-500 mr-3 text-lg md:text-xl">✓</span>
+                <span className="text-sm md:text-base">{t('jobCardSystem')}</span>
               </li>
               <li className="flex items-start">
-                <span className="text-green-500 mr-3 text-xl">✓</span>
-                <span>{t('workDemand')}</span>
+                <span className="text-green-500 mr-3 text-lg md:text-xl">✓</span>
+                <span className="text-sm md:text-base">{t('workDemand')}</span>
               </li>
               <li className="flex items-start">
-                <span className="text-green-500 mr-3 text-xl">✓</span>
-                <span>{t('planningImplementation')}</span>
+                <span className="text-green-500 mr-3 text-lg md:text-xl">✓</span>
+                <span className="text-sm md:text-base">{t('planningImplementation')}</span>
               </li>
               <li className="flex items-start">
-                <span className="text-green-500 mr-3 text-xl">✓</span>
-                <span>{t('wagePayment')}</span>
+                <span className="text-green-500 mr-3 text-lg md:text-xl">✓</span>
+                <span className="text-sm md:text-base">{t('wagePayment')}</span>
               </li>
               <li className="flex items-start">
-                <span className="text-green-500 mr-3 text-xl">✓</span>
-                <span>{t('socialAudit')}</span>
+                <span className="text-green-500 mr-3 text-lg md:text-xl">✓</span>
+                <span className="text-sm md:text-base">{t('socialAudit')}</span>
               </li>
             </ul>
           </div>
           
-          <div className={`p-8 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <h2 className="text-3xl font-bold mb-6 text-purple-700">{t('governanceStructure')}</h2>
-            <ul className="space-y-4">
+          <div className={`p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-purple-700">{t('governanceStructure')}</h2>
+            <ul className="space-y-3 md:space-y-4">
               <li className="flex items-start">
-                <span className="text-blue-500 mr-3 text-xl">✓</span>
-                <span>{t('gramSabha')}</span>
+                <span className="text-blue-500 mr-3 text-lg md:text-xl">✓</span>
+                <span className="text-sm md:text-base">{t('gramSabha')}</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-500 mr-3 text-xl">✓</span>
-                <span>{t('gpMonitoring')}</span>
+                <span className="text-blue-500 mr-3 text-lg md:text-xl">✓</span>
+                <span className="text-sm md:text-base">{t('gpMonitoring')}</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-500 mr-3 text-xl">✓</span>
-                <span>{t('stateOversight')}</span>
+                <span className="text-blue-500 mr-3 text-lg md:text-xl">✓</span>
+                <span className="text-sm md:text-base">{t('stateOversight')}</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-500 mr-3 text-xl">✓</span>
-                <span>{t('centralMonitoring')}</span>
+                <span className="text-blue-500 mr-3 text-lg md:text-xl">✓</span>
+                <span className="text-sm md:text-base">{t('centralMonitoring')}</span>
               </li>
             </ul>
           </div>
         </section>
 
         {/* How it Works */}
-        <section className={`p-10 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-          <h2 className="text-3xl font-bold mb-8 text-center text-indigo-700">{t('howSchemeWorks')}</h2>
-          <div className="flex flex-col space-y-6">
+        <section className={`p-4 md:p-10 rounded-2xl md:rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center text-indigo-700">{t('howSchemeWorks')}</h2>
+          <div className="flex flex-col space-y-4 md:space-y-6">
             {[
               { step: '1', title: t('jobCardApplication'), desc: t('jobCardApplicationDesc') },
               { step: '2', title: t('workDemandFiling'), desc: t('workDemandFilingDesc') },
@@ -131,12 +160,12 @@ export default function SchemeComponents() {
               { step: '6', title: t('paymentProcessing'), desc: t('paymentProcessingDesc') }
             ].map((item, index) => (
               <div key={index} className="flex items-start">
-                <div className="flex-shrink-0 w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold mr-3 md:mr-4 text-sm md:text-base">
                   {item.step}
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300">{item.desc}</p>
+                  <h3 className="text-lg md:text-xl font-semibold mb-2">{item.title}</h3>
+                  <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">{item.desc}</p>
                 </div>
               </div>
             ))}

@@ -44,6 +44,11 @@ export default function RaiseComplaint() {
     }
   };
 
+  const navItems = [
+    'aboutMinistry', 'aboutScheme', 'keyFeatures', 'schemeComponents',
+    'mobileApps', 'raiseComplaint', 'login'
+  ];
+
   const complaintCategories = [
     'paymentDelay',
     'attendanceIssue',
@@ -109,23 +114,47 @@ export default function RaiseComplaint() {
         onNavClick={handleNavClick}
       />
 
-      <main className="container max-w-4xl mx-auto px-6 py-10">
+      {/* Navigation Bar - Desktop Only */}
+      <nav className={`hidden md:block py-3 px-6 ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg shadow-inner' : 'bg-white/90 backdrop-blur-lg shadow-inner'} sticky top-0 z-20 transition-colors duration-300`}>
+        <ul className="flex flex-wrap justify-center gap-3 md:gap-6 font-medium tracking-wide">
+          {navItems.map((item, index) => (
+            <li key={index} className="my-2">
+              <button 
+                onClick={() => handleNavClick(item)}
+                className={`px-5 py-2 rounded-lg transition-transform duration-300 ease-in-out hover:scale-110 ${
+                  item === 'login' 
+                    ? `font-bold ${isDarkTheme 
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg' 
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'}`
+                    : isDarkTheme 
+                      ? 'text-white hover:bg-indigo-700 hover:shadow-md' 
+                      : 'text-gray-900 hover:bg-indigo-200 hover:text-indigo-700 hover:shadow-md'
+                }`}
+              >
+                {t(item as any)}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <main className="container max-w-4xl mx-auto px-4 md:px-6 py-10">
         {/* Hero Section */}
-        <section className="text-center py-12">
-          <h1 className="text-4xl font-extrabold mb-4 bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+        <section className="text-center py-12 md:py-16">
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 md:mb-6 bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent px-4">
             {t('raiseComplaint')}
           </h1>
-          <p className="text-xl font-light max-w-2xl mx-auto">
+          <p className="text-base md:text-xl font-light max-w-2xl mx-auto px-4">
             {t('complaintDescription')}
           </p>
         </section>
 
         {/* Progress Steps */}
-        <div className="flex justify-center mb-12">
-          <div className="flex items-center">
+        <div className="flex justify-center mb-12 overflow-x-auto">
+          <div className="flex items-center min-w-max">
             {[1, 2, 3].map((num) => (
               <div key={num} className="flex items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold ${
                   step >= num 
                     ? 'bg-green-600 text-white' 
                     : isDarkTheme 
@@ -135,7 +164,7 @@ export default function RaiseComplaint() {
                   {num}
                 </div>
                 {num < 3 && (
-                  <div className={`w-16 h-1 mx-2 ${
+                  <div className={`w-12 md:w-16 h-1 mx-2 md:mx-4 ${
                     step > num 
                       ? 'bg-green-600' 
                       : isDarkTheme 
@@ -150,11 +179,11 @@ export default function RaiseComplaint() {
 
         {/* Step 1: Complaint Form */}
         {step === 1 && (
-          <section className={`p-8 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <h2 className="text-3xl font-bold mb-8 text-center text-indigo-700">{t('complaintForm')}</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <section className={`p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center text-indigo-700">{t('complaintForm')}</h2>
+            <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
               <div>
-                <label className="block text-lg font-medium mb-2">{t('fullName')}</label>
+                <label className="block text-sm md:text-lg font-medium mb-2">{t('fullName')}</label>
                 <input
                   type="text"
                   name="name"
@@ -171,7 +200,7 @@ export default function RaiseComplaint() {
               </div>
 
               <div>
-                <label className="block text-lg font-medium mb-2">{t('jobCardNumber')}</label>
+                <label className="block text-sm md:text-lg font-medium mb-2">{t('jobCardNumber')}</label>
                 <input
                   type="text"
                   name="jobCardNumber"
@@ -188,7 +217,7 @@ export default function RaiseComplaint() {
               </div>
 
               <div>
-                <label className="block text-lg font-medium mb-2">{t('mobileNumber')}</label>
+                <label className="block text-sm md:text-lg font-medium mb-2">{t('mobileNumber')}</label>
                 <input
                   type="tel"
                   name="mobileNumber"
@@ -205,7 +234,7 @@ export default function RaiseComplaint() {
               </div>
 
               <div>
-                <label className="block text-lg font-medium mb-2">{t('complaintCategory')}</label>
+                <label className="block text-sm md:text-lg font-medium mb-2">{t('complaintCategory')}</label>
                 <select
                   name="complaintCategory"
                   value={formData.complaintCategory}
@@ -225,7 +254,7 @@ export default function RaiseComplaint() {
               </div>
 
               <div>
-                <label className="block text-lg font-medium mb-2">{t('complaintDescription')}</label>
+                <label className="block text-sm md:text-lg font-medium mb-2">{t('complaintDescription')}</label>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -242,8 +271,8 @@ export default function RaiseComplaint() {
               </div>
 
               <div>
-                <label className="block text-lg font-medium mb-2">{t('uploadProof')}</label>
-                <div className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer ${
+                <label className="block text-sm md:text-lg font-medium mb-2">{t('uploadProof')}</label>
+                <div className={`border-2 border-dashed rounded-lg p-4 md:p-8 text-center cursor-pointer ${
                   isDarkTheme 
                     ? 'border-gray-600 hover:border-indigo-500' 
                     : 'border-gray-300 hover:border-indigo-500'
@@ -256,7 +285,7 @@ export default function RaiseComplaint() {
                     id="file-upload"
                   />
                   <label htmlFor="file-upload" className="cursor-pointer">
-                    <svg className={`w-12 h-12 mx-auto mb-4 ${
+                    <svg className={`w-10 h-10 md:w-12 md:h-12 mx-auto mb-4 ${
                       isDarkTheme ? 'text-gray-400' : 'text-gray-500'
                     }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -264,13 +293,13 @@ export default function RaiseComplaint() {
                     <p className={`font-medium ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
                       {t('clickToUpload')}
                     </p>
-                    <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <p className={`text-xs md:text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>
                       {t('supportedFormats')}
                     </p>
                   </label>
                 </div>
                 {formData.proof && (
-                  <p className="mt-2 text-sm text-green-600">
+                  <p className="mt-2 text-xs md:text-sm text-green-600">
                     {t('fileUploaded')}: {formData.proof.name}
                   </p>
                 )}
@@ -279,7 +308,7 @@ export default function RaiseComplaint() {
               <div className="text-center pt-6">
                 <button
                   type="submit"
-                  className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-xl"
+                  className="px-6 md:px-8 py-3 md:py-4 bg-indigo-600 text-white rounded-xl font-bold text-base md:text-lg hover:bg-indigo-700 transition-colors shadow-lg hover:shadow-xl w-full md:w-auto"
                 >
                   {t('submitComplaint')}
                 </button>
@@ -290,22 +319,22 @@ export default function RaiseComplaint() {
 
         {/* Step 2: Confirmation */}
         {step === 2 && (
-          <section className={`p-12 rounded-3xl shadow-xl text-center ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <section className={`p-4 md:p-12 rounded-2xl md:rounded-3xl shadow-xl text-center ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6">
+              <svg className="w-8 h-8 md:w-12 md:h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-3xl font-bold mb-4 text-green-600">{t('complaintSubmitted')}</h2>
-            <p className="text-xl mb-2">{t('complaintIdGenerated')}</p>
-            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-4 rounded-lg inline-block mb-6">
-              <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">CR-{Date.now().toString().slice(-6)}</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-green-600">{t('complaintSubmitted')}</h2>
+            <p className="text-sm md:text-xl mb-2">{t('complaintIdGenerated')}</p>
+            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-4 rounded-lg inline-block mb-4 md:mb-6">
+              <p className="text-xl md:text-2xl font-bold text-indigo-700 dark:text-indigo-300">CR-{Date.now().toString().slice(-6)}</p>
             </div>
-            <p className="text-lg mb-8">{t('expectedResolutionTime')}</p>
+            <p className="text-sm md:text-lg mb-8">{t('expectedResolutionTime')}</p>
             
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-lg mb-8">
-              <h3 className="text-xl font-bold mb-4 text-yellow-800 dark:text-yellow-200">{t('importantNotice')}</h3>
-              <ul className="text-left space-y-2 text-yellow-700 dark:text-yellow-300">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 md:p-6 rounded-lg mb-8">
+              <h3 className="text-lg md:text-xl font-bold mb-4 text-yellow-800 dark:text-yellow-200">{t('importantNotice')}</h3>
+              <ul className="text-left space-y-2 text-xs md:text-sm text-yellow-700 dark:text-yellow-300">
                 <li>• {t('saveComplaintId')}</li>
                 <li>• {t('keepProofDocuments')}</li>
                 <li>• {t('followUpIfNeeded')}</li>
@@ -315,13 +344,13 @@ export default function RaiseComplaint() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => setStep(3)}
-                className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors w-full sm:w-auto"
               >
                 {t('trackComplaint')}
               </button>
               <button
                 onClick={resetForm}
-                className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-colors dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 w-full sm:w-auto"
               >
                 {t('submitAnother')}
               </button>
@@ -331,41 +360,41 @@ export default function RaiseComplaint() {
 
         {/* Step 3: Tracking */}
         {step === 3 && (
-          <section className={`p-8 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <h2 className="text-3xl font-bold mb-8 text-center text-indigo-700">{t('complaintTracking')}</h2>
+          <section className={`p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center text-indigo-700">{t('complaintTracking')}</h2>
             
-            <div className="max-w-md mx-auto mb-8">
-              <div className="flex">
+            <div className="max-w-md mx-auto mb-6 md:mb-8">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   placeholder={t('enterComplaintId') as string}
-                  className={`flex-1 px-4 py-3 rounded-l-lg border-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  className={`flex-1 px-4 py-3 rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     isDarkTheme 
                       ? 'bg-gray-800 border-gray-700 text-white' 
                       : 'bg-white border-gray-300 text-gray-900'
                   }`}
                 />
-                <button className="px-6 py-3 bg-indigo-600 text-white rounded-r-lg font-semibold hover:bg-indigo-700 transition-colors">
+                <button className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors w-full sm:w-auto">
                   {t('search')}
                 </button>
               </div>
             </div>
 
-            <div className={`p-6 rounded-xl ${isDarkTheme ? 'bg-gray-800' : 'bg-gray-100'}`}>
-              <h3 className="text-xl font-bold mb-4">{t('complaintStatus')}</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span>{t('status')}</span>
-                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full font-semibold">
+            <div className={`p-4 md:p-6 rounded-xl ${isDarkTheme ? 'bg-gray-800' : 'bg-gray-100'}`}>
+              <h3 className="text-lg md:text-xl font-bold mb-4">{t('complaintStatus')}</h3>
+              <div className="space-y-3 md:space-y-4">
+                <div className="flex justify-between items-center flex-wrap gap-2">
+                  <span className="text-sm md:text-base">{t('status')}</span>
+                  <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full font-semibold text-xs md:text-sm">
                     {t('statusInReview')}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>{t('assignedTo')}</span>
-                  <span className="font-medium">Block Development Officer</span>
+                <div className="flex justify-between items-center flex-wrap gap-2">
+                  <span className="text-sm md:text-base">{t('assignedTo')}</span>
+                  <span className="font-medium text-sm md:text-base">Block Development Officer</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>{t('resolutionTime')}</span>
+                <div className="flex justify-between items-center flex-wrap gap-2">
+                  <span className="text-sm md:text-base">{t('resolutionTime')}</span>
                   <span>{t('resolutionTimeline')}</span>
                 </div>
               </div>

@@ -43,6 +43,11 @@ export default function KeyFeatures() {
     }
   };
 
+  const navItems = [
+    'aboutMinistry', 'aboutScheme', 'keyFeatures', 'schemeComponents',
+    'mobileApps', 'raiseComplaint', 'login'
+  ];
+
   const features = [
     {
       title: 'guaranteedEmployment',
