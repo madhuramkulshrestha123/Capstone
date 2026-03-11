@@ -244,7 +244,7 @@ export default function MobileApps() {
               }`}>
                 <div className="aspect-[9/19] relative">
                   <img 
-                    src="/images/carousel1.jpg" 
+                    src="/images/apk image -1.png" 
                     alt="User Dashboard" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -266,7 +266,7 @@ export default function MobileApps() {
               }`}>
                 <div className="aspect-[9/19] relative">
                   <img 
-                    src="/images/carousel2.jpg" 
+                    src="/images/apk - payment.png" 
                     alt="Payment Management" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -288,7 +288,7 @@ export default function MobileApps() {
               }`}>
                 <div className="aspect-[9/19] relative">
                   <img 
-                    src="/images/carousel3.jpg" 
+                    src="/images/apk - attendance.png" 
                     alt="Attendance Management" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -310,7 +310,7 @@ export default function MobileApps() {
               }`}>
                 <div className="aspect-[9/19] relative">
                   <img 
-                    src="/images/gallery1.jpg" 
+                    src="/images/apk - login.png" 
                     alt="Secure Login" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
