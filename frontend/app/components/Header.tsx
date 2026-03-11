@@ -101,9 +101,9 @@ export default function Header({
         </div>
       </header>
 
-      {/* Navigation Bar - Desktop Only */}
+      {/* Navigation Bar */}
       {showNavigation && (
-        <nav className={`hidden md:block py-3 px-6 ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg shadow-inner' : 'bg-white/90 backdrop-blur-lg shadow-inner'} sticky top-0 z-20 transition-colors duration-300`}>
+        <nav className={`py-3 px-6 ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg shadow-inner' : 'bg-white/90 backdrop-blur-lg shadow-inner'} sticky top-0 z-20 transition-colors duration-300`}>
           <ul className="flex flex-wrap justify-center gap-3 md:gap-6 font-medium tracking-wide">
             {['aboutMinistry', 'aboutScheme', 'keyFeatures', 'schemeComponents', 'mobileApps', 'raiseComplaint', 'login'].map((item, index) => (
               <li key={index} className="my-2">
