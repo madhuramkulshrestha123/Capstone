@@ -651,16 +651,17 @@ export default function Dashboard() {
               {/* Left Side - Content */}
               <div className="space-y-6">
                 <div className="flex items-center space-x-4">
-                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
-                    isDarkTheme ? 'bg-green-600' : 'bg-green-500'
-                  }`}>
-                    <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.523 15.3414c-.5511 0-.9993-.0027-1.4322-.0239-1.4293-.0694-2.7409-.4163-3.9327-1.2253-.2571-.1743-.4855-.3756-.6828-.6173-.0347-.0426-.0709-.0845-.1114-.1308-.0379.0442-.0726.0849-.1085.1261-.2025.2328-.4319.4272-.6896.5958-1.1889.7767-2.4979 1.1137-3.9241 1.1792-.435.0201-.8853.0204-1.4386.0204-.2213 0-.4426-.0013-.6638-.0038 1.6795-2.4088 3.3483-4.8251 5.0258-7.2361.1698-.2436.3552-.4693.5693-.6639.2104-.1912.4444-.3506.7126-.4593.2716-.1101.5547-.1658.8503-.1658.2929 0 .5737.0547.8436.1636.2675.1079.5012.2666.7117.4565.2149.1939.4012.4189.5721.6617 1.6767 2.4121 3.3449 4.8295 5.0237 7.2393-.2231.0025-.4464.0039-.6697.0039-.5565 0-1.0095-.0003-1.4558-.0203zM12.0001 2.0001c-2.7614 0-5 2.2386-5 5.0001 0 2.7614 2.2386 5 5 5s5-2.2386 5-5c0-2.7615-2.2386-5.0001-5-5.0001zm0 2.0001c1.6569 0 3 1.3431 3 3 0 1.6568-1.3431 3-3 3s-3-1.3432-3-3c0-1.6569 1.3431-3 3-3z"/>
-                    </svg>
-                  </div>
+                  <img 
+                    src="/images/apk logo.png" 
+                    alt="Smart Rozgaar App Logo" 
+                    className="w-16 h-16 object-contain"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/64x64/4F46E5/FFFFFF?text=Logo';
+                    }}
+                  />
                   <div>
                     <h3 className="text-xl md:text-2xl font-bold">Smart Rozgaar App</h3>
-                    <p className={`text-sm md:text-base ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>Version 1.0.0 | 15 MB</p>
+                    <p className={`text-sm md:text-base ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>Version 1.0.0 | 6 MB</p>
                   </div>
                 </div>
 
@@ -719,9 +720,14 @@ export default function Dashboard() {
                 </div>
 
                 <button className="w-full md:w-auto px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transform transition-transform duration-300 hover:scale-105 flex items-center justify-center space-x-3">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.523 15.3414c-.5511 0-.9993-.0027-1.4322-.0239-1.4293-.0694-2.7409-.4163-3.9327-1.2253-.2571-.1743-.4855-.3756-.6828-.6173-.0347-.0426-.0709-.0845-.1114-.1308-.0379.0442-.0726.0849-.1085.1261-.2025.2328-.4319.4272-.6896.5958-1.1889.7767-2.4979 1.1137-3.9241 1.1792-.435.0201-.8853.0204-1.4386.0204-.2213 0-.4426-.0013-.6638-.0038 1.6795-2.4088 3.3483-4.8251 5.0258-7.2361.1698-.2436.3552-.4693.5693-.6639.2104-.1912.4444-.3506.7126-.4593.2716-.1101.5547-.1658.8503-.1658.2929 0 .5737.0547.8436.1636.2675.1079.5012.2666.7117.4565.2149.1939.4012.4189.5721.6617 1.6767 2.4121 3.3449 4.8295 5.0237 7.2393-.2231.0025-.4464.0039-.6697.0039-.5565 0-1.0095-.0003-1.4558-.0203zM12.0001 2.0001c-2.7614 0-5 2.2386-5 5.0001 0 2.7614 2.2386 5 5 5s5-2.2386 5-5c0-2.7615-2.2386-5.0001-5-5.0001zm0 2.0001c1.6569 0 3 1.3431 3 3 0 1.6568-1.3431 3-3 3s-3-1.3432-3-3c0-1.6569 1.3431-3 3-3z"/>
-                  </svg>
+                  <img 
+                    src="/images/apk.png" 
+                    alt="Android APK" 
+                    className="w-6 h-6 object-contain"
+                    onError={(e) => {
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xNy41MjMgMTUuMzQxNGMtLjU1MTEgMC0uOTk5My0uMDAyNy0xLjQzMjItLjAyMzktMS40MjkzLS4wNjk0LTIuNzQwOS0uNDE2My0zLjkzMjctMS4yMjUzLS4yNTcxLS4xNzQzLS40ODU1LS4zNzU2LS42ODI4LS42MTczLS4wMzQ3LS4wNDI2LS4wNzA5LS4wODQ1LS4xMTE0LS4xMzA4LS4wMzc5LjA0NDItLjA3MjYuMDg0OS0uMTA4NS4xMjYxLS4yMDI1LjIzMjgtLjQzMTkuNDI3Mi0uNjg5Ni41OTU4LTEuMTg4OS43NzY3LTIuNDk3OSAxLjExMzctMy45MjQxIDEuMTc5Mi0uNDM1LjAyMDEtLjg4NTMuMDIwNC0xLjQzODYuMDIwNC0uMjIxMyAwLS40NDI2LS4wMDEzLS42NjM4LS4wMDM4IDEuNjc5NS0yLjQwODggMy4zNDgzLTQuODI1MSA1LjAyNTgtNy4yMzYxLjE2OTgtLjI0MzYuMzU1Mi0uNDY5My41NjkzLS42NjM5LjIxMDQtLjE5MTIuNDQ0NC0uMzUwNi43MTI2LS40NTkzLjI3MTYtLjExMDEuNTU0Ny0uMTY1OC44NTAzLS4xNjU4LjI5MjkgMCAuNTczNy4wNTQ3Ljg0MzYuMTYzNi4yNjc1LjEwNzkuNTAxMi4yNjY2LjcxMTcuNDU2NS4yMTQ5LjE5MzkuNDAxMi40MTg5LjU3MjEuNjYxNyAxLjY3NjcgMi40MTIxIDMuMzQ0OSA0LjgyOTUgNS4wMjM3IDcuMjM5My0uMjIzMS4wMDI1LS40NDY0LjAwMzktLjY2OTcuMDAzOS0uNTU2NSAwLTEuMDA5NS0uMDAwMy0xLjQ1NTgtLjAyMDN6TTEyLjAwMDEgMi4wMDAxYy0yLjc2MTQgMC01IDIuMjM4Ni01IDUuMDAwMSAwIDIuNzYxNCAyLjIzODYgNSA1IDVzNS0yLjIzODYgNS01YzAtMi43NjE1LTIuMjM4Ni01LjAwMDEtNS01LjAwMDF6bTAgMi4wMDAxYzEuNjU2OSAwIDMgMS4zNDMxIDMgMyAwIDEuNjU2OC0xLjM0MzEgMy0zIDNzLTMtMS4zNDMyLTMtM2MwLTEuNjU2OSAxLjM0MzEtMyAzLTN6Ii8+PC9zdmc+';
+                    }}
+                  />
                   <span>Download Android APK</span>
                 </button>
               </div>
@@ -731,7 +737,7 @@ export default function Dashboard() {
                 <div className={`absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-3xl transform rotate-3 ${isDarkTheme ? 'opacity-50' : 'opacity-70'}`}></div>
                 <div className="relative">
                   <img 
-                    src="/images/mobile-app-mockup.jpg" 
+                    src="/images/apk image -1.png" 
                     alt="Smart Rozgaar Mobile App" 
                     className="h-[500px] md:h-[600px] w-auto object-cover rounded-3xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
                     onError={(e) => {
