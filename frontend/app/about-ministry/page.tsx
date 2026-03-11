@@ -43,11 +43,6 @@ export default function AboutMinistry() {
     }
   };
 
-  const navItems = [
-    'aboutMinistry', 'aboutScheme', 'keyFeatures', 'schemeComponents',
-    'mobileApps', 'raiseComplaint', 'login'
-  ];
-
   return (
     <div className={`min-h-screen ${isDarkTheme ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white' : 'bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 text-gray-900'}`}>
       <Header 
@@ -60,30 +55,6 @@ export default function AboutMinistry() {
         showNavigation={true}
         onNavClick={handleNavClick}
       />
-
-      {/* Navigation Bar - Desktop Only */}
-      <nav className={`hidden md:block py-3 px-6 ${isDarkTheme ? 'bg-gray-800/90 backdrop-blur-lg shadow-inner' : 'bg-white/90 backdrop-blur-lg shadow-inner'} sticky top-0 z-20 transition-colors duration-300`}>
-        <ul className="flex flex-wrap justify-center gap-3 md:gap-6 font-medium tracking-wide">
-          {navItems.map((item, index) => (
-            <li key={index} className="my-2">
-              <button 
-                onClick={() => handleNavClick(item)}
-                className={`px-5 py-2 rounded-lg transition-transform duration-300 ease-in-out hover:scale-110 ${
-                  item === 'login' 
-                    ? `font-bold ${isDarkTheme 
-                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg' 
-                        : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'}`
-                    : isDarkTheme 
-                      ? 'text-white hover:bg-indigo-700 hover:shadow-md' 
-                      : 'text-gray-900 hover:bg-indigo-200 hover:text-indigo-700 hover:shadow-md'
-                }`}
-              >
-                {t(item as any)}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
 
       <main className="container max-w-7xl mx-auto px-4 md:px-6 py-10 space-y-14">
         {/* Hero Section */}
