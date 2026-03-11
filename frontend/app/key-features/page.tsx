@@ -114,33 +114,33 @@ export default function KeyFeatures() {
         onNavClick={handleNavClick}
       />
 
-      <main className="container max-w-7xl mx-auto px-6 py-10 space-y-14">
+      <main className="container max-w-7xl mx-auto px-4 md:px-6 py-10 space-y-14">
         {/* Hero Section */}
-        <section className="text-center py-16">
-          <h1 className="text-5xl font-extrabold mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
+        <section className="text-center py-12 md:py-16">
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 md:mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent px-4">
             {t('keyFeatures')}
           </h1>
-          <p className="text-2xl font-light max-w-3xl mx-auto">
+          <p className="text-base md:text-2xl font-light max-w-3xl mx-auto px-4">
             {t('keyFeaturesDescription')}
           </p>
         </section>
 
         {/* Features Grid */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {features.map((feature, index) => (
             <div 
               key={index} 
-              className={`p-8 rounded-3xl shadow-xl transition-transform duration-300 hover:scale-105 ${
+              className={`p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl transition-transform duration-300 hover:scale-105 ${
                 isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'
               }`}
             >
-              <div className="flex justify-center mb-6">
-                {feature.icon}
+              <div className="flex justify-center mb-4 md:mb-6">
+                <div className="w-10 h-10 md:w-12 md:h-12">{feature.icon}</div>
               </div>
-              <h3 className="text-2xl font-bold mb-4 text-center text-indigo-700">
+              <h3 className="text-xl md:text-2xl font-bold mb-3 md:mb-4 text-center text-indigo-700">
                 {t(feature.title as any)}
               </h3>
-              <p className="text-gray-600 dark:text-gray-300 text-center">
+              <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 text-center">
                 {t(feature.description as any)}
               </p>
             </div>
