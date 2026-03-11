@@ -98,224 +98,235 @@ export default function MobileApps() {
         onNavClick={handleNavClick}
       />
 
-      <main className="container max-w-7xl mx-auto px-6 py-10 space-y-14">
+      <main className="container max-w-7xl mx-auto px-4 md:px-6 py-10 space-y-14">
         {/* Hero Section */}
-        <section className="text-center py-16">
-          <h1 className="text-5xl font-extrabold mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
+        <section className="text-center py-12 md:py-16">
+          <h1 className="text-3xl md:text-5xl font-extrabold mb-4 md:mb-6 bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
             {t('mobileApps')}
           </h1>
-          <p className="text-2xl font-light max-w-3xl mx-auto">
-            {t('mobileAppsDescription')}
-          </p>
-        </section>
-
-        {/* Apps Grid */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {apps.map((app, index) => (
-            <div 
-              key={index} 
-              className={`rounded-3xl shadow-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl ${
-                isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'
-              }`}
-            >
-              <div className="p-8">
-                <div className="flex justify-center mb-6">
-                  {app.icon}
-                </div>
-                <h3 className="text-2xl font-bold mb-4 text-center text-indigo-700">
-                  {t(app.title as any)}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 text-center mb-6">
-                  {t(app.description as any)}
-                </p>
-                
-                <div className={`text-center text-sm px-3 py-2 rounded-full inline-block mb-6 ${
-                  isDarkTheme ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700'
-                }`}>
-                  {t('for')} {t(app.userType as any)}
-                </div>
-                
-                <div className="mb-6">
-                  <h4 className="font-semibold mb-3 text-center">{t('platforms')}</h4>
-                  <div className="flex justify-center space-x-3">
-                    {app.platforms.map((platform, idx) => (
-                      <span 
-                        key={idx} 
-                        className={`px-3 py-1 rounded-full text-sm ${
-                          isDarkTheme ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {platform === 'android' ? '📱 Android' : '💻 Web'}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="font-semibold mb-3 text-center">{t('keyFeatures')}</h4>
-                  <ul className="space-y-2">
-                    {app.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-center">
-                        <span className="text-green-500 mr-2">✓</span>
-                        <span className="text-sm">{t(feature as any)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              
-              <div className={`p-4 border-t ${isDarkTheme ? 'border-gray-700' : 'border-gray-200'}`}>
-                <button className={`w-full py-3 rounded-lg font-semibold ${
-                  isDarkTheme 
-                    ? 'bg-indigo-700 text-white hover:bg-indigo-600' 
-                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                } transition-colors`}>
-                  {t('downloadApp')}
-                </button>
-              </div>
-            </div>
-          ))}
-        </section>
-
-        {/* Screenshots Section */}
-        <section className={`p-10 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-          <h2 className="text-3xl font-bold mb-8 text-center text-indigo-700">{t('appScreenshots')}</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-gray-200 dark:bg-gray-700 rounded-xl h-64 mb-4 flex items-center justify-center">
-                <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">{t('attendanceMarking')}</h3>
-              <p className="text-gray-600 dark:text-gray-300">{t('attendanceMarkingDesc')}</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-gray-200 dark:bg-gray-700 rounded-xl h-64 mb-4 flex items-center justify-center">
-                <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">{t('paymentStatus')}</h3>
-              <p className="text-gray-600 dark:text-gray-300">{t('paymentStatusDesc')}</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-gray-200 dark:bg-gray-700 rounded-xl h-64 mb-4 flex items-center justify-center">
-                <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">{t('complaintTracking')}</h3>
-              <p className="text-gray-600 dark:text-gray-300">{t('complaintTrackingDesc')}</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Benefits Section */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <div className={`p-8 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <h2 className="text-3xl font-bold mb-6 text-indigo-700">{t('benefitsForWorkers')}</h2>
-            <ul className="space-y-4">
-              <li className="flex items-start">
-                <span className="text-green-500 mr-3 text-xl">✓</span>
-                <span>{t('anytimeAccess')}</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-green-500 mr-3 text-xl">✓</span>
-                <span>{t('realTimeUpdates')}</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-green-500 mr-3 text-xl">✓</span>
-                <span>{t('easyNavigation')}</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-green-500 mr-3 text-xl">✓</span>
-                <span>{t('multilingualSupport')}</span>
-              </li>
-            </ul>
-          </div>
-          <div className={`p-8 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-            <h2 className="text-3xl font-bold mb-6 text-purple-700">{t('benefitsForAuthorities')}</h2>
-            <ul className="space-y-4">
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-3 text-xl">✓</span>
-                <span>{t('efficientMonitoring')}</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-3 text-xl">✓</span>
-                <span>{t('reducedPaperwork')}</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-3 text-xl">✓</span>
-                <span>{t('fasterProcessing')}</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-blue-500 mr-3 text-xl">✓</span>
-                <span>{t('betterTransparency')}</span>
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        {/* Download CTA */}
-        <section className={`p-16 rounded-3xl shadow-xl text-center ${isDarkTheme ? 'bg-gradient-to-r from-indigo-900 to-purple-900' : 'bg-gradient-to-r from-indigo-600 to-purple-600'} text-white`}>
-          <h2 className="text-4xl font-bold mb-6">{t('downloadOurApps')}</h2>
-          <p className="text-xl mb-10 max-w-2xl mx-auto">
+          <p className="text-base md:text-2xl font-light max-w-3xl mx-auto px-4">
             {t('downloadAppsDescription')}
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <button className="px-8 py-4 bg-white text-indigo-700 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors flex items-center justify-center">
-              <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.25 14.25v-2.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75v2.5a.75.75 0 00.75.75h3a.75.75 0 00.75-.75zM12 2.25a.75.75 0 01.75.75v9.5a.75.75 0 01-1.5 0v-9.5A.75.75 0 0112 2.25z"/>
-                <path fillRule="evenodd" d="M12 15a3 3 0 100-6 3 3 0 000 6zm-5.25 3a.75.75 0 01.75-.75h9.5a.75.75 0 010 1.5h-9.5a.75.75 0 01-.75-.75z" clipRule="evenodd"/>
-              </svg>
-              {t('downloadAndroid')}
-            </button>
-            <button className="px-8 py-4 bg-white text-purple-700 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors flex items-center justify-center">
-              <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-              {t('downloadWeb')}
-            </button>
+        </section>
+
+        {/* Unified Mobile App Section */}
+        <section className="mb-16">
+          <div className={`p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-xl overflow-hidden ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-center">
+              {/* Left Side - Content */}
+              <div className="space-y-4 md:space-y-6 order-2 lg:order-2">
+                <div className="flex items-center space-x-3 md:space-x-4 justify-center md:justify-start">
+                  <img 
+                    src="/images/apk logo.png" 
+                    alt="Smart Rozgaar App Logo" 
+                    className="w-12 h-12 md:w-16 md:h-16 object-contain flex-shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/64x64/4F46E5/FFFFFF?text=Logo';
+                    }}
+                  />
+                  <div>
+                    <h3 className="text-lg md:text-2xl font-bold">Smart Rozgaar App</h3>
+                    <p className={`text-xs md:text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>Version 1.0.0 | 6 MB</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 md:space-y-4">
+                  <div className="flex items-start space-x-2 md:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
+                      isDarkTheme ? 'bg-indigo-700' : 'bg-indigo-100'
+                    }`}>
+                      <svg className={`w-3 h-3 md:w-5 md:h-5 ${isDarkTheme ? 'text-white' : 'text-indigo-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className={`text-xs md:text-sm flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <strong>For Workers & Supervisors:</strong> Single app for all field operations and management
+                    </p>
+                  </div>
+
+                  <div className="flex items-start space-x-2 md:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
+                      isDarkTheme ? 'bg-purple-700' : 'bg-purple-100'
+                    }`}>
+                      <svg className={`w-3 h-3 md:w-5 md:h-5 ${isDarkTheme ? 'text-white' : 'text-purple-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className={`text-xs md:text-sm flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <strong>Digital Attendance:</strong> Mark attendance on-site with GPS verification and OTP
+                    </p>
+                  </div>
+
+                  <div className="flex items-start space-x-2 md:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
+                      isDarkTheme ? 'bg-pink-700' : 'bg-pink-100'
+                    }`}>
+                      <svg className={`w-3 h-3 md:w-5 md:h-5 ${isDarkTheme ? 'text-white' : 'text-pink-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className={`text-xs md:text-sm flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <strong>Real-time Payments:</strong> Track wage payments and view payment history anytime
+                    </p>
+                  </div>
+
+                  <div className="flex items-start space-x-2 md:space-x-3">
+                    <div className={`flex-shrink-0 w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center ${
+                      isDarkTheme ? 'bg-blue-700' : 'bg-blue-100'
+                    }`}>
+                      <svg className={`w-3 h-3 md:w-5 md:h-5 ${isDarkTheme ? 'text-white' : 'text-blue-700'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className={`text-xs md:text-sm flex-1 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <strong>Multilingual Support:</strong> Available in English and Hindi for easy accessibility
+                    </p>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = '/Smart_Rozgaar_1.0.0.apk';
+                    link.download = 'Smart_Rozgaar_1.0.0.apk';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="w-full px-6 py-3 md:px-8 md:py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transform transition-transform duration-300 hover:scale-105 flex items-center justify-center space-x-2 md:space-x-3 cursor-pointer"
+                >
+                  <img 
+                    src="/images/apk.png" 
+                    alt="Android APK" 
+                    className="w-5 h-5 md:w-6 md:h-6 object-contain"
+                    onError={(e) => {
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xNy41MjMgMTUuMzQxNGMtLjU1MTEgMC0uOTk5My0uMDAyNy0xLjQzMjItLjAyMzktMS40MjkzLS4wNjk0LTIuNzQwOS0uNDE2My0zLjkzMjctMS4yMjUzLS4yNTcxLS4xNzQzLS40ODU1LS4zNzU2LS42ODI4LS42MTczLS4wMzQ3LS4wNDI2LS4wNzA5LS4wODQ1LS4xMTE0LS4xMzA4LS4wMzc5LjA0NDItLjA3MjYuMDg0OS0uMTA4NS4xMjYxLS4yMDI1LjIzMjgtLjQzMTkuNDI3Mi0uNjg5Ni41OTU4LTEuMTg4OS43NzY3LTIuNDk3OSAxLjExMzctMy45MjQxIDEuMTc5Mi0uNDM1LjAyMDEtLjg4NTMuMDIwNC0xLjQzODYuMDIwNC0uMjIxMyAwLS40NDI2LS4wMDEzLS42NjM4LS4wMDM4IDEuNjc5NS0yLjQwODggMy4zNDgzLTQuODI1MSA1LjAyNTgtNy4yMzYxLjE2OTgtLjI0MzYuMzU1Mi0uNDY5My41NjkzLS42NjM5LjIxMDQtLjE5MTIuNDQ0NC0uMzUwNi43MTI2LS40NTkzLjI3MTYtLjExMDEuNTU0Ny0uMTY1OC44NTAzLS4xNjU4LjI5MjkgMCAuNTczNy4wNTQ3Ljg0MzYuMTYzNi4yNjc1LjEwNzkuNTAxMi4yNjY2LjcxMTcuNDU2NS4yMTQ5LjE5MzkuNDAxMi40MTg5LjU3MjEuNjYxNyAxLjY3NjcgMi40MTIxIDMuMzQ0OSA0LjgyOTUgNS4wMjM3IDcuMjM5My0uMjIzMS4wMDI1LS40NDY0LjAwMzktLjY2OTcuMDAzOS0uNTU2NSAwLTEuMDA5NS0uMDAwMy0xLjQ1NTgtLjAyMDN6TTEyLjAwMDEgMi4wMDAxYy0yLjc2MTQgMC01IDIuMjM4Ni01IDUuMDAwMSAwIDIuNzYxNCAyLjIzODYgNSA1IDVzNS0yLjIzODYgNS01YzAtMi43NjE1LTIuMjM4Ni01LjAwMDEtNS01LjAwMDF6bTAgMi4wMDAxYzEuNjU2OSAwIDMgMS4zNDMxIDMgMyAwIDEuNjU2OC0xLjM0MzEgMy0zIDNzLTMtMS4zNDMyLTMtM2MwLTEuNjU2OSAxLjM0MzEtMyAzLTN6Ii8+PC9zdmc+';
+                    }}
+                  />
+                  <span className="text-sm md:text-base">Download Android APK</span>
+                </button>
+              </div>
+
+              {/* Right Side - Mobile App Image */}
+              <div className="relative flex justify-center items-center order-1 lg:order-1 mb-4 lg:mb-0">
+                <div className={`absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-3xl transform rotate-2 ${isDarkTheme ? 'opacity-40' : 'opacity-60'}`}></div>
+                <div className="relative">
+                  <img 
+                    src="/images/apk image -1.png" 
+                    alt="Smart Rozgaar Mobile App" 
+                    className="h-[400px] sm:h-[500px] md:h-[600px] w-auto object-cover rounded-3xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/432x932/4F46E5/FFFFFF?text=Smart+Rozgaar+App';
+                    }}
+                  />
+                  <div className="absolute -bottom-4 -right-4 w-16 h-16 md:w-24 md:h-24 bg-green-500 rounded-full flex items-center justify-center shadow-xl animate-bounce">
+                    <svg className="w-8 h-8 md:w-12 md:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Support Section */}
-        <section className={`p-10 rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
-          <h2 className="text-3xl font-bold mb-8 text-center text-indigo-700">{t('needHelp')}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div>
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
+        {/* App Features Showcase */}
+        <section className={`p-6 md:p-10 rounded-2xl md:rounded-3xl shadow-xl ${isDarkTheme ? 'bg-gray-900/90 backdrop-blur-lg' : 'bg-white/90 backdrop-blur-lg'}`}>
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
+            App Features
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            {/* User Dashboard */}
+            <div className="text-center group">
+              <div className={`rounded-2xl overflow-hidden shadow-lg mb-4 transform transition-transform duration-300 group-hover:scale-105 ${
+                isDarkTheme ? 'bg-gray-800' : 'bg-gray-100'
+              }`}>
+                <div className="aspect-[9/19] relative">
+                  <img 
+                    src="/images/carousel1.jpg" 
+                    alt="User Dashboard" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/432x932/4F46E5/FFFFFF?text=User+Dashboard';
+                    }}
+                  />
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t('callSupport')}</h3>
-              <p className="text-gray-600 dark:text-gray-300">{t('tollFreeNumber')}</p>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">User Dashboard</h3>
+              <p className={`text-sm md:text-base ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>
+                Complete overview of jobs, applications, and work status
+              </p>
             </div>
-            <div>
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+
+            {/* Payments */}
+            <div className="text-center group">
+              <div className={`rounded-2xl overflow-hidden shadow-lg mb-4 transform transition-transform duration-300 group-hover:scale-105 ${
+                isDarkTheme ? 'bg-gray-800' : 'bg-gray-100'
+              }`}>
+                <div className="aspect-[9/19] relative">
+                  <img 
+                    src="/images/carousel2.jpg" 
+                    alt="Payment Management" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/432x932/7C3AED/FFFFFF?text=Payments';
+                    }}
+                  />
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t('emailSupport')}</h3>
-              <p className="text-gray-600 dark:text-gray-300">support@smartrozgar.gov.in</p>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Payment Tracking</h3>
+              <p className={`text-sm md:text-base ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>
+                Real-time payment status and transaction history
+              </p>
             </div>
-            <div>
-              <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-pink-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a1 1 0 001-1V9a1 1 0 00-1-1h-4a1 1 0 00-1 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
+
+            {/* Attendance Management */}
+            <div className="text-center group">
+              <div className={`rounded-2xl overflow-hidden shadow-lg mb-4 transform transition-transform duration-300 group-hover:scale-105 ${
+                isDarkTheme ? 'bg-gray-800' : 'bg-gray-100'
+              }`}>
+                <div className="aspect-[9/19] relative">
+                  <img 
+                    src="/images/carousel3.jpg" 
+                    alt="Attendance Management" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/432x932/2563EB/FFFFFF?text=Attendance';
+                    }}
+                  />
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2">{t('chatSupport')}</h3>
-              <p className="text-gray-600 dark:text-gray-300">{t('available247')}</p>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Attendance Management</h3>
+              <p className={`text-sm md:text-base ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>
+                Digital attendance marking with GPS and OTP verification
+              </p>
+            </div>
+
+            {/* Secure Login */}
+            <div className="text-center group">
+              <div className={`rounded-2xl overflow-hidden shadow-lg mb-4 transform transition-transform duration-300 group-hover:scale-105 ${
+                isDarkTheme ? 'bg-gray-800' : 'bg-gray-100'
+              }`}>
+                <div className="aspect-[9/19] relative">
+                  <img 
+                    src="/images/gallery1.jpg" 
+                    alt="Secure Login" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/432x932/EC4899/FFFFFF?text=Secure+Login';
+                    }}
+                  />
+                </div>
+              </div>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">Secure Login</h3>
+              <p className={`text-sm md:text-base ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>
+                Multi-factor authentication for enhanced security
+              </p>
             </div>
           </div>
         </section>
+
       </main>
 
       {/* Footer */}

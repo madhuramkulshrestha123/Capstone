@@ -719,7 +719,17 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <button className="w-full px-6 py-3 md:px-8 md:py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transform transition-transform duration-300 hover:scale-105 flex items-center justify-center space-x-2 md:space-x-3">
+                <button 
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = '/Smart_Rozgaar_1.0.0.apk';
+                    link.download = 'Smart_Rozgaar_1.0.0.apk';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="w-full px-6 py-3 md:px-8 md:py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transform transition-transform duration-300 hover:scale-105 flex items-center justify-center space-x-2 md:space-x-3 cursor-pointer"
+                >
                   <img 
                     src="/images/apk.png" 
                     alt="Android APK" 
